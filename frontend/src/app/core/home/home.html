@@ -1,0 +1,35 @@
+<section class="stack">
+  <h1>Explorer</h1>
+
+  <p>
+    Discover cities, trails and landscapes through tours designed by authors, and share your
+    impressions with the community.
+  </p>
+
+  @if (!auth.isLoggedIn()) {
+    <p class="actions">
+      <a class="button button--primary" routerLink="/register">Register</a>
+      <a class="button" routerLink="/login">Log in</a>
+    </p>
+  }
+</section>
+
+<section class="features grid">
+  <article class="card">
+    <h2>Tours</h2>
+
+    <p>
+      Find a tour that suits you and get to know a city, trail or landscape the way its author
+      imagined it. Have an idea of your own? Create your own tour.
+    </p>
+  </article>
+
+  <article class="card">
+    <h2>Community</h2>
+
+    <p>
+      Clubs bring together people who explore the way you do. Read other people's impressions on
+      blogs and share your own.
+    </p>
+  </article>
+</section>
