@@ -6,10 +6,12 @@
     impressions with the community.
   </p>
 
-  <p class="actions">
-    <a class="button button--primary" routerLink="/register">Register</a>
-    <a class="button" routerLink="/login">Log in</a>
-  </p>
+  @if (!auth.isLoggedIn()) {
+    <p class="actions">
+      <a class="button button--primary" routerLink="/register">Register</a>
+      <a class="button" routerLink="/login">Log in</a>
+    </p>
+  }
 </section>
 
 <section class="features grid">
