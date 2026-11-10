@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Identity.Infrastructure;
 using Identity.Tests.Integration.Seeds;
 using Shared.Tests;
@@ -13,6 +15,11 @@ public sealed class IntegrationCollection : ICollectionFixture<IdentityApiFactor
 [Collection("Integration")]
 public abstract class BaseIntegrationTest
 {
+    protected static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     protected readonly IdentityApiFactory Factory;
 
     protected BaseIntegrationTest(IdentityApiFactory factory)

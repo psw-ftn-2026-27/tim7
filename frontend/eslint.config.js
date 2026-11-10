@@ -41,7 +41,7 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(games|social|payment)/',
+              regex: '^(\.\./)+(games|social|payment|identity)/',
               message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
@@ -57,7 +57,7 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(exploration|social|payment)/',
+              regex: '^(\.\./)+(exploration|social|payment|identity)/',
               message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
@@ -73,7 +73,7 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(exploration|games|payment)/',
+              regex: '^(\.\./)+(exploration|games|payment|identity)/',
               message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
@@ -89,7 +89,23 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(exploration|games|social)/',
+              regex: '^(\.\./)+(exploration|games|social|identity)/',
+              message: 'Modules never import from each other; link to their routes instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/modules/identity/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(\.\./)+(exploration|games|social|payment)/',
               message: 'Modules never import from each other; link to their routes instead.',
             },
           ],

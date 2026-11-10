@@ -1,0 +1,119 @@
+<div class="stack">
+  <h1>Moja praćenja</h1>
+
+  <p><a routerLink="/identity/users">Pronađi korisnike</a></p>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (requests.isLoading()) {
+    <p>Učitavanje zahteva...</p>
+  } @else if (requests.error()) {
+    <p class="error">Zahtevi nisu učitani. Prijavi se i pokušaj ponovo.</p>
+  } @else if (requests.value(); as result) {
+    <h2>Pristigli zahtevi</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Adresa e-pošte</th>
+          <th scope="col">Akcije</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (request of result.received; track request.userId) {
+          <tr>
+            <td>{{ request.email }}</td>
+            <td class="actions">
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="accept(request.userId)"
+              >
+                Prihvati
+              </button>
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="reject(request.userId)"
+              >
+                Odbij
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="2">Nema pristiglih zahteva.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <h2>Poslati zahtevi</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Adresa e-pošte</th>
+          <th scope="col">Stanje</th>
+          <th scope="col">Akcije</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (request of result.sent; track request.userId) {
+          <tr>
+            <td>{{ request.email }}</td>
+            <td>{{ statusLabels[request.status] }}</td>
+            <td>
+              @if (request.status === 'Pending') {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="withdraw(request.userId)"
+                >
+                  Povuci
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3">Nema poslatih zahteva.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <h2>Pratioci</h2>
+  @if (followers.isLoading()) {
+    <p>Učitavanje pratilaca...</p>
+  } @else if (followers.error()) {
+    <p class="error">Pratioci nisu učitani. Prijavi se i pokušaj ponovo.</p>
+  } @else {
+    <ul>
+      @for (user of followers.value()?.items ?? []; track user.id) {
+        <li>{{ user.email }}</li>
+      } @empty {
+        <li>Niko te još ne prati.</li>
+      }
+    </ul>
+  }
+
+  <h2>Praćeni</h2>
+  @if (followed.isLoading()) {
+    <p>Učitavanje praćenih...</p>
+  } @else if (followed.error()) {
+    <p class="error">Praćeni nisu učitani. Prijavi se i pokušaj ponovo.</p>
+  } @else {
+    <ul>
+      @for (user of followed.value()?.items ?? []; track user.id) {
+        <li>{{ user.email }}</li>
+      } @empty {
+        <li>Još nikoga ne pratiš.</li>
+      }
+    </ul>
+  }
+</div>
