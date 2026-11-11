@@ -93,14 +93,15 @@ public class ConnectionTests
     }
 
     [Fact]
-    public void Sender_may_send_a_new_request_after_a_rejection()
+    public void New_request_after_a_rejection_replaces_the_rejected_one()
     {
         var connection = CreateConnectionWithRejectedRequest();
 
         connection.SendRequest(Sender);
 
-        connection.Requests.Should().ContainSingle(request =>
-            request.SenderId == Sender && request.Status == FollowRequestStatus.Pending);
+        connection.Requests.Should().ContainSingle()
+            .Which.Should().Match<FollowRequest>(request => request.SenderId == Sender
+                && request.Status == FollowRequestStatus.Pending);
     }
 
     [Fact]

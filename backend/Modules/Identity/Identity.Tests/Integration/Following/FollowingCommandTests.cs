@@ -46,6 +46,34 @@ public class FollowingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Request_to_a_nonexistent_user_is_refused_as_missing_and_nothing_is_written()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var connectionCountBefore = arrangeContext.Connections.Count();
+
+        var response = await client.PostAsync($"/api/identity/requests/sent/{Guid.NewGuid()}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        assertContext.Connections.Count().Should().Be(connectionCountBefore);
+    }
+
+    [Fact]
+    public async Task Request_to_an_administrator_is_refused_as_missing_and_nothing_is_written()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var connectionCountBefore = arrangeContext.Connections.Count();
+
+        var response = await client.PostAsync($"/api/identity/requests/sent/{UserSeed.Administrator.Id}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        assertContext.Connections.Count().Should().Be(connectionCountBefore);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_send_a_request()
     {
         var client = Factory.CreateClient();

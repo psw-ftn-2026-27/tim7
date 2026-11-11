@@ -19,8 +19,13 @@ internal sealed class ConnectionReadRepository : IConnectionReadRepository
     {
         var normalizedEmail = email.ToUpperInvariant();
         var requests = _dbContext.Set<FollowRequest>();
+        var explorerIds = _dbContext.UserRoles
+            .Join(_dbContext.Roles.Where(role => role.Name == "explorer"),
+                userRole => userRole.RoleId, role => role.Id, (userRole, role) => userRole.UserId);
         var found = _dbContext.Users
-            .Where(user => user.Id != userId && user.NormalizedEmail!.Contains(normalizedEmail))
+            .Where(user => user.Id != userId
+                && explorerIds.Contains(user.Id)
+                && user.NormalizedEmail!.Contains(normalizedEmail))
             .OrderBy(user => user.Email);
 
         var totalCount = await found.CountAsync();

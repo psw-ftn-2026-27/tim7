@@ -36,6 +36,11 @@ public sealed class Connection : AggregateRoot
             throw new DomainException("A follow request to this user is already pending.");
         }
 
+        // A new request replaces an earlier rejected one, so one direction holds at most one request.
+        _requests.RemoveAll(request => request.SenderId == senderId
+            && request.RecipientId == recipientId
+            && request.Status == FollowRequestStatus.Rejected);
+
         var request = new FollowRequest(senderId, recipientId);
         _requests.Add(request);
 
