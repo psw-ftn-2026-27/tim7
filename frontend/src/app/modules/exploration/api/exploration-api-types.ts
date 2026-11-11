@@ -35,3 +35,8 @@ export interface CreateTourDto {
   tags: string[];
   recommendedGroupSize: RecommendedGroupSizeDto;
 }
+
+export interface TourPriceDto {
+  isFree: boolean | null;
+  amount: number | null;
+}

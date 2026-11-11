@@ -18,6 +18,7 @@ export class MyTours {
   protected readonly tours = httpResource<TourDto[]>(() => '/api/exploration/tours/mine');
 
   protected readonly selectedTourId = signal<string | null>(null);
+  protected readonly publishingTourId = signal<string | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -28,21 +29,43 @@ export class MyTours {
     min(path.minutes, 1, { message: 'Minutes must be at least 1.' });
   });
 
+  private readonly priceModel = signal({ price: '', amount: null as number | null });
+
+  protected readonly priceForm = form(this.priceModel);
+
   protected select(tourId: string): void {
     this.error.set(null);
+    this.publishingTourId.set(null);
     this.selectedTourId.set(tourId);
     this.form().reset({ transport: 'Walking', minutes: 30 });
   }
 
-  protected async publish(tourId: string): Promise<void> {
+  protected selectForPublish(tourId: string): void {
+    this.error.set(null);
+    this.selectedTourId.set(null);
+    this.publishingTourId.set(tourId);
+    this.priceForm().reset({ price: '', amount: null });
+  }
+
+  protected async publish(event: Event): Promise<void> {
+    event.preventDefault();
+    const tourId = this.publishingTourId();
+    if (tourId === null) {
+      return;
+    }
+    const price = this.priceForm.price().value();
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.tourAuthoring.publish(tourId);
-      this.tours.reload();
+      await this.tourAuthoring.publish(tourId, {
+        isFree: price === '' ? null : price === 'free',
+        amount: price === 'paid' ? this.priceForm.amount().value() : null,
+      });
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not publish the tour.'));
     } finally {
+      this.publishingTourId.set(null);
+      this.tours.reload();
       this.pending.set(false);
     }
   }
