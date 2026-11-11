@@ -4,8 +4,16 @@ import { FormField, form } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
-import { TourDto } from '../../api/exploration-api-types';
+import {
+  SortDirection,
+  TourDifficulty,
+  TourDto,
+  TourSearchDto,
+  TransportMode,
+} from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
+
+const PAGE_SIZE = 20;
 
 @Component({
   imports: [FormField, RouterLink, TourCard],
@@ -16,22 +24,90 @@ import { TourCard } from '../tour-card/tour-card';
 export class TourList {
   protected readonly auth = inject(Auth);
 
-  protected readonly tours = httpResource<PageResult<TourDto>>(
-    () => '/api/exploration/tours/published?page=1&pageSize=20',
-  );
-
-  private readonly model = signal({ name: '', difficulty: '' });
+  private readonly model = signal({
+    name: '',
+    easy: false,
+    moderate: false,
+    hard: false,
+    tags: '',
+    transport: '' as TransportMode | '',
+    difficultySort: '' as SortDirection | '',
+  });
 
   protected readonly form = form(this.model);
 
-  protected readonly visibleTours = computed<TourDto[]>(() => {
-    const all = this.tours.value()?.items ?? [];
-    const name = this.model().name.toLowerCase();
-    const difficulty = this.model().difficulty;
-    return all.filter(
-      (tour) =>
-        tour.name.toLowerCase().includes(name) &&
-        (difficulty === '' || tour.difficulty === difficulty),
-    );
+  protected readonly page = signal(1);
+
+  // The criteria the user entered, in the shape the server expects; null means "not set".
+  private readonly search = computed<TourSearchDto>(() => {
+    const criteria = this.model();
+
+    const difficulties: TourDifficulty[] = [];
+    if (criteria.easy) {
+      difficulties.push('Easy');
+    }
+    if (criteria.moderate) {
+      difficulties.push('Moderate');
+    }
+    if (criteria.hard) {
+      difficulties.push('Hard');
+    }
+
+    const tags = criteria.tags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== '');
+
+    return {
+      name: criteria.name === '' ? null : criteria.name,
+      difficulties: difficulties.length === 0 ? null : difficulties,
+      tags: tags.length === 0 ? null : tags,
+      transport: criteria.transport === '' ? null : criteria.transport,
+      difficultySort: criteria.difficultySort === '' ? null : criteria.difficultySort,
+    };
   });
+
+  // Reloads from the server whenever the criteria or the page change.
+  protected readonly tours = httpResource<PageResult<TourDto>>(() => {
+    const search = this.search();
+    const params = new URLSearchParams();
+    params.set('page', String(this.page()));
+    params.set('pageSize', String(PAGE_SIZE));
+    if (search.name !== null) {
+      params.set('name', search.name);
+    }
+    for (const difficulty of search.difficulties ?? []) {
+      params.append('difficulties', difficulty);
+    }
+    for (const tag of search.tags ?? []) {
+      params.append('tags', tag);
+    }
+    if (search.transport !== null) {
+      params.set('transport', search.transport);
+    }
+    if (search.difficultySort !== null) {
+      params.set('difficultySort', search.difficultySort);
+    }
+    return `/api/exploration/tours/published?${params}`;
+  });
+
+  protected readonly hasNextPage = computed(() => {
+    if (!this.tours.hasValue()) {
+      return false;
+    }
+    return this.page() * PAGE_SIZE < this.tours.value().totalCount;
+  });
+
+  // Called on every change of a filter or the sort, so the new results start from page 1.
+  protected backToFirstPage(): void {
+    this.page.set(1);
+  }
+
+  protected previousPage(): void {
+    this.page.update((page) => page - 1);
+  }
+
+  protected nextPage(): void {
+    this.page.update((page) => page + 1);
+  }
 }

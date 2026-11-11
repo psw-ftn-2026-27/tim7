@@ -12,16 +12,71 @@
   <div class="filters">
     <div class="field">
       <label for="name-filter">Search by name</label>
-      <input id="name-filter" type="search" [formField]="form.name" />
+      <input
+        id="name-filter"
+        type="search"
+        [formField]="form.name"
+        (input)="backToFirstPage()"
+      />
+    </div>
+
+    <fieldset class="difficulties">
+      <legend>Difficulty</legend>
+      <label for="easy-filter">
+        <input
+          id="easy-filter"
+          type="checkbox"
+          [formField]="form.easy"
+          (change)="backToFirstPage()"
+        />
+        Easy
+      </label>
+      <label for="moderate-filter">
+        <input
+          id="moderate-filter"
+          type="checkbox"
+          [formField]="form.moderate"
+          (change)="backToFirstPage()"
+        />
+        Moderate
+      </label>
+      <label for="hard-filter">
+        <input
+          id="hard-filter"
+          type="checkbox"
+          [formField]="form.hard"
+          (change)="backToFirstPage()"
+        />
+        Hard
+      </label>
+    </fieldset>
+
+    <div class="field">
+      <label for="tags-filter">Tags, separated by commas</label>
+      <input
+        id="tags-filter"
+        type="text"
+        [formField]="form.tags"
+        (input)="backToFirstPage()"
+      />
     </div>
 
     <div class="field">
-      <label for="difficulty-filter">Difficulty</label>
-      <select id="difficulty-filter" [formField]="form.difficulty">
+      <label for="transport-filter">Transport</label>
+      <select id="transport-filter" [formField]="form.transport" (change)="backToFirstPage()">
         <option value="">All</option>
-        <option value="Easy">Easy</option>
-        <option value="Moderate">Moderate</option>
-        <option value="Hard">Hard</option>
+        <option value="Walking">Walking</option>
+        <option value="Bicycle">Bicycle</option>
+        <option value="Car">Car</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="sort-filter">Sort</label>
+      <select id="sort-filter" [formField]="form.difficultySort" (change)="backToFirstPage()">
+        <option value="">No sorting</option>
+        <option value="Ascending">Difficulty ascending</option>
+        <option value="Descending">Difficulty descending</option>
       </select>
     </div>
   </div>
@@ -30,13 +85,22 @@
     <p>Loading tours...</p>
   } @else if (tours.error()) {
     <p class="error">Could not load tours. Log in and try again.</p>
-  } @else if (visibleTours().length === 0) {
-    <p>No tours match the filter.</p>
-  } @else {
+  } @else if (tours.hasValue() && tours.value().items.length > 0) {
     <div class="grid">
-      @for (tour of visibleTours(); track tour.id) {
+      @for (tour of tours.value().items; track tour.id) {
         <app-tour-card [tour]="tour" />
       }
     </div>
+  } @else {
+    <p>No tours match the criteria.</p>
   }
+
+  <p class="pages">
+    <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+      Previous
+    </button>
+    <button class="button" type="button" [disabled]="!hasNextPage()" (click)="nextPage()">
+      Next
+    </button>
+  </p>
 </div>
