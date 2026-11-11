@@ -46,6 +46,34 @@ public class FollowingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Request_to_a_nonexistent_user_is_refused_as_missing_and_nothing_is_written()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var connectionCountBefore = arrangeContext.Connections.Count();
+
+        var response = await client.PostAsync($"/api/identity/requests/sent/{Guid.NewGuid()}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        assertContext.Connections.Count().Should().Be(connectionCountBefore);
+    }
+
+    [Fact]
+    public async Task Request_to_an_administrator_is_refused_as_missing_and_nothing_is_written()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var connectionCountBefore = arrangeContext.Connections.Count();
+
+        var response = await client.PostAsync($"/api/identity/requests/sent/{UserSeed.Administrator.Id}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        assertContext.Connections.Count().Should().Be(connectionCountBefore);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_send_a_request()
     {
         var client = Factory.CreateClient();
@@ -186,6 +214,90 @@ public class FollowingCommandTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
         var response = await client.DeleteAsync($"/api/identity/requests/sent/{UserSeed.AwaitedExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Removed_follower_is_no_longer_recorded_as_a_follower()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.DeleteAsync($"/api/identity/followers/{UserSeed.SecondExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var stored = assertContext.Connections.Single(connection =>
+            connection.Id == ConnectionSeed.SecondExplorerFollowsExplorer.Id);
+        stored.Requests.Should().NotContain(request => request.SenderId == UserSeed.SecondExplorer.Id
+            && request.Status == FollowRequestStatus.Accepted);
+    }
+
+    [Fact]
+    public async Task Removing_an_unconnected_user_as_a_follower_is_refused_as_missing()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var requestCountBefore = arrangeContext.Connections.SelectMany(connection => connection.Requests).Count();
+
+        var response = await client.DeleteAsync($"/api/identity/followers/{UserSeed.LoneExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        assertContext.Connections.SelectMany(connection => connection.Requests).Count()
+            .Should().Be(requestCountBefore);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_remove_a_follower()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.DeleteAsync($"/api/identity/followers/{UserSeed.SecondExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_remove_a_follower()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.DeleteAsync($"/api/identity/followers/{UserSeed.SecondExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Accepted_request_no_longer_exists_after_unfollowing()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.DeleteAsync($"/api/identity/following/{UserSeed.FollowedExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<IdentityModuleDbContext>();
+        var stored = assertContext.Connections.Single(connection =>
+            connection.Id == ConnectionSeed.ExplorerFollowsFollowedExplorer.Id);
+        stored.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_unfollow()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.DeleteAsync($"/api/identity/following/{UserSeed.FollowedExplorer.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_unfollow()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.DeleteAsync($"/api/identity/following/{UserSeed.FollowedExplorer.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

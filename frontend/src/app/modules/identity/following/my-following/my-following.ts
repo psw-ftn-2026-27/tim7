@@ -73,6 +73,32 @@ export class MyFollowing {
     }
   }
 
+  protected async removeFollower(followerId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.following.removeFollower(followerId);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Pratilac nije uklonjen.'));
+    } finally {
+      this.reloadAll();
+      this.pending.set(false);
+    }
+  }
+
+  protected async unfollow(followedId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.following.unfollow(followedId);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Praćenje nije prekinuto.'));
+    } finally {
+      this.reloadAll();
+      this.pending.set(false);
+    }
+  }
+
   private reloadAll(): void {
     this.requests.reload();
     this.followers.reload();

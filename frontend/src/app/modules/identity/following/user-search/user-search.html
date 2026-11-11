@@ -48,6 +48,14 @@
                 }
                 @case ('Following') {
                   Pratiš
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="unfollow(user.id)"
+                  >
+                    Prestani da pratiš
+                  </button>
                 }
               }
             </td>

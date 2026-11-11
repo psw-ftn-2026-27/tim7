@@ -95,7 +95,17 @@
   } @else {
     <ul>
       @for (user of followers.value()?.items ?? []; track user.id) {
-        <li>{{ user.email }}</li>
+        <li>
+          {{ user.email }}
+          <button
+            class="button"
+            type="button"
+            [disabled]="pending()"
+            (click)="removeFollower(user.id)"
+          >
+            Ukloni
+          </button>
+        </li>
       } @empty {
         <li>Niko te još ne prati.</li>
       }
@@ -110,7 +120,17 @@
   } @else {
     <ul>
       @for (user of followed.value()?.items ?? []; track user.id) {
-        <li>{{ user.email }}</li>
+        <li>
+          {{ user.email }}
+          <button
+            class="button"
+            type="button"
+            [disabled]="pending()"
+            (click)="unfollow(user.id)"
+          >
+            Prestani da pratiš
+          </button>
+        </li>
       } @empty {
         <li>Još nikoga ne pratiš.</li>
       }

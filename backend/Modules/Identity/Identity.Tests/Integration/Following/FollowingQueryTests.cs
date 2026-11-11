@@ -59,4 +59,15 @@ public class FollowingQueryTests : BaseIntegrationTest
         found.Items.Should().ContainSingle(user =>
             user.Id == UserSeed.SecondExplorer.Id && user.Status == RelationshipStatus.None);
     }
+
+    [Fact]
+    public async Task Search_does_not_find_administrators()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var found = await client.GetFromJsonAsync<PageResult<FoundUserDto>>(
+            $"/api/identity/users?email={UserSeed.Administrator.Email}", JsonOptions);
+
+        found!.Items.Should().NotContain(user => user.Id == UserSeed.Administrator.Id);
+    }
 }

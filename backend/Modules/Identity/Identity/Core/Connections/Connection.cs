@@ -20,32 +20,35 @@ public sealed class Connection : AggregateRoot
         }
 
         // The pair is stored in a fixed order, so one pair of users has exactly one row.
-        UserAId = userId.CompareTo(otherUserId) < 0 ? userId : otherUserId;
-        UserBId = userId.CompareTo(otherUserId) < 0 ? otherUserId : userId;
+        (UserAId, UserBId) = userId.CompareTo(otherUserId) < 0 ? (userId, otherUserId) : (otherUserId, userId);
     }
 
     public void SendRequest(Guid senderId)
     {
         var recipientId = GetOtherUser(senderId);
-        if (Follows(senderId, recipientId))
+        if (FindRequest(senderId, recipientId, FollowRequestStatus.Accepted) is not null)
         {
             throw new DomainException("The user already follows this user.");
         }
-        if (FindPendingRequest(senderId, recipientId) is not null)
+        if (FindRequest(senderId, recipientId, FollowRequestStatus.Pending) is not null)
         {
             throw new DomainException("A follow request to this user is already pending.");
+        }
+
+        // A new request replaces an earlier rejected one, so one direction holds at most one request.
+        var rejectedRequest = FindRequest(senderId, recipientId, FollowRequestStatus.Rejected);
+        if (rejectedRequest is not null)
+        {
+            _requests.Remove(rejectedRequest);
         }
 
         var request = new FollowRequest(senderId, recipientId);
         _requests.Add(request);
 
-        var crossedRequest = FindPendingRequest(recipientId, senderId);
-        if (crossedRequest is not null)
-        {
-            crossedRequest.Accept();
-            request.Accept();
-        }
-        else if (Follows(recipientId, senderId))
+        // A crossed pending request is accepted, and a user who is already followed back
+        // is accepted at once.
+        FindRequest(recipientId, senderId, FollowRequestStatus.Pending)?.Accept();
+        if (FindRequest(recipientId, senderId, FollowRequestStatus.Accepted) is not null)
         {
             request.Accept();
         }
@@ -53,17 +56,27 @@ public sealed class Connection : AggregateRoot
 
     public void Accept(Guid recipientId)
     {
-        GetPendingRequest(GetOtherUser(recipientId), recipientId).Accept();
+        GetRequest(GetOtherUser(recipientId), recipientId, FollowRequestStatus.Pending).Accept();
     }
 
     public void Reject(Guid recipientId)
     {
-        GetPendingRequest(GetOtherUser(recipientId), recipientId).Reject();
+        GetRequest(GetOtherUser(recipientId), recipientId, FollowRequestStatus.Pending).Reject();
     }
 
     public void Withdraw(Guid senderId)
     {
-        _requests.Remove(GetPendingRequest(senderId, GetOtherUser(senderId)));
+        _requests.Remove(GetRequest(senderId, GetOtherUser(senderId), FollowRequestStatus.Pending));
+    }
+
+    public void RemoveFollower(Guid userId)
+    {
+        _requests.Remove(GetRequest(GetOtherUser(userId), userId, FollowRequestStatus.Accepted));
+    }
+
+    public void Unfollow(Guid userId)
+    {
+        _requests.Remove(GetRequest(userId, GetOtherUser(userId), FollowRequestStatus.Accepted));
     }
 
     private Guid GetOtherUser(Guid userId)
@@ -79,27 +92,16 @@ public sealed class Connection : AggregateRoot
         throw new DomainException("The user is not part of this connection.");
     }
 
-    private bool Follows(Guid followerId, Guid followedId)
-    {
-        return _requests.Any(request => request.SenderId == followerId
-            && request.RecipientId == followedId
-            && request.Status == FollowRequestStatus.Accepted);
-    }
-
-    private FollowRequest? FindPendingRequest(Guid senderId, Guid recipientId)
+    private FollowRequest? FindRequest(Guid senderId, Guid recipientId, FollowRequestStatus status)
     {
         return _requests.FirstOrDefault(request => request.SenderId == senderId
             && request.RecipientId == recipientId
-            && request.Status == FollowRequestStatus.Pending);
+            && request.Status == status);
     }
 
-    private FollowRequest GetPendingRequest(Guid senderId, Guid recipientId)
+    private FollowRequest GetRequest(Guid senderId, Guid recipientId, FollowRequestStatus status)
     {
-        var request = FindPendingRequest(senderId, recipientId);
-        if (request is null)
-        {
-            throw new DomainException("There is no pending follow request between these users.");
-        }
-        return request;
+        return FindRequest(senderId, recipientId, status)
+            ?? throw new DomainException("There is no such follow request between these users.");
     }
 }

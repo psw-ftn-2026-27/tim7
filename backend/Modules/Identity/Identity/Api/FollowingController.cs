@@ -67,9 +67,23 @@ public sealed class FollowingController : ControllerBase
         return await _followingQueries.GetFollowersAsync(User.GetUserId(), page, pageSize);
     }
 
+    [HttpDelete("followers/{followerId:guid}")]
+    public async Task<ActionResult> RemoveFollower(Guid followerId)
+    {
+        await _followingService.RemoveFollowerAsync(User.GetUserId(), followerId);
+        return NoContent();
+    }
+
     [HttpGet("following")]
     public async Task<ActionResult<PageResult<UserDto>>> GetFollowing([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         return await _followingQueries.GetFollowingAsync(User.GetUserId(), page, pageSize);
+    }
+
+    [HttpDelete("following/{followedId:guid}")]
+    public async Task<ActionResult> Unfollow(Guid followedId)
+    {
+        await _followingService.UnfollowAsync(User.GetUserId(), followedId);
+        return NoContent();
     }
 }
