@@ -46,6 +46,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                 tour.Tags,
                 tour.Status,
                 tour.PublishedAt,
+                new RecommendedGroupSizeDto(tour.RecommendedGroupSize.From, tour.RecommendedGroupSize.To),
                 tour.TransportTimes
                     .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
                     .ToList()));
