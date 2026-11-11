@@ -24,5 +24,8 @@ public class TourAuthoringQueryTests : BaseIntegrationTest
         var seededGroupSize = TourSeed.FortressWalk.RecommendedGroupSize;
         tours.Should().ContainSingle(tour => tour.Id == TourSeed.FortressWalk.Id)
             .Which.RecommendedGroupSize.Should().Be(new RecommendedGroupSizeDto(seededGroupSize.From, seededGroupSize.To));
+        var archived = tours.Should().ContainSingle(tour => tour.Id == TourSeed.ArchivedLakeside.Id).Which;
+        archived.ArchivedAt.Should().NotBeNull();
+        archived.PublishedAt.Should().BeNull();
     }
 }
