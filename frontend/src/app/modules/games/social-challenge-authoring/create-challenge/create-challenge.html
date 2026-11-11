@@ -1,0 +1,11 @@
+<div class="card stack">
+  <h1>Novi izazov</h1>
+
+  <app-challenge-form
+    [form]="form"
+    [error]="error()"
+    [pending]="pending()"
+    (save)="save()"
+    (dismiss)="cancel()"
+  />
+</div>
