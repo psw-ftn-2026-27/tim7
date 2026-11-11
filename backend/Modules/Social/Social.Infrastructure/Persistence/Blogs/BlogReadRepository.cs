@@ -50,6 +50,7 @@ internal sealed class BlogReadRepository : IBlogReadRepository
                 blog.CreatedAt,
                 blog.Images,
                 blog.Status,
+                blog.LastModifiedAt,
                 blog.Comments
                     .Select(comment => new CommentDto(comment.Id, comment.UserId, comment.Text, comment.CreatedAt))
                     .ToList()));
