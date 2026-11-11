@@ -37,6 +37,17 @@ function markerPositions(map: L.Map): string[] {
   return positions.sort();
 }
 
+function popupTexts(map: L.Map): string[] {
+  const texts: string[] = [];
+  map.eachLayer((layer) => {
+    const content = layer instanceof L.CircleMarker ? layer.getPopup()?.getContent() : undefined;
+    if (content instanceof HTMLElement) {
+      texts.push([...content.children].map((line) => line.textContent).join(' | '));
+    }
+  });
+  return texts.sort();
+}
+
 function click(map: L.Map, latitude: number, longitude: number): void {
   map.fire('click', { latlng: L.latLng(latitude, longitude) });
 }
@@ -89,6 +100,19 @@ describe('Map', () => {
 
     expect(picked).toEqual([{ latitude: 2, longitude: 2 }]);
     expect(markerPositions(map)).toEqual(['0,0', '0,1', '2,2']);
+  });
+
+  it('with a path a pin shows its order, and without a path it does not', () => {
+    const addLayer = spyOnAddLayer();
+    createMap({ pins: [ORIGIN, ONE_EAST], showPath: true });
+    createMap({ pins: [ORIGIN, ONE_EAST] });
+    const [withPath, withoutPath] = [...new Set(addLayer.mock.contexts)] as L.Map[];
+
+    expect(popupTexts(withPath)).toEqual([
+      'Point 1 of 2 | 0.00000, 0.00000',
+      'Point 2 of 2 | 0.00000, 1.00000',
+    ]);
+    expect(popupTexts(withoutPath)).toEqual(['0.00000, 0.00000', '0.00000, 1.00000']);
   });
 
   it('outside picking mode a click reports no coordinates', () => {

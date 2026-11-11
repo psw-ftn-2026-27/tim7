@@ -62,15 +62,20 @@ export class Map implements OnDestroy {
       const pins = this.pins();
       const showPath = this.showPath();
       this.pinLayer.clearLayers();
-      for (const pin of pins) {
-        this.pinLayer.addLayer(this.marker(pin, false));
-      }
       if (showPath) {
         this.pinLayer.addLayer(
-          L.polyline(pins.map(toLatLng), { color: this.token('--color-accent') }),
+          L.polyline(pins.map(toLatLng), {
+            color: this.token('--color-accent'),
+            weight: 4,
+            opacity: 0.6,
+            interactive: false,
+          }),
         );
         this.pathLength.emit(pathLengthKm(pins));
       }
+      pins.forEach((pin, index) => {
+        this.pinLayer.addLayer(this.pinMarker(pin, showPath ? index + 1 : null, pins.length));
+      });
       untracked(() => this.frameView());
     });
 
@@ -86,20 +91,32 @@ export class Map implements OnDestroy {
 
   private placeSelectedMarker(location: MapPin | null): void {
     this.selectedMarker?.remove();
-    this.selectedMarker = location ? this.marker(location, true).addTo(this.map) : null;
+    // The selected pin ignores clicks, so a click on it reaches the map and moves it.
+    this.selectedMarker = location
+      ? L.circleMarker(toLatLng(location), {
+          radius: 11,
+          color: this.token('--color-surface'),
+          weight: 3,
+          fillColor: this.token('--color-danger'),
+          fillOpacity: 1,
+          interactive: false,
+        }).addTo(this.map)
+      : null;
   }
 
-  private marker(pin: MapPin, selected: boolean): L.CircleMarker {
-    const color = this.token(selected ? '--color-danger' : '--color-accent');
+  // A click on a pin opens its popup and does not reach the map, so it never picks a location.
+  private pinMarker(pin: MapPin, order: number | null, count: number): L.CircleMarker {
     const marker = L.circleMarker(toLatLng(pin), {
-      radius: selected ? 10 : 7,
-      color,
-      fillColor: color,
-      fillOpacity: selected ? 0.9 : 0.5,
-      weight: 2,
+      radius: 8,
+      color: this.token('--color-surface'),
+      weight: 3,
+      fillColor: this.token('--color-accent'),
+      fillOpacity: 1,
+      bubblingMouseEvents: false,
     });
+    marker.bindPopup(popupContent(pin, order, count), { offset: [0, -6] });
     if (pin.label) {
-      marker.bindTooltip(pin.label, { permanent: true, direction: 'top', offset: [0, -8] });
+      marker.bindTooltip(textElement('span', pin.label), { direction: 'top', offset: [0, -8] });
     }
     return marker;
   }
@@ -129,4 +146,26 @@ export class Map implements OnDestroy {
 
 function toLatLng(pin: MapPin): L.LatLngTuple {
   return [pin.latitude, pin.longitude];
+}
+
+// The popup shows the order (only with a path), the label and the coordinates.
+function popupContent(pin: MapPin, order: number | null, count: number): HTMLElement {
+  const content = document.createElement('div');
+  if (order !== null) {
+    content.append(textElement('div', `Point ${order} of ${count}`));
+  }
+  if (pin.label) {
+    const line = document.createElement('div');
+    line.append(textElement('strong', pin.label));
+    content.append(line);
+  }
+  content.append(textElement('div', `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`));
+  return content;
+}
+
+// Leaflet treats a string as HTML, so labels written by users are passed as text in an element.
+function textElement(tag: string, text: string): HTMLElement {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  return element;
 }

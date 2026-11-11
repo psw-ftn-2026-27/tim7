@@ -23,6 +23,14 @@ export class MapDemo {
 
   protected readonly sights = [PETROVARADIN, CITY_HALL, DANUBE_PARK];
 
+  // Challenges in a city, as Games would show them: pins only, no path and no order.
+  protected readonly challenges: MapPin[] = [
+    { latitude: 45.2531, longitude: 19.8615, label: 'Quiz: the clock tower' },
+    { latitude: 45.2569, longitude: 19.8441, label: 'Hidden location: the old well' },
+    { latitude: 45.2486, longitude: 19.8398, label: 'Quiz: the Danube bridges' },
+    { latitude: 45.2601, longitude: 19.8329, label: 'Hidden location: the secret garden' },
+  ];
+
   protected readonly pathPins = signal(this.route.slice(0, 3));
   protected readonly pathLength = signal(0);
 

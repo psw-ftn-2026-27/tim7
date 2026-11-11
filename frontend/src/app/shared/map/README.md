@@ -17,7 +17,7 @@ import { Map, MapPin } from '../../../../shared/map/map'; // broj ../ zavisi od 
 interface MapPin {
   latitude: number;
   longitude: number;
-  label?: string; // prikazuje se iznad pina samo kada je zadat
+  label?: string; // prikazuje se nad pinom i u oblačiću samo kada je zadat, kao čist tekst
 }
 ```
 
@@ -49,7 +49,14 @@ protected readonly keyPoints = computed<MapPin[]>(() =>
 | `pathLength`     | `number` | Samo kada je `showPath` uključen: pri prvom iscrtavanju i posle svake promene `pins`. Zbir vazdušnih rastojanja uzastopnih pinova u km, nezaokružen; za nijedan ili jedan pin 0. Izabrani pin se ne računa. Zaokruživanje za prikaz radi stranica. |
 | `locationPicked` | `MapPin` | Posle svakog klika u režimu izbora, sa koordinatama izabranog pina (bez `label`).                                                                                                                                                                  |
 
-Ostali pinovi u režimu izbora su vizuelno različiti od izabranog i klik ih ne pomera.
+Ostali pinovi u režimu izbora su vizuelno različiti od izabranog (plavi naspram crvenog) i klik ih ne pomera.
+
+## Klik na pin
+
+Klik na pin otvara iznad njega oblačić sa oznakom i koordinatama. Kada je `showPath`
+uključen, oblačić piše i redni broj pina u putanji („Point 2 of 5“); bez putanje, kao kod
+izazova u gradu, rednog broja nema. Klik na pin ne bira lokaciju, ni u režimu izbora.
+Oznaka se vidi i kada se miš zadrži nad pinom.
 
 ## Visina
 

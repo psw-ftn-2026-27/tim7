@@ -13,9 +13,23 @@
 </section>
 
 <section class="demo stack">
+  <h2>Challenges in a city</h2>
+
+  <p>
+    How Games would show its challenges: pins with no path, so there is no order. Click a pin to see
+    its label and location.
+  </p>
+
+  <app-map [pins]="challenges" />
+</section>
+
+<section class="demo stack">
   <h2>Path</h2>
 
-  <p>Pins joined in order. Add or remove a point and the length is reported again.</p>
+  <p>
+    Pins joined in order. Add or remove a point and the length is reported again. Click a pin to see
+    its order and location.
+  </p>
 
   <p class="actions">
     <button
