@@ -64,6 +64,38 @@ public sealed class SocialChallenge : AggregateRoot
         ExitMessage = exitMessage;
     }
 
+    public void Publish()
+    {
+        EnsureStatus("published", SocialChallengeStatus.Draft);
+        Status = SocialChallengeStatus.Published;
+    }
+
+    public void Retire()
+    {
+        EnsureStatus("retired", SocialChallengeStatus.Published);
+        Status = SocialChallengeStatus.Retired;
+    }
+
+    public void Restore()
+    {
+        EnsureStatus("restored", SocialChallengeStatus.Retired);
+        Status = SocialChallengeStatus.Published;
+    }
+
+    public void Archive()
+    {
+        EnsureStatus("archived", SocialChallengeStatus.Published, SocialChallengeStatus.Retired);
+        Status = SocialChallengeStatus.Archived;
+    }
+
+    private void EnsureStatus(string action, params SocialChallengeStatus[] allowedFrom)
+    {
+        if (!allowedFrom.Contains(Status))
+        {
+            throw new DomainException($"A {Status.ToString().ToLowerInvariant()} challenge cannot be {action}.");
+        }
+    }
+
     public void EnsureDeletable()
     {
         if (Status != SocialChallengeStatus.Draft && Status != SocialChallengeStatus.Archived)

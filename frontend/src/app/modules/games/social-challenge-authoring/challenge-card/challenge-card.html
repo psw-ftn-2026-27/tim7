@@ -9,6 +9,13 @@
   <p>{{ challenge().exitMessage }}</p>
 
   <div class="actions">
+    <button class="button icon" type="button" title="Objavi" aria-label="Objavi" [disabled]="!canPublish()" (click)="publish.emit()">&#9654;</button>
+    <button class="button icon" type="button" title="Povuci" aria-label="Povuci" [disabled]="!canRetire()" (click)="retire.emit()">&#9208;</button>
+    <button class="button icon" type="button" title="Vrati" aria-label="Vrati" [disabled]="!canRestore()" (click)="restore.emit()">&#8634;</button>
+    <button class="button icon" type="button" title="Arhiviraj" aria-label="Arhiviraj" [disabled]="!canArchive()" (click)="archive.emit()">&#9632;</button>
+  </div>
+
+  <div class="actions">
     <button class="button" type="button" [disabled]="!canEdit()" (click)="edit.emit()">
       Ispravi
     </button>
