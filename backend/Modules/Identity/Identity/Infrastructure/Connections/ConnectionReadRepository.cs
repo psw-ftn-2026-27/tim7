@@ -17,36 +17,43 @@ internal sealed class ConnectionReadRepository : IConnectionReadRepository
 
     public async Task<PageResult<FoundUserDto>> SearchUsersAsync(Guid userId, string email, int page, int pageSize)
     {
+        var found = FindOtherExplorers(userId, email);
+
+        var totalCount = await found.CountAsync();
+        var items = await WithRelationship(found, userId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PageResult<FoundUserDto>(items, totalCount);
+    }
+
+    private IQueryable<ApplicationUser> FindOtherExplorers(Guid userId, string email)
+    {
         var normalizedEmail = email.ToUpperInvariant();
-        var requests = _dbContext.Set<FollowRequest>();
         var explorerIds = _dbContext.UserRoles
             .Join(_dbContext.Roles.Where(role => role.Name == "explorer"),
                 userRole => userRole.RoleId, role => role.Id, (userRole, role) => userRole.UserId);
-        var found = _dbContext.Users
+
+        return _dbContext.Users
             .Where(user => user.Id != userId
                 && explorerIds.Contains(user.Id)
                 && user.NormalizedEmail!.Contains(normalizedEmail))
             .OrderBy(user => user.Email);
+    }
 
-        var totalCount = await found.CountAsync();
-        var items = await found
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(user => new FoundUserDto(
-                user.Id,
-                user.Email!,
-                requests.Any(request => request.SenderId == userId
-                    && request.RecipientId == user.Id
-                    && request.Status == FollowRequestStatus.Accepted)
-                    ? RelationshipStatus.Following
-                    : requests.Any(request => request.SenderId == userId
-                        && request.RecipientId == user.Id
-                        && request.Status == FollowRequestStatus.Pending)
-                        ? RelationshipStatus.Pending
-                        : RelationshipStatus.None))
-            .ToListAsync();
+    private IQueryable<FoundUserDto> WithRelationship(IQueryable<ApplicationUser> users, Guid userId)
+    {
+        var sentRequests = _dbContext.Set<FollowRequest>().Where(request => request.SenderId == userId);
 
-        return new PageResult<FoundUserDto>(items, totalCount);
+        return users.Select(user => new FoundUserDto(
+            user.Id,
+            user.Email!,
+            sentRequests.Any(request => request.RecipientId == user.Id && request.Status == FollowRequestStatus.Accepted)
+                ? RelationshipStatus.Following
+                : sentRequests.Any(request => request.RecipientId == user.Id && request.Status == FollowRequestStatus.Pending)
+                    ? RelationshipStatus.Pending
+                    : RelationshipStatus.None));
     }
 
     public async Task<FollowRequestsDto> GetRequestsAsync(Guid userId)
