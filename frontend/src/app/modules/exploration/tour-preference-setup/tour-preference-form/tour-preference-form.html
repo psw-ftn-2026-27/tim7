@@ -1,0 +1,76 @@
+@if (editing()) {
+  <form class="card stack" (submit)="submit($event)">
+    <fieldset>
+      <legend>Difficulty</legend>
+      <label><input type="checkbox" [formField]="form.easy" /> Easy</label>
+      <label><input type="checkbox" [formField]="form.moderate" /> Moderate</label>
+      <label><input type="checkbox" [formField]="form.hard" /> Hard</label>
+    </fieldset>
+
+    <div class="field">
+      <label for="transport">Preferred transport</label>
+      <select id="transport" [formField]="form.transport">
+        <option value="">No transport</option>
+        <option value="Walking">Walking</option>
+        <option value="Bicycle">Bicycle</option>
+        <option value="Car">Car</option>
+      </select>
+    </div>
+
+    <fieldset>
+      <legend>Tags</legend>
+      @for (item of form.tags; track $index) {
+        <label><input type="checkbox" [formField]="item.selected" /> {{ item.tag().value() }}</label>
+      } @empty {
+        <p class="meta">No tags to choose from yet.</p>
+      }
+    </fieldset>
+
+    <label>
+      <input type="checkbox" [formField]="form.applyPreferencesAutomatically" />
+      Apply my preferences automatically to the tour list
+    </label>
+
+    @if (!hasCriterion()) {
+      <p class="meta">Choose at least one difficulty, a preferred transport or a tag to save.</p>
+    }
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button class="button button--primary" type="submit" [disabled]="!hasCriterion() || pending()">
+        Save
+      </button>
+    </div>
+  </form>
+} @else {
+  @if (preferences(); as saved) {
+    <div class="card stack">
+      <p>Difficulty: {{ saved.difficulties.length > 0 ? saved.difficulties.join(', ') : 'None' }}</p>
+      <p>Preferred transport: {{ saved.preferredTransportMode ?? 'No transport' }}</p>
+      <p>Tags: {{ saved.tags.length > 0 ? saved.tags.join(', ') : 'None' }}</p>
+      <p>Apply automatically: {{ saved.applyPreferencesAutomatically ? 'Yes' : 'No' }}</p>
+
+      <div class="actions">
+        <button class="button button--primary" type="button" (click)="startEdit()">
+          Edit preferences
+        </button>
+        <button class="button" type="button" [disabled]="pending()" (click)="delete.emit()">
+          Delete preferences
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="card stack">
+      <p>Your tour preferences are not set up yet.</p>
+
+      <div class="actions">
+        <button class="button button--primary" type="button" (click)="startEdit()">
+          Set up preferences
+        </button>
+      </div>
+    </div>
+  }
+}

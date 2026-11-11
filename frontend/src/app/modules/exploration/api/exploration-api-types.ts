@@ -38,6 +38,23 @@ export interface CreateTourDto {
   recommendedGroupSize: RecommendedGroupSizeDto;
 }
 
+export interface TourPreferenceDto {
+  difficulties: TourDifficulty[];
+  preferredTransportMode: TransportMode | null;
+  tags: string[];
+  applyPreferencesAutomatically: boolean;
+}
+
+export interface MyTourPreferencesDto {
+  preferences: TourPreferenceDto | null;
+}
+
+export interface SaveTourPreferenceDto {
+  difficulties: TourDifficulty[];
+  preferredTransportMode: TransportMode | null;
+  tags: string[];
+  applyPreferencesAutomatically: boolean;
+}
 export interface TourSearchDto {
   name: string | null;
   difficulties: TourDifficulty[] | null;
