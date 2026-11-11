@@ -1,0 +1,17 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.actions a {
+  text-decoration: none;
+}
+
+.features {
+  margin-top: var(--space-6);
+}
+
+.card p {
+  margin: 0;
+}
