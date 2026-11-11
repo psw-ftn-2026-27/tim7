@@ -18,6 +18,7 @@
           <th scope="col">Name</th>
           <th scope="col">Difficulty</th>
           <th scope="col">Status</th>
+          <th scope="col">Group size</th>
           <th scope="col">Transport times</th>
           <th scope="col">Actions</th>
         </tr>
@@ -28,6 +29,7 @@
             <td>{{ tour.name }}</td>
             <td>{{ tour.difficulty }}</td>
             <td>{{ tour.status }}</td>
+            <td>{{ tour.recommendedGroupSize.from }}–{{ tour.recommendedGroupSize.to }}</td>
             <td>
               @for (time of tour.transportTimes; track time.transport) {
                 <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
@@ -51,7 +53,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">You have no tours yet.</td>
+            <td colspan="6">You have no tours yet.</td>
           </tr>
         }
       </tbody>

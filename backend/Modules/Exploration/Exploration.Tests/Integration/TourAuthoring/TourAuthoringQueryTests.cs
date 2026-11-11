@@ -21,5 +21,8 @@ public class TourAuthoringQueryTests : BaseIntegrationTest
         tours.Should().HaveCount(TourSeed.All.Count(tour => tour.AuthorId == WellKnownUsers.Explorer));
         tours.Should().OnlyContain(tour => tour.AuthorId == WellKnownUsers.Explorer);
         tours.Should().NotContain(tour => tour.Id == TourSeed.SecondExplorersTrail.Id);
+        var seededGroupSize = TourSeed.FortressWalk.RecommendedGroupSize;
+        tours.Should().ContainSingle(tour => tour.Id == TourSeed.FortressWalk.Id)
+            .Which.RecommendedGroupSize.Should().Be(new RecommendedGroupSizeDto(seededGroupSize.From, seededGroupSize.To));
     }
 }
