@@ -47,6 +47,32 @@ export class MyTours {
     }
   }
 
+  protected async archive(tourId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.tourAuthoring.archive(tourId);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not archive the tour.'));
+    } finally {
+      this.tours.reload();
+      this.pending.set(false);
+    }
+  }
+
+  protected async reactivate(tourId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.tourAuthoring.reactivate(tourId);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not reactivate the tour.'));
+    } finally {
+      this.tours.reload();
+      this.pending.set(false);
+    }
+  }
+
   protected async addTransportTime(event: Event): Promise<void> {
     event.preventDefault();
     const tourId = this.selectedTourId();

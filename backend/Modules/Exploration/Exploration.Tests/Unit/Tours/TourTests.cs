@@ -13,6 +13,21 @@ public class TourTests
     private static Tour CreateTour(string description) =>
         new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 6));
 
+    private static Tour CreatePublishedTour()
+    {
+        var tour = CreateTour(LongDescription);
+        tour.AddTransportTime(TransportMode.Walking, 120);
+        tour.Publish();
+        return tour;
+    }
+
+    private static Tour CreateArchivedTour()
+    {
+        var tour = CreatePublishedTour();
+        tour.Archive();
+        return tour;
+    }
+
     [Fact]
     public void New_tour_starts_as_a_draft()
     {
@@ -117,5 +132,80 @@ public class TourTests
         var publishing = () => tour.Publish();
 
         publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_tour_cannot_be_published()
+    {
+        var tour = CreateArchivedTour();
+
+        var publishing = () => tour.Publish();
+
+        publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Published_tour_is_archived_with_an_archive_time_and_without_a_publish_time()
+    {
+        var tour = CreatePublishedTour();
+
+        tour.Archive();
+
+        tour.Status.Should().Be(TourStatus.Archived);
+        tour.ArchivedAt.Should().NotBeNull();
+        tour.PublishedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void Draft_tour_cannot_be_archived()
+    {
+        var tour = CreateTour(LongDescription);
+
+        var archiving = () => tour.Archive();
+
+        archiving.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_tour_cannot_be_archived_again()
+    {
+        var tour = CreateArchivedTour();
+
+        var archiving = () => tour.Archive();
+
+        archiving.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_tour_is_reactivated_as_published_with_a_new_publish_time_and_without_an_archive_time()
+    {
+        var tour = CreateArchivedTour();
+        var reactivationStart = DateTime.UtcNow;
+
+        tour.Reactivate();
+
+        tour.Status.Should().Be(TourStatus.Published);
+        tour.PublishedAt.Should().BeOnOrAfter(reactivationStart);
+        tour.ArchivedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void Draft_tour_cannot_be_reactivated()
+    {
+        var tour = CreateTour(LongDescription);
+
+        var reactivation = () => tour.Reactivate();
+
+        reactivation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Published_tour_cannot_be_reactivated()
+    {
+        var tour = CreatePublishedTour();
+
+        var reactivation = () => tour.Reactivate();
+
+        reactivation.Should().Throw<DomainException>();
     }
 }
