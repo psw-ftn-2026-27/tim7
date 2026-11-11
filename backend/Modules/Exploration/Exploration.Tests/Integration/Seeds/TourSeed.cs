@@ -1,3 +1,4 @@
+
 using Exploration.Domain.Tours;
 using Shared.Tests;
 
@@ -13,6 +14,7 @@ internal static class TourSeed
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedBikeRideToPetrovaradin;
     public static readonly Tour PublishedOldTownWalk;
+    public static readonly Tour ArchivedLakeside;
 
     static TourSeed()
     {
@@ -35,7 +37,12 @@ internal static class TourSeed
         PublishedOldTownWalk = new(WellKnownUsers.SecondExplorer, "Peške kroz staro jezgro", "Šetnja vodi od Trga slobode, kroz Zmaj Jovinu i Dunavsku ulicu, pored Vladičanskog dvora i Saborne crkve, do Dunavskog parka i Muzeja Vojvodine.", TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 15));
         PublishedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
         PublishedOldTownWalk.Publish();
+
+        ArchivedLakeside = new(WellKnownUsers.Explorer, "Obala Palićkog jezera", "Tura prati obalu Palićkog jezera od Velike terase do Ženskog štranda, uz obilazak Vodotornja i zoološkog vrta na severnoj strani jezera.", TourDifficulty.Easy, ["priroda", "jezero"], new RecommendedGroupSize(2, 8));
+        ArchivedLakeside.AddTransportTime(TransportMode.Walking, 75);
+        ArchivedLakeside.Publish();
+        ArchivedLakeside.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, ArchivedLakeside];
 }
