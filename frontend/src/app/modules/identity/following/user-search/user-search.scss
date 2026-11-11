@@ -1,0 +1,13 @@
+.search {
+  align-items: flex-end;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.search .field {
+  flex: 1;
+}
+
+.table td:last-child {
+  width: 10rem;
+}

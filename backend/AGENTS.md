@@ -85,7 +85,9 @@ platform decision. Do not change the version or add a license key.
 Identity is a deliberate exception to the module structure: one platform-owned project
 that students use but never modify or reference. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
-(`administrator`, `explorer`); the details live in the project itself.
+(`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
+`Connection` (following between users), with a `Following` use-case group that follows the
+application-layer patterns below; the details live in the project itself.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the

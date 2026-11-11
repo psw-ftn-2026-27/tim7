@@ -24,6 +24,9 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
         tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.FortressWalk.Id);
         tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
+        var seededGroupSize = TourSeed.PublishedVineyards.RecommendedGroupSize;
+        tours.Items.Should().ContainSingle(tour => tour.Id == TourSeed.PublishedVineyards.Id)
+            .Which.RecommendedGroupSize.Should().Be(new RecommendedGroupSizeDto(seededGroupSize.From, seededGroupSize.To));
     }
 
     [Fact]

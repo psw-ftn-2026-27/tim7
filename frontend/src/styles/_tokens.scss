@@ -1,12 +1,29 @@
 :root {
-  --color-bg: #f7f7f8;
+  // Base palette, shared by every module.
+  --color-bg: #f6f5f1;
   --color-surface: #ffffff;
-  --color-border: #e2e2e6;
-  --color-text: #1c1c1f;
-  --color-text-muted: #5c5c66;
-  --color-accent: #2f6df6;
+  --color-border: #dddad2;
+  --color-border-strong: #8c8f94;
+  --color-text: #1f2328;
+  --color-text-muted: #5b6168;
+  --color-danger: #b42318;
+
+  // Platform colour: the only colour for actions (buttons, links, focus).
+  --color-accent: #0f6b66;
+  --color-accent-hover: #0b544f;
+  --color-accent-tint: #dcefec;
   --color-accent-text: #ffffff;
-  --color-danger: #c02626;
+
+  // Module accents: they mark where the user is (badge, active nav link),
+  // never an action. A button always uses --color-accent.
+  --color-module-exploration: #a04716;
+  --color-module-exploration-tint: #f8e9df;
+  --color-module-games: #6d3fc0;
+  --color-module-games-tint: #eee7f9;
+  --color-module-social: #2659c9;
+  --color-module-social-tint: #e6edfa;
+  --color-module-payment: #6b5d0f;
+  --color-module-payment-tint: #f2eeda;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
