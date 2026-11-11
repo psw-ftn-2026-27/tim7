@@ -16,6 +16,10 @@ export interface RecommendedGroupSizeDto {
   to: number;
 }
 
+export interface TourLengthDto {
+  kilometers: number;
+}
+
 export interface TourDto {
   id: string;
   authorId: string;
@@ -27,6 +31,7 @@ export interface TourDto {
   publishedAt: string | null;
   archivedAt: string | null;
   recommendedGroupSize: RecommendedGroupSizeDto;
+  length: TourLengthDto | null;
   transportTimes: TransportTimeDto[];
 }
 
@@ -36,6 +41,7 @@ export interface CreateTourDto {
   difficulty: TourDifficulty;
   tags: string[];
   recommendedGroupSize: RecommendedGroupSizeDto;
+  length: TourLengthDto | null;
 }
 
 export interface TourSearchDto {

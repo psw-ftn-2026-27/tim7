@@ -11,5 +11,6 @@ public sealed class ExplorationMapperProfile : Profile
         CreateMap<Tour, TourDto>();
         CreateMap<TransportTime, TransportTimeDto>();
         CreateMap<RecommendedGroupSize, RecommendedGroupSizeDto>();
+        CreateMap<TourLength, TourLengthDto>();
     }
 }

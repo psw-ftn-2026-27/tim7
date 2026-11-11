@@ -18,6 +18,7 @@ public sealed class Tour : AggregateRoot
     public DateTime? PublishedAt { get; private set; }
     public DateTime? ArchivedAt { get; private set; }
     public RecommendedGroupSize RecommendedGroupSize { get; private set; }
+    public TourLength? Length { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
 
     private Tour()
@@ -28,7 +29,7 @@ public sealed class Tour : AggregateRoot
         RecommendedGroupSize = null!;
     }
 
-    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags, RecommendedGroupSize recommendedGroupSize)
+    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags, RecommendedGroupSize recommendedGroupSize, TourLength? length)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -50,6 +51,7 @@ public sealed class Tour : AggregateRoot
         Difficulty = difficulty;
         Tags = tags;
         RecommendedGroupSize = recommendedGroupSize;
+        Length = length;
         Status = TourStatus.Draft;
     }
 

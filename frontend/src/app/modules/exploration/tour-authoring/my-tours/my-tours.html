@@ -19,6 +19,7 @@
           <th scope="col">Difficulty</th>
           <th scope="col">Status</th>
           <th scope="col">Group size</th>
+          <th scope="col">Length</th>
           <th scope="col">Transport times</th>
           <th scope="col">Published at</th>
           <th scope="col">Archived at</th>
@@ -32,6 +33,13 @@
             <td>{{ tour.difficulty }}</td>
             <td>{{ tour.status }}</td>
             <td>{{ tour.recommendedGroupSize.from }}–{{ tour.recommendedGroupSize.to }}</td>
+            <td>
+              @if (tour.length) {
+                {{ tour.length.kilometers }} km
+              } @else {
+                <span class="meta">Length not available</span>
+              }
+            </td>
             <td>
               @for (time of tour.transportTimes; track time.transport) {
                 <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
@@ -77,7 +85,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8">You have no tours yet.</td>
+            <td colspan="9">You have no tours yet.</td>
           </tr>
         }
       </tbody>
