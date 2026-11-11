@@ -27,3 +27,21 @@ export interface CreateTourDto {
   difficulty: TourDifficulty;
   tags: string[];
 }
+
+export interface TourPreferenceDto {
+  difficulties: TourDifficulty[];
+  preferredTransportMode: TransportMode | null;
+  tags: string[];
+  applyPreferencesAutomatically: boolean;
+}
+
+export interface MyTourPreferencesDto {
+  preferences: TourPreferenceDto | null;
+}
+
+export interface SaveTourPreferenceDto {
+  difficulties: TourDifficulty[];
+  preferredTransportMode: TransportMode | null;
+  tags: string[];
+  applyPreferencesAutomatically: boolean;
+}
