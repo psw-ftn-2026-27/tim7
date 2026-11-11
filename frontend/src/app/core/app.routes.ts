@@ -21,6 +21,11 @@ export const routes: Routes = [
     loadChildren: () => import('../modules/social/social.routes').then((m) => m.socialRoutes),
   },
   {
+    path: 'identity',
+    loadChildren: () =>
+      import('../modules/identity/identity.routes').then((m) => m.identityRoutes),
+  },
+  {
     path: 'payment',
     loadChildren: () => import('../modules/payment/payment.routes').then((m) => m.paymentRoutes),
   },
