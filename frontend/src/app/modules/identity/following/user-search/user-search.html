@@ -1,0 +1,71 @@
+<div class="stack">
+  <h1>Pronađi korisnike</h1>
+
+  <p><a routerLink="/identity/following">Moja praćenja</a></p>
+
+  <form class="search" (submit)="search($event)">
+    <div class="field">
+      <label for="email">Adresa e-pošte</label>
+      <input id="email" type="search" [formField]="form.email" />
+    </div>
+    <button class="button button--primary" type="submit">Pretraži</button>
+  </form>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (users.isLoading()) {
+    <p>Učitavanje korisnika...</p>
+  } @else if (users.error()) {
+    <p class="error">Korisnici nisu učitani. Prijavi se i pokušaj ponovo.</p>
+  } @else if (users.value(); as result) {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Adresa e-pošte</th>
+          <th scope="col">Praćenje</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of result.items; track user.id) {
+          <tr>
+            <td>{{ user.email }}</td>
+            <td>
+              @switch (user.status) {
+                @case ('None') {
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="sendRequest(user.id)"
+                  >
+                    Pošalji zahtev
+                  </button>
+                }
+                @case ('Pending') {
+                  Na čekanju
+                }
+                @case ('Following') {
+                  Pratiš
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="unfollow(user.id)"
+                  >
+                    Prestani da pratiš
+                  </button>
+                }
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="2">Nijedan korisnik ne odgovara pretrazi.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

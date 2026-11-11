@@ -51,6 +51,9 @@ frontend/src/
                              only module file imported from outside the module
 ```
 
+Besides the four feature modules, `modules/identity/` holds Identity's screens for
+following other users; login and register stay in `core/auth`.
+
 A module is a flat list of use-case groups. A group is a flat list of component
 folders plus at most one service file. That is the whole layout, and it follows the
 2025 Angular style guide: organise by feature, never by type, so there are no
