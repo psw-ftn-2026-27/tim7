@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form, min, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDifficulty } from '../../api/exploration-api-types';
@@ -16,10 +16,20 @@ export class CreateTour {
   private readonly router = inject(Router);
 
   protected readonly form = form(
-    signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
+    signal({
+      name: '',
+      description: '',
+      difficulty: 'Easy' as TourDifficulty,
+      tags: '',
+      groupSizeFrom: 1,
+      groupSizeTo: 1,
+    }),
     (path) => {
       required(path.name, { message: 'Name is required.' });
       required(path.description, { message: 'Description is required.' });
+      required(path.groupSizeFrom, { message: 'From is required.' });
+      min(path.groupSizeFrom, 1, { message: 'From must be at least 1.' });
+      required(path.groupSizeTo, { message: 'To is required.' });
     },
   );
 
@@ -41,6 +51,10 @@ export class CreateTour {
           .split(',')
           .map((tag) => tag.trim())
           .filter((tag) => tag !== ''),
+        recommendedGroupSize: {
+          from: this.form.groupSizeFrom().value(),
+          to: this.form.groupSizeTo().value(),
+        },
       });
       await this.router.navigate(['/exploration/mine']);
     } catch (failure) {

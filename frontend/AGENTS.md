@@ -134,6 +134,11 @@ lean files that students extend, not a design system. The four global partials i
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
 
+Colours have two roles. `--color-accent` is the platform colour and the only colour of an
+action: buttons, links, focus. Each module has `--color-module-<name>` and a
+`.badge--<name>` class that mark where the user is; a module colour never goes on a
+button or a link.
+
 Where a style goes, in order:
 
 1. A token value changes: `_tokens.scss`.

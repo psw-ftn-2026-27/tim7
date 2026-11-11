@@ -20,7 +20,8 @@ public sealed class TourAuthoringService
 
     public async Task<TourDto> CreateAsync(Guid authorId, CreateTourDto dto)
     {
-        var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags);
+        var recommendedGroupSize = new RecommendedGroupSize(dto.RecommendedGroupSize.From, dto.RecommendedGroupSize.To);
+        var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags, recommendedGroupSize);
 
         _tourRepository.Add(tour);
         await _unitOfWork.SaveChangesAsync();
