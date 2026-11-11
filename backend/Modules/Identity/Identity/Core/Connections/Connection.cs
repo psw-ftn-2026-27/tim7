@@ -66,6 +66,16 @@ public sealed class Connection : AggregateRoot
         _requests.Remove(GetPendingRequest(senderId, GetOtherUser(senderId)));
     }
 
+    public void RemoveFollower(Guid userId)
+    {
+        _requests.Remove(GetAcceptedRequest(GetOtherUser(userId), userId));
+    }
+
+    public void Unfollow(Guid userId)
+    {
+        _requests.Remove(GetAcceptedRequest(userId, GetOtherUser(userId)));
+    }
+
     private Guid GetOtherUser(Guid userId)
     {
         if (userId == UserAId)
@@ -84,6 +94,18 @@ public sealed class Connection : AggregateRoot
         return _requests.Any(request => request.SenderId == followerId
             && request.RecipientId == followedId
             && request.Status == FollowRequestStatus.Accepted);
+    }
+
+    private FollowRequest GetAcceptedRequest(Guid followerId, Guid followedId)
+    {
+        var request = _requests.FirstOrDefault(request => request.SenderId == followerId
+            && request.RecipientId == followedId
+            && request.Status == FollowRequestStatus.Accepted);
+        if (request is null)
+        {
+            throw new DomainException("The user does not follow this user.");
+        }
+        return request;
     }
 
     private FollowRequest? FindPendingRequest(Guid senderId, Guid recipientId)

@@ -51,6 +51,22 @@ public sealed class FollowingService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task RemoveFollowerAsync(Guid userId, Guid followerId)
+    {
+        var connection = await GetConnectionAsync(userId, followerId);
+
+        connection.RemoveFollower(userId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UnfollowAsync(Guid userId, Guid followedId)
+    {
+        var connection = await GetConnectionAsync(userId, followedId);
+
+        connection.Unfollow(userId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     private async Task<Connection> GetConnectionAsync(Guid userId, Guid otherUserId)
     {
         var connection = await _connectionRepository.GetByUsersAsync(userId, otherUserId);

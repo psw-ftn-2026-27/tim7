@@ -32,6 +32,13 @@ public class ConnectionTests
         return connection;
     }
 
+    private static Connection CreateConnectionWithMutualFollowing()
+    {
+        var connection = CreateConnectionWithAcceptedRequest();
+        connection.SendRequest(Recipient);
+        return connection;
+    }
+
     [Fact]
     public void User_cannot_be_connected_to_themselves()
     {
@@ -147,5 +154,63 @@ public class ConnectionTests
         var withdrawal = () => connection.Withdraw(Sender);
 
         withdrawal.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Removing_a_follower_ends_only_their_following_and_the_opposite_following_stays()
+    {
+        var connection = CreateConnectionWithMutualFollowing();
+
+        connection.RemoveFollower(Recipient);
+
+        connection.Requests.Should().ContainSingle()
+            .Which.Should().Match<FollowRequest>(request => request.SenderId == Recipient
+                && request.RecipientId == Sender
+                && request.Status == FollowRequestStatus.Accepted);
+    }
+
+    [Fact]
+    public void Unfollowing_ends_only_that_direction_and_the_opposite_following_stays()
+    {
+        var connection = CreateConnectionWithMutualFollowing();
+
+        connection.Unfollow(Sender);
+
+        connection.Requests.Should().ContainSingle()
+            .Which.Should().Match<FollowRequest>(request => request.SenderId == Recipient
+                && request.RecipientId == Sender
+                && request.Status == FollowRequestStatus.Accepted);
+    }
+
+    [Fact]
+    public void User_who_does_not_follow_the_user_cannot_be_removed_as_a_follower()
+    {
+        var connection = CreateConnectionWithAcceptedRequest();
+
+        var removal = () => connection.RemoveFollower(Sender);
+
+        removal.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void User_cannot_unfollow_a_user_they_do_not_follow()
+    {
+        var connection = CreateConnectionWithAcceptedRequest();
+
+        var unfollowing = () => connection.Unfollow(Recipient);
+
+        unfollowing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Removed_follower_may_send_a_new_request()
+    {
+        var connection = CreateConnectionWithAcceptedRequest();
+        connection.RemoveFollower(Recipient);
+
+        connection.SendRequest(Sender);
+
+        connection.Requests.Should().ContainSingle(request =>
+            request.SenderId == Sender && request.Status == FollowRequestStatus.Pending);
     }
 }

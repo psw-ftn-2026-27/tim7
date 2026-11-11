@@ -50,4 +50,17 @@ export class UserSearch {
       this.pending.set(false);
     }
   }
+
+  protected async unfollow(userId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.following.unfollow(userId);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Praćenje nije prekinuto.'));
+    } finally {
+      this.users.reload();
+      this.pending.set(false);
+    }
+  }
 }
