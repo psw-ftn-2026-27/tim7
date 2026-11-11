@@ -11,6 +11,8 @@ internal static class TourSeed
     public static readonly Tour PublishableRiverside;
     public static readonly Tour PublishedVineyards;
     public static readonly Tour PublishedMonasteries;
+    public static readonly Tour PublishedBikeRideToPetrovaradin;
+    public static readonly Tour PublishedOldTownWalk;
 
     static TourSeed()
     {
@@ -24,7 +26,16 @@ internal static class TourSeed
         PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"]);
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
         PublishedMonasteries.Publish();
+
+        PublishedBikeRideToPetrovaradin = new(WellKnownUsers.SecondExplorer, "Biciklom do Petrovaradina", "Vožnja kreće sa Keja žrtava racije, prelazi Varadinski most i penje se do Petrovaradinske tvrđave, uz obilazak Sahat kule i povratak kroz Podgrađe.", TourDifficulty.Easy, ["grad", "istorija"]);
+        PublishedBikeRideToPetrovaradin.AddTransportTime(TransportMode.Bicycle, 40);
+        PublishedBikeRideToPetrovaradin.AddTransportTime(TransportMode.Walking, 120);
+        PublishedBikeRideToPetrovaradin.Publish();
+
+        PublishedOldTownWalk = new(WellKnownUsers.SecondExplorer, "Peške kroz staro jezgro", "Šetnja vodi od Trga slobode, kroz Zmaj Jovinu i Dunavsku ulicu, pored Vladičanskog dvora i Saborne crkve, do Dunavskog parka i Muzeja Vojvodine.", TourDifficulty.Easy, ["istorija"]);
+        PublishedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
+        PublishedOldTownWalk.Publish();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk];
 }

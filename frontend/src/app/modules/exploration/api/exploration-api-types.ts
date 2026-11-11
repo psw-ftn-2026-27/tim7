@@ -4,6 +4,8 @@ export type TourStatus = 'Draft' | 'Published';
 
 export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
+export type SortDirection = 'Ascending' | 'Descending';
+
 export interface TransportTimeDto {
   transport: TransportMode;
   minutes: number;
@@ -26,4 +28,12 @@ export interface CreateTourDto {
   description: string;
   difficulty: TourDifficulty;
   tags: string[];
+}
+
+export interface TourSearchDto {
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transport: TransportMode | null;
+  difficultySort: SortDirection | null;
 }
