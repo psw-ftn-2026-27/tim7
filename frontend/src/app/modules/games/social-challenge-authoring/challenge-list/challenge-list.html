@@ -1,0 +1,70 @@
+<div class="stack">
+  <h1>Društveni izazovi</h1>
+
+  <p><a routerLink="/games/challenges/create">Novi izazov</a></p>
+
+  @if (editingId()) {
+    <section class="card stack">
+      <h2>Ispravka izazova</h2>
+      <app-challenge-form
+        [form]="editForm"
+        [error]="editError()"
+        [pending]="pending()"
+        (save)="saveEdit()"
+        (dismiss)="cancelEdit()"
+      />
+    </section>
+  }
+
+  <div class="filters">
+    <div class="field">
+      <label for="sort">Sortiranje</label>
+      <select id="sort" [formField]="view.sort">
+        <option value="name">Naziv</option>
+        <option value="duration">Trajanje</option>
+        <option value="people">Broj ljudi</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="status">Stanje</label>
+      <select id="status" [formField]="view.status">
+        <option value="all">Sva</option>
+        <option value="Draft">Draft</option>
+        <option value="Published">Published</option>
+        <option value="Retired">Retired</option>
+        <option value="Archived">Archived</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="duration">Trajanje</label>
+      <select id="duration" [formField]="view.duration">
+        <option value="all">Sva</option>
+        <option value="short">Do 2 sata</option>
+        <option value="medium">2 do 6 sati</option>
+        <option value="long">Preko 6 sati</option>
+      </select>
+    </div>
+  </div>
+
+  @if (listError()) {
+    <p class="error">{{ listError() }}</p>
+  }
+
+  @if (challenges.isLoading()) {
+    <p>Učitavanje izazova...</p>
+  } @else if (challenges.error()) {
+    <p class="error">Izazove nije moguće učitati.</p>
+  } @else {
+    <div class="grid">
+      @for (challenge of visible(); track challenge.id) {
+        <app-challenge-card
+          [challenge]="challenge"
+          (edit)="startEdit(challenge)"
+          (remove)="remove(challenge.id)"
+        />
+      } @empty {
+        <p>Nema izazova.</p>
+      }
+    </div>
+  }
+</div>
