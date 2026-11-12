@@ -26,10 +26,10 @@
           <tr>
             <td>{{ club.name }}</td>
             <td>{{ club.description }}</td>
-            <td>
+            <td class="images">
               <ul>
                 @for (image of club.images; track $index) {
-                  <li>{{ image }}</li>
+                  <li [title]="image">{{ image }}</li>
                 }
               </ul>
             </td>

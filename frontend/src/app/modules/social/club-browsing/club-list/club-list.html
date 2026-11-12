@@ -1,6 +1,12 @@
 <div class="stack">
   <h1>Clubs</h1>
 
+  <p class="links">
+    <a routerLink="/social">All blogs</a>
+    <a routerLink="/social/clubs/mine">My clubs</a>
+    <a routerLink="/social/clubs/create">Create club</a>
+  </p>
+
   @if (clubs.isLoading()) {
     <p>Loading clubs...</p>
   } @else if (clubs.error()) {
