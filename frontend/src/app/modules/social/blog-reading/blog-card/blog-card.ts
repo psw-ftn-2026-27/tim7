@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { marked } from 'marked';
 import { BlogDto } from '../../api/social-api-types';
 
 @Component({
@@ -10,4 +11,8 @@ import { BlogDto } from '../../api/social-api-types';
 })
 export class BlogCard {
   readonly blog = input.required<BlogDto>();
+
+  protected readonly descriptionHtml = computed(() =>
+    marked.parse(this.blog().description, { async: false }),
+  );
 }

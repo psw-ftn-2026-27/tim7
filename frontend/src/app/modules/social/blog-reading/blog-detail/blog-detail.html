@@ -17,7 +17,7 @@
         <p class="meta">Edited {{ blog.lastModifiedAt }}</p>
       }
 
-      <p>{{ blog.description }}</p>
+      <div [innerHTML]="descriptionHtml()"></div>
 
       <p class="meta">Status: {{ blog.status }}</p>
 

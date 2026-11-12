@@ -13,7 +13,7 @@
     </div>
 
     <div class="field">
-      <label for="description">Description</label>
+      <label for="description">Description (Markdown supported)</label>
       <textarea id="description" rows="6" [formField]="form.description"></textarea>
       @if (form.description().touched()) {
         @for (message of form.description().errors(); track $index) {

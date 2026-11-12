@@ -22,7 +22,7 @@
           </div>
 
           <div class="field">
-            <label for="description">Description</label>
+            <label for="description">Description (Markdown supported)</label>
             <textarea id="description" rows="6" [formField]="form.description"></textarea>
             @if (form.description().touched()) {
               @for (message of form.description().errors(); track $index) {
@@ -57,7 +57,7 @@
           <p class="meta">Edited {{ blog.lastModifiedAt }}</p>
         }
 
-        <p>{{ blog.description }}</p>
+        <div [innerHTML]="descriptionHtml()"></div>
 
         <ul>
           @for (image of blog.images; track $index) {
