@@ -16,6 +16,11 @@ public sealed class Wallet : AggregateRoot
         UserId = userId;
     }
 
+    public void Deposit(Guid administratorId, int amount)
+    {
+        _transactions.Add(new Transaction(amount, administratorId));
+    }
+
     public int Balance()
     {
         return _transactions.Where(transaction => !transaction.IsReversed).Sum(transaction => transaction.Amount);
