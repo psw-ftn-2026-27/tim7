@@ -9,6 +9,7 @@ namespace Exploration.Tests.Unit.Tours;
 public class TourTests
 {
     private static readonly string LongDescription = new('o', 100);
+    private static readonly TourPrice FreePrice = new(true, null);
 
     private static Tour CreateTour(string description) =>
         new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 6));
@@ -17,7 +18,7 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Walking, 120);
-        tour.Publish();
+        tour.Publish(FreePrice);
         return tour;
     }
 
@@ -95,7 +96,7 @@ public class TourTests
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Bicycle, 45);
 
-        tour.Publish();
+        tour.Publish(FreePrice);
 
         tour.Status.Should().Be(TourStatus.Published);
         tour.PublishedAt.Should().NotBeNull();
@@ -107,7 +108,7 @@ public class TourTests
         var tour = CreateTour("Kratak opis.");
         tour.AddTransportTime(TransportMode.Walking, 120);
 
-        var publishing = () => tour.Publish();
+        var publishing = () => tour.Publish(FreePrice);
 
         publishing.Should().Throw<DomainException>();
     }
@@ -117,7 +118,7 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
 
-        var publishing = () => tour.Publish();
+        var publishing = () => tour.Publish(FreePrice);
 
         publishing.Should().Throw<DomainException>();
     }
@@ -127,9 +128,9 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Car, 30);
-        tour.Publish();
+        tour.Publish(FreePrice);
 
-        var publishing = () => tour.Publish();
+        var publishing = () => tour.Publish(FreePrice);
 
         publishing.Should().Throw<DomainException>();
     }
@@ -139,7 +140,7 @@ public class TourTests
     {
         var tour = CreateArchivedTour();
 
-        var publishing = () => tour.Publish();
+        var publishing = () => tour.Publish(FreePrice);
 
         publishing.Should().Throw<DomainException>();
     }
