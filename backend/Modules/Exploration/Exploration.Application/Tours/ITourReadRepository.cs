@@ -6,5 +6,6 @@ namespace Exploration.Application.Tours;
 public interface ITourReadRepository
 {
     Task<List<TourDto>> GetByAuthorAsync(Guid authorId);
+    Task<List<string>> GetPublishedTagsAsync();
     Task<PageResult<TourDto>> GetPublishedAsync(TourSearchDto search, int page, int pageSize);
 }

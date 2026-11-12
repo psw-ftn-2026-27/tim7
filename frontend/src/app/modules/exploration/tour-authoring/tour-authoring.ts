@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { CreateTourDto, TourDto, TransportTimeDto } from '../api/exploration-api-types';
+import { CreateTourDto, TourDto, TourPriceDto, TransportTimeDto } from '../api/exploration-api-types';
 
 const BASE_URL = '/api/exploration/tours';
 
@@ -13,8 +13,8 @@ export class TourAuthoring {
     return firstValueFrom(this.http.post<TourDto>(BASE_URL, dto));
   }
 
-  async publish(id: string): Promise<void> {
-    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, {}));
+  async publish(id: string, dto: TourPriceDto): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, dto));
   }
 
   async archive(id: string): Promise<void> {

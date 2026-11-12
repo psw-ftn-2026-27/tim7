@@ -44,6 +44,29 @@ export interface CreateTourDto {
   length: TourLengthDto | null;
 }
 
+export interface TourPriceDto {
+  isFree: boolean | null;
+  amount: number | null;
+}
+
+export interface TourPreferenceDto {
+  difficulties: TourDifficulty[];
+  preferredTransportMode: TransportMode | null;
+  tags: string[];
+  applyPreferencesAutomatically: boolean;
+}
+
+export interface MyTourPreferencesDto {
+  preferences: TourPreferenceDto | null;
+}
+
+export interface SaveTourPreferenceDto {
+  difficulties: TourDifficulty[];
+  preferredTransportMode: TransportMode | null;
+  tags: string[];
+  applyPreferencesAutomatically: boolean;
+}
+
 export interface TourSearchDto {
   name: string | null;
   difficulties: TourDifficulty[] | null;

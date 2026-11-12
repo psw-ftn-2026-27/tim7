@@ -1,0 +1,41 @@
+<div class="stack">
+  <h1>My wallet</h1>
+
+  @if (openFailed() || wallet.error()) {
+    <p class="error">Could not load your wallet.</p>
+  } @else if (!opened() || wallet.isLoading()) {
+    <p>Loading your wallet...</p>
+  } @else {
+    <p class="balance">Balance: {{ wallet.value()?.balance }} EC</p>
+
+    <h2>Transactions</h2>
+    @if (wallet.value()?.transactions?.length === 0) {
+      <p>No transactions yet.</p>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Amount</th>
+            <th scope="col">Time</th>
+            <th scope="col">Administrator</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (transaction of wallet.value()?.transactions ?? []; track $index) {
+            <tr>
+              <td>{{ transaction.amount }} EC</td>
+              <td>{{ formatTime(transaction.createdAt) }}</td>
+              <td>{{ transaction.administratorId }}</td>
+              <td>
+                @if (transaction.isReversed) {
+                  <span class="meta">reversed</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</div>
