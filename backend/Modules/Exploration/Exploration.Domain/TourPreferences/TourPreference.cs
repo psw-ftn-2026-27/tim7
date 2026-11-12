@@ -19,17 +19,18 @@ public sealed class TourPreference : AggregateRoot
     }
 
     public TourPreference(Guid userId, List<TourDifficulty> difficulties, TransportMode? preferredTransportMode,
-        List<string> tags, bool applyPreferencesAutomatically)
+        List<string> tags)
         : base(Guid.NewGuid())
     {
         UserId = userId;
         Difficulties = [];
         Tags = [];
-        Update(difficulties, preferredTransportMode, tags, applyPreferencesAutomatically);
+        ApplyPreferencesAutomatically = false;
+        Update(difficulties, preferredTransportMode, tags);
     }
 
     public void Update(List<TourDifficulty> difficulties, TransportMode? preferredTransportMode,
-        List<string> tags, bool applyPreferencesAutomatically)
+        List<string> tags)
     {
         difficulties ??= [];
         tags ??= [];
@@ -41,6 +42,5 @@ public sealed class TourPreference : AggregateRoot
         Difficulties = difficulties;
         PreferredTransportMode = preferredTransportMode;
         Tags = tags;
-        ApplyPreferencesAutomatically = applyPreferencesAutomatically;
     }
 }
