@@ -1,7 +1,8 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { marked } from 'marked';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { BlogDto } from '../../api/social-api-types';
 import { BlogAuthoring } from '../blog-authoring';
@@ -19,6 +20,10 @@ export class MyBlogDetail {
   readonly id = input.required<string>();
 
   protected readonly detail = httpResource<BlogDto>(() => `/api/social/blogs/mine/${this.id()}`);
+
+  protected readonly descriptionHtml = computed(() =>
+    marked.parse(this.detail.value()?.description ?? '', { async: false }),
+  );
 
   protected readonly editing = signal(false);
   protected readonly pending = signal(false);

@@ -1,3 +1,10 @@
 .card > a {
   align-self: flex-start;
 }
+
+// Headings inside the description use the global heading sizes; on the card they shrink to
+// body text size so they never outgrow the card title.
+.description {
+  --font-size-xl: var(--font-size-md);
+  --font-size-lg: var(--font-size-md);
+}
