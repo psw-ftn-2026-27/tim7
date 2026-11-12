@@ -1,6 +1,10 @@
 <article class="card stack">
   <h3>{{ blog().title }}</h3>
 
+  @if (blog().lastModifiedAt) {
+    <p class="meta">Edited {{ blog().lastModifiedAt }}</p>
+  }
+
   <p>{{ blog().description }}</p>
 
   <p class="meta">Status: {{ blog().status }}</p>

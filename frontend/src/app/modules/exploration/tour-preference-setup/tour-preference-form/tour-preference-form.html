@@ -26,11 +26,6 @@
       }
     </fieldset>
 
-    <label>
-      <input type="checkbox" [formField]="form.applyPreferencesAutomatically" />
-      Apply my preferences automatically to the tour list
-    </label>
-
     @if (!hasCriterion()) {
       <p class="meta">Choose at least one difficulty, a preferred transport or a tag to save.</p>
     }
@@ -51,7 +46,6 @@
       <p>Difficulty: {{ saved.difficulties.length > 0 ? saved.difficulties.join(', ') : 'None' }}</p>
       <p>Preferred transport: {{ saved.preferredTransportMode ?? 'No transport' }}</p>
       <p>Tags: {{ saved.tags.length > 0 ? saved.tags.join(', ') : 'None' }}</p>
-      <p>Apply automatically: {{ saved.applyPreferencesAutomatically ? 'Yes' : 'No' }}</p>
 
       <div class="actions">
         <button class="button button--primary" type="button" (click)="startEdit()">

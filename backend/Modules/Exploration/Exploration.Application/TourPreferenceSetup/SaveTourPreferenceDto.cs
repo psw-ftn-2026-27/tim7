@@ -5,5 +5,4 @@ namespace Exploration.Application.TourPreferenceSetup;
 public sealed record SaveTourPreferenceDto(
     List<TourDifficulty> Difficulties,
     TransportMode? PreferredTransportMode,
-    List<string> Tags,
-    bool ApplyPreferencesAutomatically);
+    List<string> Tags);

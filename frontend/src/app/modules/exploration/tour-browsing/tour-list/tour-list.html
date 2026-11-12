@@ -6,6 +6,16 @@
       <a routerLink="/exploration/mine">My tours</a>
       <a routerLink="/exploration/create">Create tour</a>
       <a routerLink="/exploration/preferences">My preferences</a>
+      @if (isExplorer()) {
+        <button
+          class="button"
+          type="button"
+          [disabled]="!myPreferences.hasValue()"
+          (click)="applyMyPreferences()"
+        >
+          Apply my preferences
+        </button>
+      }
     </p>
   }
 
@@ -80,6 +90,17 @@
       </select>
     </div>
   </div>
+
+  @if (preferencesNotSetUp()) {
+    <p>
+      Your tour preferences are not set up yet.
+      <a routerLink="/exploration/preferences">Set up preferences</a>
+    </p>
+  }
+
+  @if (myPreferences.error()) {
+    <p class="error">Could not load your preferences.</p>
+  }
 
   @if (tours.isLoading()) {
     <p>Loading tours...</p>

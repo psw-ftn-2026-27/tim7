@@ -6,7 +6,11 @@
   <p class="meta">Difficulty: {{ tour().difficulty }}</p>
 
 
-  <p class="meta">Length not available</p>
+  @if (tour().length; as length) {
+    <p class="meta">Length: {{ length.kilometers }} km</p>
+  } @else {
+    <p class="meta">Length not available</p>
+  }
 
   <p class="meta">
     For {{ tour().recommendedGroupSize.from }}–{{ tour().recommendedGroupSize.to }} people

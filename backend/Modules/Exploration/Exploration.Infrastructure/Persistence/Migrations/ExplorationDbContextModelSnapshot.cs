@@ -120,6 +120,22 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("TourId");
                         });
 
+                    b.OwnsOne("Exploration.Domain.Tours.TourLength", "Length", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Kilometers")
+                                .HasColumnType("numeric");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
                     b.OwnsMany("Exploration.Domain.Tours.TransportTime", "TransportTimes", b1 =>
                         {
                             b1.Property<Guid>("TourId");
@@ -143,6 +159,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourId");
                         });
+
+                    b.Navigation("Length");
 
                     b.Navigation("RecommendedGroupSize")
                         .IsRequired();

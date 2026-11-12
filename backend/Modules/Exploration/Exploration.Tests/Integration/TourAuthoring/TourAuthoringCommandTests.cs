@@ -19,7 +19,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     public async Task Explorer_creates_a_draft_tour()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"], new RecommendedGroupSizeDto(2, 6));
+        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"], new RecommendedGroupSizeDto(2, 6), new TourLengthDto(7.5m));
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var tourCountBefore = arrangeContext.Tours.Count();
 
@@ -29,19 +29,40 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
         var created = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
         created!.AuthorId.Should().Be(WellKnownUsers.Explorer);
         created.RecommendedGroupSize.Should().Be(new RecommendedGroupSizeDto(2, 6));
+        created.Length.Should().Be(new TourLengthDto(7.5m));
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
         assertContext.Tours.Count().Should().Be(tourCountBefore + 1);
         var stored = assertContext.Tours.Single(tour => tour.Id == created.Id);
         stored.Status.Should().Be(TourStatus.Draft);
         stored.TransportTimes.Should().BeEmpty();
         stored.RecommendedGroupSize.Should().Be(new RecommendedGroupSize(2, 6));
+        stored.Length.Should().Be(new TourLength(7.5m));
+    }
+
+    [Fact]
+    public async Task Explorer_creates_a_tour_without_a_length()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6), null);
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var tourCountBefore = arrangeContext.Tours.Count();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var created = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
+        created!.Length.Should().BeNull();
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.Tours.Count().Should().Be(tourCountBefore + 1);
+        var stored = assertContext.Tours.Single(tour => tour.Id == created.Id);
+        stored.Length.Should().BeNull();
     }
 
     [Fact]
     public async Task Explorer_cannot_create_a_tour_without_a_name()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new CreateTourDto("   ", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6));
+        var request = new CreateTourDto("   ", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6), null);
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var tourCountBefore = arrangeContext.Tours.Count();
 
@@ -56,7 +77,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     public async Task Explorer_cannot_create_a_tour_whose_group_size_starts_above_its_upper_limit()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(6, 2));
+        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(6, 2), null);
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var tourCountBefore = arrangeContext.Tours.Count();
 
@@ -71,7 +92,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     public async Task Anonymous_user_cannot_create_a_tour()
     {
         var client = Factory.CreateClient();
-        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6));
+        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6), null);
 
         var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
 
@@ -82,7 +103,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     public async Task Administrator_cannot_create_a_tour()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6));
+        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"], new RecommendedGroupSizeDto(2, 6), null);
 
         var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
 
