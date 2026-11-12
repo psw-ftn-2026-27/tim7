@@ -1,0 +1,13 @@
+.thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.thumbnails img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}

@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Shared.Tests;
-using Social.Application.ClubManagement;
+using Social.Application.Clubs;
 using Social.Tests.Integration.Seeds;
 using Xunit;
 

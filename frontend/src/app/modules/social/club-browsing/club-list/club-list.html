@@ -1,0 +1,26 @@
+<div class="stack">
+  <h1>Clubs</h1>
+
+  @if (clubs.isLoading()) {
+    <p>Loading clubs...</p>
+  } @else if (clubs.error()) {
+    <p class="error">Could not load clubs. Log in and try again.</p>
+  } @else {
+    <div class="grid">
+      @for (club of clubs.value()?.items ?? []; track club.id) {
+        <app-club-card [club]="club" />
+      } @empty {
+        <p>No clubs yet.</p>
+      }
+    </div>
+  }
+
+  <p class="pages">
+    <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+      Previous
+    </button>
+    <button class="button" type="button" [disabled]="!hasNextPage()" (click)="nextPage()">
+      Next
+    </button>
+  </p>
+</div>
