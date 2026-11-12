@@ -1,0 +1,70 @@
+<div class="card stack">
+  <p><a routerLink="/social/clubs/mine">Back to my clubs</a></p>
+
+  @if (detail.isLoading()) {
+    <p>Loading club...</p>
+  } @else if (detail.statusCode() === 404) {
+    <p class="error">This club does not exist.</p>
+  } @else if (detail.error()) {
+    <p class="error">Could not load the club. Log in and try again.</p>
+  } @else {
+    @if (detail.value(); as club) {
+      @if (editing()) {
+        <h1>Edit club</h1>
+
+        <form class="stack" (submit)="submit($event)">
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" [formField]="form.name" />
+            @if (form.name().touched()) {
+              @for (message of form.name().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" rows="6" [formField]="form.description"></textarea>
+            @if (form.description().touched()) {
+              @for (message of form.description().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="images">Image addresses, one per line</label>
+            <textarea id="images" rows="4" [formField]="form.images"></textarea>
+          </div>
+
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
+
+          <button
+            class="button button--primary"
+            type="submit"
+            [disabled]="!form().valid() || pending()"
+          >
+            Save changes
+          </button>
+        </form>
+      } @else {
+        <h1>{{ club.name }}</h1>
+
+        <p>{{ club.description }}</p>
+
+        <ul>
+          @for (image of club.images; track $index) {
+            <li>{{ image }}</li>
+          }
+        </ul>
+
+        <button class="button button--primary" type="button" (click)="startEdit(club)">
+          Edit
+        </button>
+      }
+    }
+  }
+</div>

@@ -1,0 +1,72 @@
+<div class="stack">
+  <h1>My clubs</h1>
+
+  <p><a routerLink="/social">All blogs</a> · <a routerLink="/social/clubs/create">Create club</a></p>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (clubs.isLoading()) {
+    <p>Loading your clubs...</p>
+  } @else if (clubs.error()) {
+    <p class="error">Could not load your clubs. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Description</th>
+          <th scope="col">Images</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (club of clubs.value() ?? []; track club.id) {
+          <tr>
+            <td>{{ club.name }}</td>
+            <td>{{ club.description }}</td>
+            <td>
+              <ul>
+                @for (image of club.images; track $index) {
+                  <li>{{ image }}</li>
+                }
+              </ul>
+            </td>
+            <td>
+              <div class="actions">
+                @if (confirmingId() === club.id) {
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="confirmDelete(club.id)"
+                  >
+                    Confirm delete
+                  </button>
+                  <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
+                    Cancel
+                  </button>
+                } @else {
+                  <a class="button" [routerLink]="['/social/clubs/mine', club.id]">Details</a>
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="askDelete(club.id)"
+                  >
+                    Delete
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4">You have no clubs yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
