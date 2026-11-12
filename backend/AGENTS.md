@@ -20,12 +20,17 @@ backend/
   Host.Tests/                      ArchUnitNET architecture tests            [platform]
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
-                                   DomainException, NotFoundException       [platform]
-    Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
+                                   DomainException, NotFoundException,
+                                   Images/ (ImageFile, ImageSelection)       [platform]
+    Shared.Api/                    ClaimsPrincipal.GetUserId(),
+                                   Images/ (ImageUploadReader, UploadedImage,
+                                   ImageUploadLimits)                        [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
-                                   module, per-schema migrations history)    [platform]
+                                   module, per-schema migrations history),
+                                   Images/ (ImageStore, AddImageStorage)     [platform]
     Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
                                    reseed, test JWTs), WellKnownUsers        [platform]
+    Shared.UnitTests/              unit tests of the shared code             [platform]
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
@@ -192,6 +197,20 @@ enforced in aggregate constructors and methods, which throw `DomainException` (o
 middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 404, and
 anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
 try/catch and no validation code.
+
+## Image upload
+
+A module that accepts images adopts the shared component; it never writes its own checks.
+The controller action carries `[RequestSizeLimit(ImageUploadLimits.MaxRequestBytes)]`,
+binds the `IFormFile`s, turns each into `UploadedImage` with `ImageUploadReader.ReadAsync`
+and copies it into the module's own `ImageUploadDto` (file name, content, width, height).
+The command service builds an `ImageFile` per image and an `ImageSelection` from them
+(the constructors enforce format, size, dimensions and count), saves them through the
+module's own `IImageStore` port declared in `Application`, and passes the returned
+addresses to its aggregate, which keeps them as strings. The module's `Infrastructure`
+implements the port by calling `ImageStore` from `Shared.Infrastructure`. Files are
+served as static files at `/images/<name>` by `Host.Api`. The frontend half is the
+presentational component `shared/image-picker`.
 
 ## Events
 
