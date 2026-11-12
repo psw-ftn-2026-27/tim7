@@ -58,7 +58,6 @@ export interface SaveTourPreferenceDto {
   difficulties: TourDifficulty[];
   preferredTransportMode: TransportMode | null;
   tags: string[];
-  applyPreferencesAutomatically: boolean;
 }
 
 export interface TourSearchDto {

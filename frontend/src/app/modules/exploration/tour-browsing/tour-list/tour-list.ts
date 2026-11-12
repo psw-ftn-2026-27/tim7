@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import {
+  MyTourPreferencesDto,
   SortDirection,
   TourDifficulty,
   TourDto,
@@ -91,6 +92,18 @@ export class TourList {
     return `/api/exploration/tours/published?${params}`;
   });
 
+  // Only explorers have tour preferences.
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
+  );
+
+  // Read in the background when the page opens; undefined means "do not read".
+  protected readonly myPreferences = httpResource<MyTourPreferencesDto>(() =>
+    this.isExplorer() ? '/api/exploration/tour-preferences/mine' : undefined,
+  );
+
+  protected readonly preferencesNotSetUp = signal(false);
+
   protected readonly hasNextPage = computed(() => {
     if (!this.tours.hasValue()) {
       return false;
@@ -101,6 +114,26 @@ export class TourList {
   // Called on every change of a filter or the sort, so the new results start from page 1.
   protected backToFirstPage(): void {
     this.page.set(1);
+  }
+
+  // Copies the saved difficulties, transport and tags into the filters; name and sort stay.
+  protected applyMyPreferences(): void {
+    const preferences = this.myPreferences.value()?.preferences ?? null;
+    if (preferences === null) {
+      this.preferencesNotSetUp.set(true);
+      return;
+    }
+    const criteria = this.model();
+    this.form().reset({
+      name: criteria.name,
+      easy: preferences.difficulties.includes('Easy'),
+      moderate: preferences.difficulties.includes('Moderate'),
+      hard: preferences.difficulties.includes('Hard'),
+      tags: preferences.tags.join(', '),
+      transport: preferences.preferredTransportMode ?? '',
+      difficultySort: criteria.difficultySort,
+    });
+    this.backToFirstPage();
   }
 
   protected previousPage(): void {
