@@ -15,16 +15,29 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     public BlogReadingQueryTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Only_published_blogs_are_listed()
+    public async Task Published_and_archived_blogs_are_listed_and_drafts_are_not()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
+        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/visible", JsonOptions);
 
-        blogs!.Items.Should().OnlyContain(blog => blog.Status == BlogStatus.Published);
+        blogs!.Items.Should().OnlyContain(blog => blog.Status == BlogStatus.Published || blog.Status == BlogStatus.Archived);
         blogs.Items.Should().Contain(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        blogs.Items.Should().Contain(blog => blog.Id == BlogSeed.ArchivedDanubeCruise.Id);
         blogs.Items.Should().NotContain(blog => blog.Id == BlogSeed.FortressImpressions.Id);
-        blogs.TotalCount.Should().Be(BlogSeed.All.Count(blog => blog.Status == BlogStatus.Published));
+        blogs.TotalCount.Should().Be(BlogSeed.All.Count(blog => blog.Status == BlogStatus.Published || blog.Status == BlogStatus.Archived));
+    }
+
+    [Fact]
+    public async Task Archived_blog_can_be_read()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var blog = await client.GetFromJsonAsync<BlogDto>(
+            $"/api/social/blogs/{BlogSeed.ArchivedDanubeCruise.Id}", JsonOptions);
+
+        blog!.Id.Should().Be(BlogSeed.ArchivedDanubeCruise.Id);
+        blog.Status.Should().Be(BlogStatus.Archived);
     }
 
     [Fact]
