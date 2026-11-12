@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
+using Payment.Application.WalletAdministration;
 using Payment.Application.WalletBrowsing;
 using Payment.Application.WalletOpening;
 using Payment.Application.Wallets;
@@ -23,6 +24,8 @@ public static class PaymentModuleExtensions
 
         services.AddScoped<WalletOpeningService>();
         services.AddScoped<WalletBrowsingQueries>();
+        services.AddScoped<WalletAdministrationService>();
+        services.AddScoped<WalletAdministrationQueries>();
 
         return services;
     }

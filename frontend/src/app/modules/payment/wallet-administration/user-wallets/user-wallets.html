@@ -1,0 +1,67 @@
+<div class="stack">
+  <h1>Users and wallets</h1>
+
+  @if (users.error()) {
+    <p class="error">Could not load the users.</p>
+  } @else if (users.isLoading()) {
+    <p>Loading users...</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">User</th>
+          <th scope="col">Balance</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users.value()?.items ?? []; track user.userId) {
+          <tr>
+            <td>{{ user.userId }}</td>
+            <td>{{ user.balance }} EC</td>
+            <td>
+              <button class="button" type="button" (click)="select(user.userId)">Select</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3">No users have a wallet yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (success()) {
+    <p>{{ success() }}</p>
+  }
+
+  @if (selectedUserId()) {
+    <form class="card stack" (submit)="deposit($event)">
+      <h2>Deposit EC</h2>
+      <p class="meta">User {{ selectedUserId() }}</p>
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" type="number" [formField]="form.amount" />
+        @if (form.amount().touched()) {
+          @for (message of form.amount().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!form().valid() || pending()"
+      >
+        Deposit
+      </button>
+    </form>
+  }
+</div>
