@@ -12,7 +12,7 @@ public class TourTests
     private static readonly TourPrice FreePrice = new(true, null);
 
     private static Tour CreateTour(string description) =>
-        new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 6));
+        new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 6), null);
 
     private static Tour CreatePublishedTour()
     {
@@ -44,7 +44,7 @@ public class TourTests
     [InlineData("   ")]
     public void New_tour_requires_a_name(string name)
     {
-        var creation = () => new Tour(WellKnownUsers.Explorer, name, "Opis ture.", TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 6));
+        var creation = () => new Tour(WellKnownUsers.Explorer, name, "Opis ture.", TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 6), null);
 
         creation.Should().Throw<DomainException>();
     }
@@ -62,7 +62,7 @@ public class TourTests
     [Fact]
     public void New_tour_requires_tags()
     {
-        var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, [], new RecommendedGroupSize(2, 6));
+        var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, [], new RecommendedGroupSize(2, 6), null);
 
         creation.Should().Throw<DomainException>();
     }

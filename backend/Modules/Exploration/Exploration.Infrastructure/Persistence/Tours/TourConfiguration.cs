@@ -20,6 +20,8 @@ internal static class TourConfiguration
         builder.OwnsOne(tour => tour.RecommendedGroupSize);
         builder.Navigation(tour => tour.RecommendedGroupSize).IsRequired();
 
+        builder.OwnsOne(tour => tour.Length);
+
         builder.OwnsMany(tour => tour.TransportTimes, transportTimes =>
         {
             transportTimes.ToJson();
