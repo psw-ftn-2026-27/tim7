@@ -2,6 +2,16 @@
   width: 16rem;
 }
 
+.images ul {
+  max-width: 16rem;
+}
+
+.images li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .actions {
   display: flex;
   gap: var(--space-2);

@@ -1,4 +1,4 @@
-namespace Social.Application.ClubManagement;
+namespace Social.Application.Clubs;
 
 public sealed record ClubDto(
     Guid Id,
