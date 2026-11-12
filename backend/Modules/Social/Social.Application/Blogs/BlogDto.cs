@@ -10,4 +10,5 @@ public sealed record BlogDto(
     DateTime CreatedAt,
     List<string> Images,
     BlogStatus Status,
+    DateTime? LastModifiedAt,
     List<CommentDto> Comments);

@@ -15,10 +15,17 @@ export interface BlogDto {
   createdAt: string;
   images: string[];
   status: BlogStatus;
+  lastModifiedAt: string | null;
   comments: CommentDto[];
 }
 
 export interface CreateBlogDto {
+  title: string;
+  description: string;
+  images: string[] | null;
+}
+
+export interface EditBlogDto {
   title: string;
   description: string;
   images: string[] | null;

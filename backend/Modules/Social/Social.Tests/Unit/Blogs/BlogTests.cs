@@ -136,4 +136,30 @@ public class BlogTests
         blog.Comments.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Edited_blog_has_new_content_and_a_last_modification_date()
+    {
+        var blog = CreatePublishedBlog();
+
+        blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/nova.jpg"]);
+
+        blog.Title.Should().Be("Novi utisci sa tvrđave");
+        blog.Description.Should().Be("Dopunjen opis obilaska.");
+        blog.Images.Should().ContainSingle().Which.Should().Be("https://example.com/nova.jpg");
+        blog.LastModifiedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Theory]
+    [InlineData("", "Dopunjen opis obilaska.")]
+    [InlineData("   ", "Dopunjen opis obilaska.")]
+    [InlineData("Novi utisci sa tvrđave", "")]
+    [InlineData("Novi utisci sa tvrđave", "   ")]
+    public void Edited_blog_requires_a_title_and_a_description(string title, string description)
+    {
+        var blog = CreateBlog();
+
+        var edit = () => blog.Edit(title, description, []);
+
+        edit.Should().Throw<DomainException>();
+    }
 }

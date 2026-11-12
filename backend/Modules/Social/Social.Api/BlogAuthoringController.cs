@@ -35,9 +35,22 @@ public sealed class BlogAuthoringController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult> Edit(Guid id, EditBlogDto dto)
+    {
+        await _authoringService.EditAsync(id, User.GetUserId(), dto);
+        return NoContent();
+    }
+
     [HttpGet("mine")]
     public async Task<ActionResult<List<BlogDto>>> GetMine()
     {
         return await _authoringQueries.GetByAuthorAsync(User.GetUserId());
+    }
+
+    [HttpGet("mine/{id:guid}")]
+    public async Task<ActionResult<BlogDto>> GetMineById(Guid id)
+    {
+        return await _authoringQueries.GetOwnedByIdAsync(id, User.GetUserId());
     }
 }

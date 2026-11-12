@@ -11,6 +11,7 @@ public sealed class Blog : AggregateRoot
     public DateTime CreatedAt { get; private set; }
     public List<string> Images { get; private set; }
     public BlogStatus Status { get; private set; }
+    public DateTime? LastModifiedAt { get; private set; }
     private readonly List<Comment> _comments = [];
     public IReadOnlyList<Comment> Comments => _comments;
 
@@ -51,6 +52,24 @@ public sealed class Blog : AggregateRoot
         Status = BlogStatus.Published;
     }
 
+    public void Edit(string title, string description, List<string>? images)
+    {
+        EnsureEditable();
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new DomainException("A blog requires a title.");
+        }
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            throw new DomainException("A blog requires a description.");
+        }
+
+        Title = title;
+        Description = description;
+        Images = images ?? [];
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
     public void AddComment(Guid userId, string text)
     {
         EnsurePublished();
@@ -77,6 +96,14 @@ public sealed class Blog : AggregateRoot
         if (Status != BlogStatus.Published)
         {
             throw new DomainException("Comments are allowed only on a published blog.");
+        }
+    }
+
+    private void EnsureEditable()
+    {
+        if (Status != BlogStatus.Draft && Status != BlogStatus.Published)
+        {
+            throw new DomainException("Only a draft or published blog can be edited.");
         }
     }
 
