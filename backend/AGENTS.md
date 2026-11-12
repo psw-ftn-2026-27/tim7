@@ -208,9 +208,19 @@ The command service builds an `ImageFile` per image and an `ImageSelection` from
 (the constructors enforce format, size, dimensions and count), saves them through the
 module's own `IImageStore` port declared in `Application`, and passes the returned
 addresses to its aggregate, which keeps them as strings. The module's `Infrastructure`
-implements the port by calling `ImageStore` from `Shared.Infrastructure`. Files are
-served as static files at `/images/<name>` by `Host.Api`. The frontend half is the
-presentational component `shared/image-picker`.
+implements the port by calling `ImageStore.SaveAsync(module, selection)` from
+`Shared.Infrastructure`, passing the module's name, so the files land in the module's own
+subfolder. Files are served as static files at `/images/<module>/<name>` by `Host.Api`.
+The frontend half is the presentational component `shared/image-picker`.
+
+A module that adopts upload also implements `IImageUsage` from `Shared.Infrastructure` in
+its `Infrastructure`: `Module` is the same name it passes to `SaveAsync`, and
+`GetUsedAddressesAsync()` returns every image address its aggregates keep, whatever their
+status. It registers the implementation as scoped in its `AddXxxModule`. The platform's
+image cleanup job (`AddImageCleanup` in `Host.Api`) periodically deletes images that no
+module uses and that are older than `ImageCleanup:MinAge`, and it only touches the
+subfolders of modules that registered an `IImageUsage`; a module without one keeps all of
+its files.
 
 ## Events
 
