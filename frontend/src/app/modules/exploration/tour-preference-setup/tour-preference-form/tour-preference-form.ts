@@ -13,7 +13,6 @@ interface TourPreferenceFormModel {
   hard: boolean;
   transport: TransportMode | '';
   tags: { tag: string; selected: boolean }[];
-  applyPreferencesAutomatically: boolean;
 }
 
 @Component({
@@ -39,7 +38,6 @@ export class TourPreferenceForm {
     hard: false,
     transport: '',
     tags: [],
-    applyPreferencesAutomatically: false,
   });
 
   protected readonly form = form(this.model);
@@ -68,7 +66,6 @@ export class TourPreferenceForm {
       hard: difficulties.includes('Hard'),
       transport: preferences?.preferredTransportMode ?? '',
       tags: allTags.map((tag) => ({ tag, selected: savedTags.includes(tag) })),
-      applyPreferencesAutomatically: preferences?.applyPreferencesAutomatically ?? false,
     });
     this.editing.set(true);
   }
@@ -90,7 +87,6 @@ export class TourPreferenceForm {
       difficulties,
       preferredTransportMode: model.transport === '' ? null : model.transport,
       tags: model.tags.filter((item) => item.selected).map((item) => item.tag),
-      applyPreferencesAutomatically: model.applyPreferencesAutomatically,
     });
   }
 }

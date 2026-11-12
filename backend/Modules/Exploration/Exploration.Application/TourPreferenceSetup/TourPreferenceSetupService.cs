@@ -24,14 +24,12 @@ public sealed class TourPreferenceSetupService
         var tourPreference = await _tourPreferenceRepository.GetByUserAsync(userId);
         if (tourPreference is null)
         {
-            tourPreference = new TourPreference(userId, dto.Difficulties, dto.PreferredTransportMode, dto.Tags,
-                dto.ApplyPreferencesAutomatically);
+            tourPreference = new TourPreference(userId, dto.Difficulties, dto.PreferredTransportMode, dto.Tags);
             _tourPreferenceRepository.Add(tourPreference);
         }
         else
         {
-            tourPreference.Update(dto.Difficulties, dto.PreferredTransportMode, dto.Tags,
-                dto.ApplyPreferencesAutomatically);
+            tourPreference.Update(dto.Difficulties, dto.PreferredTransportMode, dto.Tags);
         }
 
         await _unitOfWork.SaveChangesAsync();
