@@ -52,7 +52,8 @@ builder.Services
     .AddGamesModule(builder.Configuration)
     .AddSocialModule(builder.Configuration)
     .AddPaymentModule(builder.Configuration)
-    .AddImageStorage(builder.Configuration);
+    .AddImageStorage(builder.Configuration)
+    .AddImageCleanup(builder.Configuration);
 
 var app = builder.Build();
 
