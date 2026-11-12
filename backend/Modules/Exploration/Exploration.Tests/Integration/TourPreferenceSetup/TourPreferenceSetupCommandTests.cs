@@ -17,7 +17,7 @@ public class TourPreferenceSetupCommandTests : BaseIntegrationTest
     public async Task First_save_sets_up_the_users_preferences()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
-        var request = new SaveTourPreferenceDto([TourDifficulty.Hard], TransportMode.Bicycle, ["planina"], true);
+        var request = new SaveTourPreferenceDto([TourDifficulty.Hard], TransportMode.Bicycle, ["planina"]);
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var preferenceCountBefore = arrangeContext.TourPreferences.Count();
 
@@ -36,7 +36,7 @@ public class TourPreferenceSetupCommandTests : BaseIntegrationTest
     public async Task Saving_again_changes_the_existing_preferences_without_creating_a_second_set()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new SaveTourPreferenceDto([], null, ["vino"], false);
+        var request = new SaveTourPreferenceDto([], null, ["vino"]);
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var preferenceCountBefore = arrangeContext.TourPreferences.Count();
 
@@ -53,7 +53,7 @@ public class TourPreferenceSetupCommandTests : BaseIntegrationTest
     public async Task Preferences_without_any_criterion_are_not_saved()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
-        var request = new SaveTourPreferenceDto([], null, [], true);
+        var request = new SaveTourPreferenceDto([], null, []);
         using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
         var preferenceCountBefore = arrangeContext.TourPreferences.Count();
 
@@ -69,7 +69,7 @@ public class TourPreferenceSetupCommandTests : BaseIntegrationTest
     public async Task Anonymous_user_cannot_save_preferences()
     {
         var client = Factory.CreateClient();
-        var request = new SaveTourPreferenceDto([TourDifficulty.Easy], null, [], true);
+        var request = new SaveTourPreferenceDto([TourDifficulty.Easy], null, []);
 
         var response = await client.PutAsJsonAsync("/api/exploration/tour-preferences/mine", request);
 
@@ -80,7 +80,7 @@ public class TourPreferenceSetupCommandTests : BaseIntegrationTest
     public async Task Administrator_cannot_save_preferences()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var request = new SaveTourPreferenceDto([TourDifficulty.Easy], null, [], true);
+        var request = new SaveTourPreferenceDto([TourDifficulty.Easy], null, []);
 
         var response = await client.PutAsJsonAsync("/api/exploration/tour-preferences/mine", request);
 

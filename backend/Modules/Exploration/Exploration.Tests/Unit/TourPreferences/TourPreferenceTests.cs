@@ -10,12 +10,12 @@ namespace Exploration.Tests.Unit.TourPreferences;
 public class TourPreferenceTests
 {
     private static TourPreference CreatePreferences() =>
-        new(WellKnownUsers.Explorer, [TourDifficulty.Easy], TransportMode.Walking, ["istorija"], true);
+        new(WellKnownUsers.Explorer, [TourDifficulty.Easy], TransportMode.Walking, ["istorija"]);
 
     [Fact]
     public void Preferences_without_any_criterion_cannot_be_set_up()
     {
-        var creation = () => new TourPreference(WellKnownUsers.Explorer, [], null, [], true);
+        var creation = () => new TourPreference(WellKnownUsers.Explorer, [], null, []);
 
         creation.Should().Throw<DomainException>();
     }
@@ -25,7 +25,7 @@ public class TourPreferenceTests
     {
         var preferences = CreatePreferences();
 
-        var update = () => preferences.Update([], null, [], false);
+        var update = () => preferences.Update([], null, []);
 
         update.Should().Throw<DomainException>();
     }
@@ -33,7 +33,7 @@ public class TourPreferenceTests
     [Fact]
     public void Preferences_with_only_a_difficulty_are_valid()
     {
-        var creation = () => new TourPreference(WellKnownUsers.Explorer, [TourDifficulty.Hard], null, [], false);
+        var creation = () => new TourPreference(WellKnownUsers.Explorer, [TourDifficulty.Hard], null, []);
 
         creation.Should().NotThrow();
     }
@@ -41,7 +41,7 @@ public class TourPreferenceTests
     [Fact]
     public void Preferences_with_only_a_preferred_transport_mode_are_valid()
     {
-        var creation = () => new TourPreference(WellKnownUsers.Explorer, [], TransportMode.Bicycle, [], false);
+        var creation = () => new TourPreference(WellKnownUsers.Explorer, [], TransportMode.Bicycle, []);
 
         creation.Should().NotThrow();
     }
@@ -49,8 +49,16 @@ public class TourPreferenceTests
     [Fact]
     public void Preferences_with_only_a_tag_are_valid()
     {
-        var creation = () => new TourPreference(WellKnownUsers.Explorer, [], null, ["priroda"], false);
+        var creation = () => new TourPreference(WellKnownUsers.Explorer, [], null, ["priroda"]);
 
         creation.Should().NotThrow();
+    }
+
+    [Fact]
+    public void New_preferences_are_not_applied_automatically()
+    {
+        var preferences = new TourPreference(WellKnownUsers.Explorer, [TourDifficulty.Easy], null, []);
+
+        preferences.ApplyPreferencesAutomatically.Should().BeFalse();
     }
 }

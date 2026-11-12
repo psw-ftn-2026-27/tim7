@@ -6,7 +6,7 @@ namespace Exploration.Tests.Integration.Seeds;
 
 internal static class TourPreferenceSeed
 {
-    public static readonly TourPreference ExplorersPreferences = new(WellKnownUsers.Explorer, [TourDifficulty.Easy, TourDifficulty.Moderate], TransportMode.Walking, ["istorija", "priroda"], true);
+    public static readonly TourPreference ExplorersPreferences = new(WellKnownUsers.Explorer, [TourDifficulty.Easy, TourDifficulty.Moderate], TransportMode.Walking, ["istorija", "priroda"]);
 
     public static TourPreference[] All => [ExplorersPreferences];
 }
