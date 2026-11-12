@@ -52,6 +52,16 @@ public sealed class Blog : AggregateRoot
         Status = BlogStatus.Published;
     }
 
+    public void Archive()
+    {
+        if (Status != BlogStatus.Published)
+        {
+            throw new DomainException("Only a published blog can be archived.");
+        }
+
+        Status = BlogStatus.Archived;
+    }
+
     public void Edit(string title, string description, List<string>? images)
     {
         EnsureEditable();

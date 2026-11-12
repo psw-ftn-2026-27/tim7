@@ -67,9 +67,11 @@
           }
         </ul>
 
-        <button class="button button--primary" type="button" (click)="startEdit(blog)">
-          Edit
-        </button>
+        @if (blog.status !== 'Archived') {
+          <button class="button button--primary" type="button" (click)="startEdit(blog)">
+            Edit
+          </button>
+        }
       }
     }
   }

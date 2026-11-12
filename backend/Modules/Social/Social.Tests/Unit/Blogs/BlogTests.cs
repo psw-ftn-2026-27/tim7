@@ -18,6 +18,13 @@ public class BlogTests
         return blog;
     }
 
+    private static Blog CreateArchivedBlog()
+    {
+        var blog = CreatePublishedBlog();
+        blog.Archive();
+        return blog;
+    }
+
     [Fact]
     public void New_blog_starts_as_a_draft()
     {
@@ -71,6 +78,56 @@ public class BlogTests
     public void Published_blog_cannot_be_published_again()
     {
         var blog = CreatePublishedBlog();
+
+        var publishing = () => blog.Publish();
+
+        publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Published_blog_is_archived()
+    {
+        var blog = CreatePublishedBlog();
+
+        blog.Archive();
+
+        blog.Status.Should().Be(BlogStatus.Archived);
+    }
+
+    [Fact]
+    public void Draft_blog_cannot_be_archived()
+    {
+        var blog = CreateBlog();
+
+        var archiving = () => blog.Archive();
+
+        archiving.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_blog_cannot_be_edited()
+    {
+        var blog = CreateArchivedBlog();
+
+        var edit = () => blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", []);
+
+        edit.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_blog_cannot_be_commented_on()
+    {
+        var blog = CreateArchivedBlog();
+
+        var addition = () => blog.AddComment(WellKnownUsers.Administrator, "Odlična tura!");
+
+        addition.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_blog_cannot_be_published_again()
+    {
+        var blog = CreateArchivedBlog();
 
         var publishing = () => blog.Publish();
 
