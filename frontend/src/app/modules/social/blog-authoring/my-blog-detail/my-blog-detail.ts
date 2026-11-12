@@ -34,7 +34,7 @@ export class MyBlogDetail {
     this.form().reset({
       title: blog.title,
       description: blog.description,
-      images: blog.images.join(', '),
+      images: blog.images.join('\n'),
     });
     this.editing.set(true);
   }
@@ -47,7 +47,7 @@ export class MyBlogDetail {
       const images = this.form
         .images()
         .value()
-        .split(',')
+        .split('\n')
         .map((address) => address.trim())
         .filter((address) => address !== '');
       await this.blogAuthoring.edit(this.id(), {

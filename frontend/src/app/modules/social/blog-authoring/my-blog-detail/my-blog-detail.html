@@ -32,8 +32,8 @@
           </div>
 
           <div class="field">
-            <label for="images">Images (addresses separated by commas)</label>
-            <input id="images" type="text" [formField]="form.images" />
+            <label for="images">Image addresses, one per line</label>
+            <textarea id="images" rows="4" [formField]="form.images"></textarea>
           </div>
 
           @if (error()) {
