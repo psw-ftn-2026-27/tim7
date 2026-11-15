@@ -6,8 +6,13 @@
 //
 // A parameter is an identifier of the thing the event is about, a number, or a value from a
 // closed list. Never a name, an email, an account identifier or text the user typed.
+//
+// An event without parameters is typed Record<string, never>: the call passes {} and any
+// parameter is a compile error.
 export interface AnalyticsEvents {
+  tour_created: { tour_id: string };
   tour_published: { tour_id: string };
+  user_registered: Record<string, never>;
 }
 
 // The role sent with every event as the parameter `user_role`. The Analytics service adds it;

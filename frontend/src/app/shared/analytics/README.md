@@ -2,7 +2,7 @@
 
 Servis platformskog tima, `providedIn: 'root'`. Drži odluku korisnika o praćenju i, samo
 kada je korisnik pristao, šalje Google Analytics-u pregled svake stranice i događaje koje
-moduli zabeleže. Sa našim serverom ne razgovara: odluka se čita i upisuje u pregledaču, a
+stranice zabeleže. Sa našim serverom ne razgovara: odluka se čita i upisuje u pregledaču, a
 pregledi i događaji idu iz pregledača pravo Google-u.
 
 ```ts
@@ -76,12 +76,17 @@ Svi događaji i njihovi parametri popisani su na jednom mestu, u
 
 ```ts
 export interface AnalyticsEvents {
+  tour_created: { tour_id: string };
   tour_published: { tour_id: string };
+  user_registered: Record<string, never>;
 }
 ```
 
 Nov događaj je nov red u tom interfejsu. Datoteka je platformski kod, pa nov događaj ulazi
 kroz pull request koji pregleda platformski tim.
+
+Događaj bez parametara, kao `user_registered`, ima oblik `Record<string, never>`. Poziv je
+`record('user_registered', {})`, a svaki prosleđen parametar je greška pri prevođenju.
 
 Prevodilac odbija ime koje nije popisano i parametar koji nije popisan za to ime: greška
 se vidi u editoru i pri `npm run build`, pa takav kod ne stiže do korisnika.
@@ -218,8 +223,96 @@ aplikacije poslala i svoj `page_view`.
 
 Provera: u kartici Network pregledača filtrirati po `collect`. Pre pristanka nema nijednog
 zahteva ka Google-u, a posle pristanka ide tačno jedan `page_view` po stranici, sa
-parametrom `dp` jednakim putanji. Događaji koje moduli zabeleže idu ka istoj adresi; vidi
+parametrom `dp` jednakim putanji. Događaji koje stranice zabeleže idu ka istoj adresi; vidi
 „Provera novog događaja“.
+
+## Ključni događaji i izveštaj toka
+
+Uputstvo za platformski tim. Ovaj deo funkcionalnosti nije kod: uloga se prijavljuje i
+izveštaj se pravi ručno, u Google Analytics-u, i u repozitorijumu od toga ostaje samo ovaj
+opis. Po njemu izveštaj može ponovo da se napravi.
+
+**Napomena:** nazivi polja u dijalogu za dimenziju i u uređivaču koraka prepisani su sa
+živog interfejsa (novembar 2026). Putanje kroz menije i nazivi „Breakdown“ i „Share“ nisu
+provereni, pa mogu malo da se razlikuju od onoga što ovde piše.
+
+### Događaji koji se danas beleže
+
+| Događaj           | Gde se beleži                                             | Parametri                    |
+| ----------------- | --------------------------------------------------------- | ---------------------------- |
+| `page_view`       | Servis `Analytics`, posle svake završene navigacije       | `page_path`, `page_location` |
+| `tour_published`  | Stranica `MyTours`, kada server potvrdi objavljivanje     | `tour_id`                    |
+| `tour_created`    | Stranica `CreateTour`, kada server potvrdi pravljenje     | `tour_id`                    |
+| `user_registered` | Stranica `Register`, kada server potvrdi registraciju     | nema                         |
+
+Uz svaki od njih servis dodaje i `user_role`. Uz `user_registered` to je `explorer`, jer je
+korisnik u tom trenutku već prijavljen.
+
+### Uloga kao prilagođena dimenzija
+
+Servis uz svaki događaj šalje parametar `user_role`, ali Google Analytics po njemu deli
+izveštaje tek kada se parametar prijavi kao prilagođena dimenzija. Prijava se radi jednom,
+ručno, pre nego što podaci počnu da stižu:
+
+1. Admin → Data display → Custom definitions → otvoriti dijalog „New custom definition“.
+2. „Definition type“: Dimension.
+3. „Scope“: Event.
+4. „Event parameter name“: `user_role`.
+5. „Dimension name“: ime pod kojim će se videti u izveštajima, na primer `User role`, pa
+   „Save“.
+
+Prijava ne važi unazad: podaci koji su stigli pre nje ostaju bez uloge, pa se u izveštaju ne
+mogu podeliti po ulozi.
+
+### Izveštaj toka
+
+Izveštaj se pravi ručno, u delu Explore, kao „Funnel exploration“, sa tri koraka:
+
+| Korak | Ime koraka     | Uslovi                                                                               |
+| ----- | -------------- | ------------------------------------------------------------------------------------ |
+| 1     | „Naslovna“     | `page_view`, pa „And“: „Page path and screen class“ „exactly matches (=)“ `/`            |
+| 2     | „Registracija“ | `user_registered`                                                                    |
+| 3     | „Spisak tura“  | `page_view`, pa „And“: „Page path and screen class“ „exactly matches (=)“ `/exploration` |
+
+Koraci se zadaju u dijalogu „Edit funnel steps“. Putanja je drugi uslov u koraku, dodat
+dugmetom „And“ i izabran među ugrađenim dimenzijama. Dugme „Add parameter“ uz događaj nudi
+samo prilagođene parametre, pa `page_location` tamo ne postoji; ne treba ga prijavljivati
+kao novu definiciju. Između koraka ostaje „is indirectly followed by“.
+
+Putanja se zadaje kao tačno poklapanje, a ne kao „contains“: `/` je deo svake putanje, a
+`/exploration` je i početak adresa `/exploration/mine` i `/exploration/create`.
+
+Za svaki korak izveštaj pokazuje koliko je korisnika do njega stiglo i koliko je odustalo
+pre sledećeg. Da bi se isti brojevi videli po ulogama (`visitor`, `explorer`,
+`administrator`), u „Breakdown“ se stavlja prijavljena dimenzija uloge.
+
+Izveštaj se sačuva i podeli („Share“), da ostatak tima može da ga otvori.
+
+### Kada izveštaj treba ispraviti
+
+Uslovi koraka su u Google Analytics-u upisani kao običan tekst i sa kodom ih ništa ne
+povezuje. Izveštaj treba ispraviti kada se promeni:
+
+- ime događaja iz toka (`user_registered`),
+- adresa `/` ili adresa `/exploration`.
+
+Bez ispravke kod se i dalje prevodi i aplikacija radi isto, a izveštaj na tom koraku ćutke
+pokazuje nulu.
+
+### Provera posle podešavanja
+
+Platformski tim jednom, posle prijave dimenzije i pravljenja izveštaja, prođe ceo tok:
+
+1. Kao neprijavljen posetilac otvoriti naslovnu stranicu `/` i pristati na analitiku.
+2. Registrovati se na `/register`.
+3. Otvoriti spisak tura na `/exploration`.
+
+Zatim u izveštaju proveriti da se vide sva tri koraka i podela po ulozi.
+
+Izveštaji u delu Explore pokazuju podatke tek kada ih Google obradi, što može da potraje
+dan ili duže. Zato se izveštaj ne proverava odmah posle prolaska kroz tok. DebugView isti
+događaj pokazuje posle nekoliko sekundi, pa se njime odmah proverava da su događaji poslati;
+vidi „Provera novog događaja“.
 
 ## Platformsko odstupanje: pretplata na ruter, `document`, `window` i `isDevMode()`
 
