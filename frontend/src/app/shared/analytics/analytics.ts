@@ -101,7 +101,8 @@ export class Analytics {
     this.scriptAdded = true;
 
     gtag('js', new Date());
-    // Without send_page_view: false Google would record a page view of its own on load.
+    // Asks Google not to record a page view of its own on load. Google's tag can ignore this
+    // on-page setting, so the same parameter is also set on the tag itself; see the README.
     gtag('config', MEASUREMENT_ID, { send_page_view: false });
 
     const script = document.createElement('script');

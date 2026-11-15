@@ -67,9 +67,35 @@ Dok je ID prazan, servis ne učitava Google-ovu skriptu i ne šalje ništa, a od
 i stranica `/privacy` rade isto. Projekat nema produkciju, pa nema ni druge datoteke
 okruženja ni pravila zamene u `angular.json`.
 
-Pri otvaranju merenja u Google Analytics-u treba isključiti opciju „Page changes based on
-browser history events“ (Enhanced measurement → Page views). Inače Google sam beleži
-promenu adrese, pa bi se svaki pregled brojao dvaput.
+ID nije tajna: vidi ga svako ko otvori stranicu, pa sme da stoji u repozitorijumu.
+
+## Podešavanje u Google Analytics-u
+
+Servis sam šalje svaki `page_view`, pa Google ne sme da šalje nijedan svoj. To se ne
+postiže kodom, nego podešavanjem merenja, i radi se jednom, kada se merenje otvori. Bez
+ovih koraka pregledi se broje dvaput.
+
+U strimu (Admin → Data streams → strim → Enhanced measurement, zupčanik):
+
+1. Isključiti sve stavke osim „Page views“.
+2. U „Page views“ → „Show advanced settings“ isključiti „Page changes based on browser
+   history events“. Inače Google sam beleži svaku promenu adrese.
+
+Na Google oznaci (isti strim → „Configure tag settings“, što otvara Tag Manager):
+
+3. Settings → „Manage automatic event detection“: isključiti sve stavke.
+4. Settings → „Allow user-provided data capabilities“: isključiti. Inače oznaka na stranici
+   traži mejl, telefon i adresu, a lični podaci ne smeju da idu Google-u.
+5. Tags → Google oznaka sa ID-jem merenja → „Configuration settings“: dodati parametar
+   `send_page_view` sa vrednošću `false`, sačuvati i objaviti („Submit“).
+
+Korak 5 je neophodan iako servis isti parametar zadaje i iz koda: Google oznaka ima
+ugrađenu konfiguraciju i onu sa stranice odbacuje kao duplu, pa bi pri svakom učitavanju
+aplikacije poslala i svoj `page_view`.
+
+Provera: u kartici Network pregledača filtrirati po `collect`. Pre pristanka nema nijednog
+zahteva ka Google-u, a posle pristanka ide tačno jedan po stranici, sa parametrom `dp`
+jednakim putanji.
 
 ## Platformsko odstupanje: pretplata na ruter, `document` i `window`
 
