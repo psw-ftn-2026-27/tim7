@@ -34,7 +34,7 @@ frontend/src/
       util/
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
-      analytics/             analytics consent decision and page views         [platform]
+      analytics/             analytics consent decision, page views, events    [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -100,6 +100,9 @@ nothing.
 - The only legitimately shared state is the current user (identity, roles) in `core/`
   and the analytics consent decision in `shared/analytics`. Modules read them; only
   platform code writes them.
+- Modules record analytics events only through `Analytics` in `shared/analytics` and
+  never call Google Analytics directly. Event names and parameters are listed in
+  `shared/analytics/analytics-events.ts`, which is platform-owned.
 
 ## The Angular subset
 

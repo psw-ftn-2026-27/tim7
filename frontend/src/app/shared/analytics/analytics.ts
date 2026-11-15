@@ -1,6 +1,8 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, isDevMode, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { Auth } from '../../core/auth/auth';
+import { AnalyticsEvents, AnalyticsUserRole } from './analytics-events';
 
 const CONSENT_KEY = 'explorer.analytics-consent';
 const MEASUREMENT_ID = environment.analyticsMeasurementId;
@@ -28,10 +30,12 @@ const gtag: (...parameters: unknown[]) => void = function () {
 };
 
 // Platform-approved deviation from the Angular subset: this service subscribes to router
-// events (RxJS) and touches `document` and `window`. Modules must not copy this.
+// events (RxJS), touches `document` and `window`, and asks `isDevMode()` whether to write to
+// the console. Modules must not copy this.
 @Injectable({ providedIn: 'root' })
 export class Analytics {
   private readonly router = inject(Router);
+  private readonly auth = inject(Auth);
   private readonly decision = signal<AnalyticsConsent>(readStoredConsent());
 
   // The page on screen, set after every completed navigation. Null until the first one.
@@ -79,14 +83,57 @@ export class Analytics {
     }
   }
 
+  // Records an event listed in analytics-events.ts. Call it after the action has succeeded,
+  // not on click. The compiler rejects a name or a parameter that is not listed. The role and
+  // the consent check are added here, and the call never throws: the feature that records an
+  // event behaves the same whether recording works or not.
+  record<Name extends keyof AnalyticsEvents>(name: Name, parameters: AnalyticsEvents[Name]): void {
+    this.send(name, parameters);
+  }
+
   private sendPageView(): void {
-    if (this.decision() !== 'granted' || MEASUREMENT_ID === '' || this.currentPath === null) {
+    if (this.currentPath === null) {
       return;
     }
-    gtag('event', 'page_view', {
+    this.send('page_view', {
       page_path: this.currentPath,
       page_location: window.location.origin + this.currentPath,
     });
+  }
+
+  // The single path to Google: page views and recorded events both go through here.
+  private send(name: string, parameters: Record<string, unknown>): void {
+    try {
+      if (this.decision() !== 'granted') {
+        logInDevelopment(`Analytics event skipped (no consent): ${name}`);
+        return;
+      }
+      if (MEASUREMENT_ID === '') {
+        logInDevelopment(`Analytics event skipped (no measurement ID): ${name}`);
+        return;
+      }
+
+      // The role is written last, so nothing in the parameters can replace it.
+      const sent: Record<string, unknown> = { ...parameters, user_role: this.userRole() };
+      if (isDevMode()) {
+        // Makes the event show up in Google Analytics' DebugView.
+        sent['debug_mode'] = true;
+      }
+      gtag('event', name, sent);
+      logInDevelopment(`Analytics event sent: ${name}`, sent);
+    } catch (failure) {
+      // Recording must never disturb the feature that asked for it.
+      logInDevelopment(`Analytics event skipped (recording failed): ${name}`, failure);
+    }
+  }
+
+  // A user with both roles is recorded with the one that has more permissions.
+  private userRole(): AnalyticsUserRole {
+    const user = this.auth.user();
+    if (user === null) {
+      return 'visitor';
+    }
+    return user.roles.includes('administrator') ? 'administrator' : 'explorer';
   }
 
   // Loads Google's script the first time consent is given. Later calls only clear the opt-out.
@@ -132,6 +179,14 @@ function readStoredConsent(): AnalyticsConsent {
     // The browser storage is unavailable: there is no decision.
   }
   return 'undecided';
+}
+
+// One console line per event, for the team member checking a new event. Development only:
+// a production build writes nothing to the console for events.
+function logInDevelopment(...line: unknown[]): void {
+  if (isDevMode()) {
+    console.info(...line);
+  }
 }
 
 // The part after ? or # can carry personal data (a search term, an email), so it is dropped.
