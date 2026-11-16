@@ -10,9 +10,9 @@ public sealed record TourLength
 
     public TourLength(decimal kilometers)
     {
-        if (kilometers <= 0)
+        if (kilometers < 0)
         {
-            throw new DomainException("A tour length requires a positive number of kilometers.");
+            throw new DomainException("A tour length cannot be a negative number of kilometers.");
         }
         if (decimal.Round(kilometers, 1) != kilometers)
         {

@@ -18,10 +18,9 @@ public class TourLengthTests
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(-3)]
     [InlineData(7.55)]
-    public void Length_is_rejected_when_not_positive_or_with_more_than_one_decimal(double kilometers)
+    public void Length_is_rejected_when_negative_or_with_more_than_one_decimal(double kilometers)
     {
         var creation = () => new TourLength((decimal)kilometers);
 

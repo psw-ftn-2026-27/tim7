@@ -101,6 +101,68 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
+                    b.OwnsMany("Exploration.Domain.Tours.KeyPoint", "KeyPoints", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Description")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Image")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsPublic")
+                                .HasColumnType("boolean");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)");
+
+                            b1.Property<int>("Order")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Secret")
+                                .HasColumnType("text");
+
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("TourId");
+
+                            b1.ToTable("KeyPoints", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+
+                            b1.OwnsOne("Exploration.Domain.Tours.Location", "Location", b2 =>
+                                {
+                                    b2.Property<Guid>("KeyPointId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<double>("Latitude")
+                                        .HasColumnType("double precision");
+
+                                    b2.Property<double>("Longitude")
+                                        .HasColumnType("double precision");
+
+                                    b2.HasKey("KeyPointId");
+
+                                    b2.ToTable("KeyPoints", "exploration");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("KeyPointId");
+                                });
+
+                            b1.Navigation("Location")
+                                .IsRequired();
+                        });
+
                     b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>
                         {
                             b1.Property<Guid>("TourId")
@@ -159,6 +221,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourId");
                         });
+
+                    b.Navigation("KeyPoints");
 
                     b.Navigation("Length");
 
