@@ -56,14 +56,19 @@
             }
           </div>
 
-          <p>
-            Location:
-            @if (form.latitude().value() !== null && form.longitude().value() !== null) {
-              {{ form.latitude().value()?.toFixed(5) }}, {{ form.longitude().value()?.toFixed(5) }}
-            } @else {
-              <span class="meta">click the map to pick the location.</span>
+          <div class="field">
+            <p>
+              Location:
+              @if (form.latitude().value() !== null && form.longitude().value() !== null) {
+                {{ form.latitude().value()?.toFixed(5) }}, {{ form.longitude().value()?.toFixed(5) }}
+              } @else {
+                <span class="meta">not picked yet</span>
+              }
+            </p>
+            @for (message of form.latitude().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
             }
-          </p>
+          </div>
 
           <app-image-picker
             (filesChange)="imageFiles.set($event)"
