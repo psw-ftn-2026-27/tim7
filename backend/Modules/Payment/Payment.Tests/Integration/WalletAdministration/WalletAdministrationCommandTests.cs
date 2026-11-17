@@ -61,6 +61,76 @@ public class WalletAdministrationCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Administrator_reverses_a_deposit_within_24_hours_and_it_is_stored_as_reversed_and_the_balance_is_reduced()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var deposit = WalletSeed.FundedWallet.Transactions[0];
+
+        var response = await client.PostAsync($"/api/payment/wallets/{WalletSeed.FundedWallet.UserId}/deposits/{deposit.Id}/reversal", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        var stored = assertContext.Wallets.Include(wallet => wallet.Transactions).Single(wallet => wallet.Id == WalletSeed.FundedWallet.Id);
+        stored.Transactions.Single(transaction => transaction.Id == deposit.Id).IsReversed.Should().BeTrue();
+        stored.Balance().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Reversing_a_deposit_that_is_already_reversed_is_rejected_and_nothing_changes()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var wallet = WalletSeed.WalletWithReversedAndActiveDeposits;
+        var reversedDeposit = wallet.Transactions[0];
+        var activeDeposit = wallet.Transactions[1];
+
+        var response = await client.PostAsync($"/api/payment/wallets/{wallet.UserId}/deposits/{reversedDeposit.Id}/reversal", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        var stored = assertContext.Wallets.Include(w => w.Transactions).Single(w => w.Id == wallet.Id);
+        stored.Transactions.Single(transaction => transaction.Id == reversedDeposit.Id).IsReversed.Should().BeTrue();
+        stored.Transactions.Single(transaction => transaction.Id == activeDeposit.Id).IsReversed.Should().BeFalse();
+        stored.Balance().Should().Be(20);
+    }
+
+    [Fact]
+    public async Task Reversing_a_deposit_of_a_user_without_a_wallet_is_rejected_as_not_found_and_nothing_changes()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var deposit = WalletSeed.FundedWallet.Transactions[0];
+        using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
+        var reversedCountBefore = arrangeContext.Set<Transaction>().Count(transaction => transaction.IsReversed);
+
+        var response = await client.PostAsync($"/api/payment/wallets/{WellKnownUsers.SecondExplorer}/deposits/{deposit.Id}/reversal", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.Set<Transaction>().Count(transaction => transaction.IsReversed).Should().Be(reversedCountBefore);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_reverse_a_deposit()
+    {
+        var client = Factory.CreateClient();
+        var deposit = WalletSeed.FundedWallet.Transactions[0];
+
+        var response = await client.PostAsync($"/api/payment/wallets/{WalletSeed.FundedWallet.UserId}/deposits/{deposit.Id}/reversal", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_reverse_a_deposit()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var deposit = WalletSeed.FundedWallet.Transactions[0];
+
+        var response = await client.PostAsync($"/api/payment/wallets/{WalletSeed.FundedWallet.UserId}/deposits/{deposit.Id}/reversal", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_deposit()
     {
         var client = Factory.CreateClient();

@@ -12,4 +12,10 @@ export class WalletAdministration {
   async deposit(userId: string, dto: DepositDto): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${BASE_URL}/${userId}/deposits`, dto));
   }
+
+  async reverse(userId: string, transactionId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${BASE_URL}/${userId}/deposits/${transactionId}/reversal`, null),
+    );
+  }
 }

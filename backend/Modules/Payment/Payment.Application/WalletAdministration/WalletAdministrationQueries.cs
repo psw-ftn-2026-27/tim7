@@ -7,12 +7,19 @@ namespace Payment.Application.WalletAdministration;
 public sealed class WalletAdministrationQueries
 {
     private readonly IWalletRepository _walletRepository;
+    private readonly IWalletReadRepository _walletReadRepository;
     private readonly IMapper _mapper;
 
-    public WalletAdministrationQueries(IWalletRepository walletRepository, IMapper mapper)
+    public WalletAdministrationQueries(IWalletRepository walletRepository, IWalletReadRepository walletReadRepository, IMapper mapper)
     {
         _walletRepository = walletRepository;
+        _walletReadRepository = walletReadRepository;
         _mapper = mapper;
+    }
+
+    public Task<List<UserDepositDto>> GetUserDepositsAsync(Guid userId)
+    {
+        return _walletReadRepository.GetDepositsByUserAsync(userId);
     }
 
     public async Task<PageResult<UserBalanceDto>> GetUsersWithBalancesAsync(int page, int pageSize)
