@@ -13,3 +13,15 @@
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 }
+
+// A row of buttons or links that sit side by side, such as a form's submit and cancel.
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+// A form or card on its own, narrower than the page and centred in it.
+.narrow {
+  margin-inline: auto;
+  max-width: var(--form-width);
+}
