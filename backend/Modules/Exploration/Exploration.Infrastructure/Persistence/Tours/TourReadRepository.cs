@@ -1,3 +1,4 @@
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
@@ -18,6 +19,40 @@ internal sealed class TourReadRepository : ITourReadRepository
     public Task<List<TourDto>> GetByAuthorAsync(Guid authorId)
     {
         return ProjectToDtos(_dbContext.Tours.Where(tour => tour.AuthorId == authorId)).ToListAsync();
+    }
+
+    public Task<AuthorTourDto?> GetAuthorTourAsync(Guid tourId, Guid authorId)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId && tour.AuthorId == authorId)
+            .Select(tour => new AuthorTourDto(
+                tour.Id,
+                tour.AuthorId,
+                tour.Name,
+                tour.Description,
+                tour.Difficulty,
+                tour.Tags,
+                tour.Status,
+                tour.PublishedAt,
+                tour.ArchivedAt,
+                new RecommendedGroupSizeDto(tour.RecommendedGroupSize.From, tour.RecommendedGroupSize.To),
+                tour.Length == null ? null : new TourLengthDto(tour.Length.Kilometers),
+                tour.TransportTimes
+                    .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
+                    .ToList(),
+                tour.KeyPoints
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => new KeyPointDto(
+                        keyPoint.Id,
+                        keyPoint.Order,
+                        keyPoint.Name,
+                        keyPoint.Description,
+                        keyPoint.Image,
+                        new LocationDto(keyPoint.Location.Latitude, keyPoint.Location.Longitude),
+                        keyPoint.Secret,
+                        keyPoint.IsPublic))
+                    .ToList()))
+            .FirstOrDefaultAsync();
     }
 
     public async Task<PageResult<TourDto>> GetPublishedAsync(TourSearchDto search, int page, int pageSize)

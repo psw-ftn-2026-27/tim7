@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using Exploration.Api;
@@ -8,6 +9,7 @@ using Host.Api;
 using Identity.Api;
 using Identity.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Payment.Api;
@@ -58,6 +60,15 @@ builder.Services
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Form values (the multipart image uploads) are parsed with the request culture;
+// fixing it to the invariant culture makes "45.25" mean the same on every machine.
+app.UseRequestLocalization(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+    options.SupportedCultures = [CultureInfo.InvariantCulture];
+    options.SupportedUICultures = [CultureInfo.InvariantCulture];
+});
 
 app.UseStaticFiles(new StaticFileOptions
 {

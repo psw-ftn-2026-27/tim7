@@ -1,0 +1,151 @@
+<div class="stack">
+  <p><a routerLink="/exploration/mine">Back to my tours</a></p>
+
+  @if (tour.isLoading()) {
+    <p>Loading tour...</p>
+  } @else if (tour.statusCode() === 404) {
+    <p class="error">This tour was not found.</p>
+  } @else if (tour.error()) {
+    <p class="error">Could not load the tour. Log in and try again.</p>
+  } @else {
+    @if (tour.value(); as current) {
+      <h1>{{ current.name }}</h1>
+
+      <p class="meta">{{ current.status }} · {{ current.difficulty }}</p>
+
+      <p>{{ current.description }}</p>
+
+      <p>
+        Length:
+        @if (current.length) {
+          {{ current.length.kilometers }} km
+        } @else {
+          <span class="meta">not available</span>
+        }
+      </p>
+
+      <app-map
+        [pins]="pins()"
+        [showPath]="true"
+        [picking]="formOpen()"
+        [initialLocation]="initialLocation()"
+        (locationPicked)="onLocationPicked($event)"
+      />
+
+      @if (formOpen()) {
+        <form class="card stack" (submit)="save($event)">
+          <h2>{{ editing() ? 'Edit key point' : 'Add key point' }}</h2>
+
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" [formField]="form.name" />
+            @if (form.name().touched()) {
+              @for (message of form.name().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" rows="4" [formField]="form.description"></textarea>
+            @if (form.description().touched()) {
+              @for (message of form.description().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <p>
+            Location:
+            @if (form.latitude().value() !== null && form.longitude().value() !== null) {
+              {{ form.latitude().value()?.toFixed(5) }}, {{ form.longitude().value()?.toFixed(5) }}
+            } @else {
+              <span class="meta">click the map to pick the location.</span>
+            }
+          </p>
+
+          <app-image-picker
+            (filesChange)="imageFiles.set($event)"
+            (validChange)="imagesValid.set($event)"
+          />
+          @if (editing()) {
+            <p class="meta">Without a new image the key point keeps its current one.</p>
+          }
+          @if (tooManyImages()) {
+            <p class="error">A key point has exactly one image; keep only one.</p>
+          }
+
+          <div class="field">
+            <label for="secret">Secret (optional)</label>
+            <textarea id="secret" rows="2" [formField]="form.secret"></textarea>
+          </div>
+
+          <label><input type="checkbox" [formField]="form.isPublic" /> Visible without purchase</label>
+
+          @if (formError()) {
+            <p class="error">{{ formError() }}</p>
+          }
+
+          <button class="button button--primary" type="submit" [disabled]="!canSave()">
+            Save
+          </button>
+        </form>
+      }
+
+      <h2>Key points</h2>
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      <ol class="key-points">
+        @for (point of current.keyPoints; track point.id) {
+          <li class="card key-point">
+            <img [src]="point.image" [alt]="point.name" />
+            <div class="stack">
+              <h3>{{ point.order }}. {{ point.name }}</h3>
+              <p>{{ point.description }}</p>
+              @if (point.secret) {
+                <p><span class="meta">Secret:</span> {{ point.secret }}</p>
+              }
+              <p class="meta">
+                {{ point.isPublic ? 'Visible without purchase' : 'Visible after purchase' }}
+              </p>
+              @if (current.status === 'Draft') {
+                <div class="actions">
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="startEdit(point)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="remove(point)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="meta">This tour has no key points yet.</li>
+        }
+      </ol>
+
+      @if (current.status === 'Draft') {
+        <p>
+          <button class="button button--primary" type="button" (click)="startAdd()">
+            Add key point
+          </button>
+        </p>
+      }
+    }
+  }
+</div>

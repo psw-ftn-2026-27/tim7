@@ -50,6 +50,7 @@
             <td>{{ tour.publishedAt }}</td>
             <td>{{ tour.archivedAt }}</td>
             <td class="actions">
+              <a [routerLink]="['/exploration/mine', tour.id]">Key points</a>
               <button class="button" type="button" (click)="select(tour.id)">Add time</button>
               @if (tour.status === 'Draft') {
                 <button
