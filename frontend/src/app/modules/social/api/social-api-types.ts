@@ -19,18 +19,6 @@ export interface BlogDto {
   comments: CommentDto[];
 }
 
-export interface CreateBlogDto {
-  title: string;
-  description: string;
-  images: string[] | null;
-}
-
-export interface EditBlogDto {
-  title: string;
-  description: string;
-  images: string[] | null;
-}
-
 export interface CreateCommentDto {
   text: string;
 }

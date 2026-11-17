@@ -7,6 +7,14 @@
 
   <div class="description" [innerHTML]="descriptionHtml()"></div>
 
+  @if (blog().images.length > 0) {
+    <div class="thumbnails">
+      @for (image of blog().images; track $index) {
+        <img [src]="image" [alt]="blog().title" />
+      }
+    </div>
+  }
+
   <p class="meta">Status: {{ blog().status }}</p>
 
   <p class="meta">Comments: {{ blog().comments.length }}</p>

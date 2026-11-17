@@ -19,6 +19,14 @@
 
       <div [innerHTML]="descriptionHtml()"></div>
 
+      @if (blog.images.length > 0) {
+        <ul class="gallery">
+          @for (image of blog.images; track $index) {
+            <li><img [src]="image" [alt]="blog.title" /></li>
+          }
+        </ul>
+      }
+
       <p class="meta">Status: {{ blog.status }}</p>
 
       <app-blog-comments

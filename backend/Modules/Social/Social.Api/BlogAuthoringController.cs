@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Api;
+using Shared.Api.Images;
 using Social.Application.BlogAuthoring;
 using Social.Application.Blogs;
 
@@ -22,9 +24,15 @@ public sealed class BlogAuthoringController : ControllerBase
         _authoringQueries = authoringQueries;
     }
 
+    // Multipart form: the files cannot travel in JSON, so the action binds the form fields and builds the DTO from them.
     [HttpPost]
-    public async Task<ActionResult<BlogDto>> Create(CreateBlogDto dto)
+    [RequestSizeLimit(ImageUploadLimits.MaxRequestBytes)]
+    public async Task<ActionResult<BlogDto>> Create(
+        [FromForm] string title,
+        [FromForm] string description,
+        [FromForm] List<IFormFile> images)
     {
+        var dto = new CreateBlogDto(title, description, await ReadImagesAsync(images));
         return await _authoringService.CreateAsync(User.GetUserId(), dto);
     }
 
@@ -43,8 +51,15 @@ public sealed class BlogAuthoringController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult> Edit(Guid id, EditBlogDto dto)
+    [RequestSizeLimit(ImageUploadLimits.MaxRequestBytes)]
+    public async Task<ActionResult> Edit(
+        Guid id,
+        [FromForm] string title,
+        [FromForm] string description,
+        [FromForm] List<string> keptImages,
+        [FromForm] List<IFormFile> newImages)
     {
+        var dto = new EditBlogDto(title, description, keptImages, await ReadImagesAsync(newImages));
         await _authoringService.EditAsync(id, User.GetUserId(), dto);
         return NoContent();
     }
@@ -59,5 +74,17 @@ public sealed class BlogAuthoringController : ControllerBase
     public async Task<ActionResult<BlogDto>> GetMineById(Guid id)
     {
         return await _authoringQueries.GetOwnedByIdAsync(id, User.GetUserId());
+    }
+
+    // Part of binding the request: each uploaded file is read and copied into the module's own DTO.
+    private static async Task<List<ImageUploadDto>> ReadImagesAsync(List<IFormFile> files)
+    {
+        var images = new List<ImageUploadDto>();
+        foreach (var file in files)
+        {
+            var uploaded = await ImageUploadReader.ReadAsync(file);
+            images.Add(new ImageUploadDto(uploaded.FileName, uploaded.Content, uploaded.Width, uploaded.Height));
+        }
+        return images;
     }
 }

@@ -22,11 +22,17 @@
       }
     </div>
 
+    <app-image-picker (filesChange)="images.set($event)" (validChange)="imagesValid.set($event)" />
+
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+    <button
+      class="button button--primary"
+      type="submit"
+      [disabled]="!form().valid() || !imagesValid() || pending()"
+    >
       Create
     </button>
   </form>
