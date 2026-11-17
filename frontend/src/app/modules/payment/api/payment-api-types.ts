@@ -18,3 +18,11 @@ export interface UserBalanceDto {
 export interface DepositDto {
   amount: number;
 }
+
+export interface UserDepositDto {
+  id: string;
+  amount: number;
+  createdAt: string;
+  administratorId: string;
+  isReversed: boolean;
+}

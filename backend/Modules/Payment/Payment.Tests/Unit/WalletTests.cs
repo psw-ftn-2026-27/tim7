@@ -20,6 +20,52 @@ public class WalletTests
             .Which.AdministratorId.Should().Be(administratorId);
     }
 
+    [Fact]
+    public void Deposit_reversed_within_24_hours_is_marked_reversed_and_the_balance_is_reduced_by_its_amount()
+    {
+        var wallet = WalletWithDeposits(50, 30);
+        var deposit = wallet.Transactions[1];
+
+        wallet.ReverseDeposit(deposit.Id, DateTime.UtcNow);
+
+        deposit.IsReversed.Should().BeTrue();
+        wallet.Balance().Should().Be(50);
+    }
+
+    [Fact]
+    public void Deposit_reversed_25_hours_after_it_was_made_is_rejected()
+    {
+        var wallet = WalletWithDeposits(50);
+        var deposit = wallet.Transactions[0];
+
+        var reverse = () => wallet.ReverseDeposit(deposit.Id, deposit.CreatedAt.AddHours(25));
+
+        reverse.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Deposit_that_is_already_reversed_cannot_be_reversed_again()
+    {
+        var wallet = WalletWithDeposits(50, 30);
+        var deposit = wallet.Transactions[1];
+        wallet.ReverseDeposit(deposit.Id, DateTime.UtcNow);
+
+        var reverseAgain = () => wallet.ReverseDeposit(deposit.Id, DateTime.UtcNow);
+
+        reverseAgain.Should().Throw<DomainException>();
+    }
+
+    private static Wallet WalletWithDeposits(params int[] amounts)
+    {
+        var wallet = new Wallet(Guid.NewGuid());
+        foreach (var amount in amounts)
+        {
+            wallet.Deposit(Guid.NewGuid(), amount);
+        }
+
+        return wallet;
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
