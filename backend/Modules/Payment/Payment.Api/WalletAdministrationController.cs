@@ -34,4 +34,17 @@ public sealed class WalletAdministrationController : ControllerBase
         await _administrationService.DepositAsync(userId, deposit.Amount, User.GetUserId());
         return NoContent();
     }
+
+    [HttpGet("{userId:guid}/deposits")]
+    public async Task<ActionResult<List<UserDepositDto>>> GetUserDeposits(Guid userId)
+    {
+        return await _administrationQueries.GetUserDepositsAsync(userId);
+    }
+
+    [HttpPost("{userId:guid}/deposits/{transactionId:guid}/reversal")]
+    public async Task<ActionResult> ReverseDeposit(Guid userId, Guid transactionId)
+    {
+        await _administrationService.ReverseDepositAsync(userId, transactionId);
+        return NoContent();
+    }
 }

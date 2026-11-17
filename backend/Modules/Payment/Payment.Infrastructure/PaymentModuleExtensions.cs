@@ -20,6 +20,7 @@ public static class PaymentModuleExtensions
         services.AddAutoMapper(mapper => mapper.AddProfile<PaymentMapperProfile>());
 
         services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<IWalletReadRepository, WalletReadRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<PaymentDbContext>());
 
         services.AddScoped<WalletOpeningService>();

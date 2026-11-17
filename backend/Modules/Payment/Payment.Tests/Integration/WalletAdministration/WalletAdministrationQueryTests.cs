@@ -25,6 +25,41 @@ public class WalletAdministrationQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Administrator_sees_the_reversed_and_the_non_reversed_deposits_of_a_user()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var wallet = WalletSeed.WalletWithReversedAndActiveDeposits;
+        var reversedDeposit = wallet.Transactions[0];
+        var activeDeposit = wallet.Transactions[1];
+
+        var deposits = await client.GetFromJsonAsync<List<UserDepositDto>>($"/api/payment/wallets/{wallet.UserId}/deposits", JsonOptions);
+
+        deposits.Should().Contain(deposit => deposit.Id == reversedDeposit.Id && deposit.Amount == 30 && deposit.IsReversed);
+        deposits.Should().Contain(deposit => deposit.Id == activeDeposit.Id && deposit.Amount == 20 && !deposit.IsReversed);
+        deposits.Should().OnlyContain(deposit => deposit.AdministratorId == WellKnownUsers.Administrator);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_read_the_deposits_of_a_user()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.GetAsync($"/api/payment/wallets/{WalletSeed.FundedWallet.UserId}/deposits");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_read_the_deposits_of_a_user()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.GetAsync($"/api/payment/wallets/{WalletSeed.FundedWallet.UserId}/deposits");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_read_users_with_balances()
     {
         var client = Factory.CreateClient();

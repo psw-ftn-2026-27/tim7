@@ -37,6 +37,63 @@
   }
 
   @if (selectedUserId()) {
+    <h2>Deposits</h2>
+    <p class="meta">User {{ selectedUserId() }}</p>
+
+    @if (reverseError()) {
+      <p class="error">{{ reverseError() }}</p>
+    }
+
+    @if (deposits.error()) {
+      <p class="error">Could not load the deposits.</p>
+    } @else if (deposits.isLoading() && !deposits.hasValue()) {
+      <p>Loading deposits...</p>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Time</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Administrator</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (deposit of deposits.value() ?? []; track deposit.id) {
+            <tr>
+              <td>{{ formatTime(deposit.createdAt) }}</td>
+              <td>{{ deposit.amount }} EC</td>
+              <td>{{ deposit.administratorId }}</td>
+              <td>
+                @if (deposit.isReversed) {
+                  <span class="meta">reversed</span>
+                } @else {
+                  <span class="meta">active</span>
+                }
+              </td>
+              <td>
+                @if (!deposit.isReversed) {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="reverse(deposit.id)"
+                  >
+                    Reverse
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">This user has no deposits yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
     <form class="card stack" (submit)="deposit($event)">
       <h2>Deposit EC</h2>
       <p class="meta">User {{ selectedUserId() }}</p>

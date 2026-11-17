@@ -26,4 +26,17 @@ public sealed class WalletAdministrationService
 
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task ReverseDepositAsync(Guid userId, Guid transactionId)
+    {
+        var wallet = await _walletRepository.GetByUserIdAsync(userId);
+        if (wallet is null)
+        {
+            throw new NotFoundException("The user has no wallet.");
+        }
+
+        wallet.ReverseDeposit(transactionId, DateTime.UtcNow);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
 }
