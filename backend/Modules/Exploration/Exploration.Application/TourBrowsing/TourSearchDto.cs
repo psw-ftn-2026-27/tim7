@@ -9,4 +9,6 @@ public sealed record TourSearchDto(
     TransportMode? Transport,
     int? MinPrice,
     int? MaxPrice,
+    decimal? MinLength,
+    decimal? MaxLength,
     TourSort? SortBy);

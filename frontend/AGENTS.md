@@ -132,6 +132,8 @@ construct means adding a lesson, so treat it as a platform decision.
   after a command.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
+- Repetition (a check every few seconds): `repeatEvery` from `shared/util`, called in the
+  page's constructor. Never `setInterval`, `interval` or `timer` in module code.
 
 ## Styling
 
