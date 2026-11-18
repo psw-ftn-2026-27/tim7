@@ -30,6 +30,8 @@
               <td>
                 @if (transaction.isReversed) {
                   <span class="meta">reversed</span>
+                } @else {
+                  <span class="meta">active</span>
                 }
               </td>
             </tr>

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
+using Shared.Infrastructure.Images;
 using Social.Application;
 using Social.Application.BlogAuthoring;
 using Social.Application.BlogCommenting;
@@ -8,7 +9,9 @@ using Social.Application.BlogReading;
 using Social.Application.ClubBrowsing;
 using Social.Application.Blogs;
 using Social.Application.ClubManagement;
+using Social.Application.ClubMembership;
 using Social.Application.Clubs;
+using Social.Infrastructure.Images;
 using Social.Infrastructure.Persistence;
 using Social.Infrastructure.Persistence.Blogs;
 using Social.Infrastructure.Persistence.Clubs;
@@ -28,6 +31,8 @@ public static class SocialModuleExtensions
         services.AddScoped<IBlogReadRepository, BlogReadRepository>();
         services.AddScoped<IClubRepository, ClubRepository>();
         services.AddScoped<IClubReadRepository, ClubReadRepository>();
+        services.AddScoped<IImageStore, SocialImageStore>();
+        services.AddScoped<IImageUsage, SocialImageUsage>();
 
         services.AddScoped<BlogAuthoringService>();
         services.AddScoped<BlogAuthoringQueries>();
@@ -36,6 +41,8 @@ public static class SocialModuleExtensions
         services.AddScoped<ClubManagementService>();
         services.AddScoped<ClubManagementQueries>();
         services.AddScoped<ClubBrowsingQueries>();
+        services.AddScoped<ClubMembershipService>();
+        services.AddScoped<ClubMembershipQueries>();
 
         return services;
     }

@@ -18,7 +18,7 @@ public class IdentityApiTests : BaseIntegrationTest
         var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
         var unknownId = Guid.Parse("00000000-0000-0000-0009-000000000001");
 
-        var users = await identityApi.GetUsersAsync([WellKnownUsers.Explorer, UserSeed.Administrator.Id, unknownId]);
+        var users = await identityApi.GetUsersByIdsAsync([WellKnownUsers.Explorer, UserSeed.Administrator.Id, unknownId]);
 
         users.Should().BeEquivalentTo([
             new UserSummary(WellKnownUsers.Explorer, UserSeed.Explorer.UserName!),

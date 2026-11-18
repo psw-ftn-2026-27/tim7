@@ -31,10 +31,21 @@
             }
           </div>
 
-          <div class="field">
-            <label for="images">Image addresses, one per line</label>
-            <textarea id="images" rows="4" [formField]="form.images"></textarea>
-          </div>
+          @if (keptImages().length > 0) {
+            <ul class="gallery">
+              @for (image of keptImages(); track image) {
+                <li>
+                  <img [src]="image" [alt]="blog.title" />
+                  <button class="button" type="button" (click)="removeImage(image)">Remove</button>
+                </li>
+              }
+            </ul>
+          }
+
+          <app-image-picker
+            (filesChange)="newImages.set($event)"
+            (validChange)="newImagesValid.set($event)"
+          />
 
           @if (error()) {
             <p class="error">{{ error() }}</p>
@@ -43,7 +54,7 @@
           <button
             class="button button--primary"
             type="submit"
-            [disabled]="!form().valid() || pending()"
+            [disabled]="!form().valid() || !newImagesValid() || pending()"
           >
             Save changes
           </button>
@@ -59,13 +70,15 @@
 
         <div [innerHTML]="descriptionHtml()"></div>
 
-        <ul>
-          @for (image of blog.images; track $index) {
-            <li>{{ image }}</li>
-          } @empty {
-            <li class="meta">No images.</li>
-          }
-        </ul>
+        @if (blog.images.length > 0) {
+          <ul class="gallery">
+            @for (image of blog.images; track $index) {
+              <li><img [src]="image" [alt]="blog.title" /></li>
+            }
+          </ul>
+        } @else {
+          <p class="meta">No images.</p>
+        }
 
         @if (blog.status !== 'Archived') {
           <button class="button button--primary" type="button" (click)="startEdit(blog)">

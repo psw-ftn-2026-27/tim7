@@ -25,7 +25,7 @@ internal static class TourSeed
 
         PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"], new RecommendedGroupSize(2, 6));
         PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
-        PublishedVineyards.AddKeyPoint("Trg Branka Radičevića", "Polazna tačka ture, u centru Sremskih Karlovaca.", "/images/exploration/seed-trg-branka-radicevica.jpg", new Location(45.2025, 19.9339), null, true);
+        PublishedVineyards.AddKeyPoint("Trg Branka Radičevića", "Polazna tačka ture, u centru Sremskih Karlovaca.", "/images/exploration/seed-trg-branka-radicevica.jpg", new Location(45.2025, 19.9339), "Iza fontane je skriven ulaz u stari podrum.", true);
         PublishedVineyards.AddKeyPoint("Porodični podrum", "Degustacija bermeta u prvom podrumu.", "/images/exploration/seed-porodicni-podrum.jpg", new Location(45.1960, 19.9200), "Lozinka za popust je bermet.", false);
         PublishedVineyards.Publish(new TourPrice(true, null));
 

@@ -62,7 +62,8 @@ public sealed class Blog : AggregateRoot
         Status = BlogStatus.Archived;
     }
 
-    public void Edit(string title, string description, List<string>? images)
+    // keptImages are addresses the blog already has; addedImages are addresses of newly uploaded images.
+    public void Edit(string title, string description, List<string> keptImages, List<string> addedImages)
     {
         EnsureEditable();
         if (string.IsNullOrWhiteSpace(title))
@@ -73,10 +74,14 @@ public sealed class Blog : AggregateRoot
         {
             throw new DomainException("A blog requires a description.");
         }
+        if (keptImages.Any(image => !Images.Contains(image)))
+        {
+            throw new DomainException("Only images the blog already has can be kept.");
+        }
 
         Title = title;
         Description = description;
-        Images = images ?? [];
+        Images = [.. keptImages, .. addedImages];
         LastModifiedAt = DateTime.UtcNow;
     }
 

@@ -34,8 +34,7 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
-      Identity.Contracts/          IIdentityApi, the only part other modules
-                                   may reference                             [platform]
+      Identity.Contracts/          IIdentityApi, the module's only public surface [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -66,9 +65,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID and
-  resolve it through `Identity.Contracts`, which a module may reference like any other
-  module's `Contracts`.
+- No module references `Identity`. Other modules carry a `UserId` as a plain ID and, when
+  they need more about a user, ask `IIdentityApi` in `Identity.Contracts`, which follows
+  the same rules as any other `Contracts` project.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -92,16 +91,19 @@ platform decision. Do not change the version or add a license key.
 ## Identity
 
 Identity is a deliberate exception to the module structure: one platform-owned project
-that students use but never modify or reference. It holds ASP.NET Core Identity on the
+that students use but never modify or reference, plus `Identity.Contracts`, which other
+modules may reference like any other module's `Contracts`. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
 (`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
 `Connection` (following between users), with a `Following` use-case group that follows the
 application-layer patterns below; the details live in the project itself.
 
 Its public surface for other modules is the separate `Identity.Contracts` project with
-`IIdentityApi`: `GetUsersAsync` returns a `UserSummary` (ID and username) for each known
-ID and leaves unknown IDs out; `SearchExplorersAsync` finds at most ten explorers by part
-of the username. The username is the email address the user registered with. The
+`IIdentityApi`, whose methods return a `UserSummary` (ID and username): `GetUsersAsync`
+returns a page of users; `GetUsersByIdsAsync` returns one summary for each known ID and
+leaves unknown IDs out; `SearchExplorersAsync` finds at most ten explorers by part of the
+username; `UserExistsAsync` checks whether a user exists; `FindUserByEmailAsync` finds a
+user by e-mail. The username is the e-mail address the user registered with. The
 interface is implemented by `IdentityApi` in `Core/Users`.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are

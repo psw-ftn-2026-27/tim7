@@ -83,6 +83,25 @@ export interface SaveKeyPointDto {
   isPublic: boolean;
 }
 
+export interface PublicKeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: LocationDto;
+}
+
+export interface PublishedTourDto {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  length: TourLengthDto | null;
+  transportTimes: TransportTimeDto[];
+  keyPoints: PublicKeyPointDto[];
+}
+
 export interface TourPriceDto {
   isFree: boolean | null;
   amount: number | null;
