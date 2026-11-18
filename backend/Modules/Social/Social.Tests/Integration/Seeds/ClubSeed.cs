@@ -12,5 +12,15 @@ internal static class ClubSeed
     public static readonly Club BirdWatchers = new(WellKnownUsers.Explorer, "Posmatrači ptica", "Jutarnje posmatranje ptica na Koviljskom ritu.", ["https://example.com/kovilj.jpg"]);
     public static readonly Club SecondExplorersBirdWatchers = new(WellKnownUsers.SecondExplorer, "Posmatrači ptica", "Posmatranje ptica na Carskoj bari.", ["https://example.com/carska-bara.jpg"]);
 
-    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers];
+    public static readonly Club RunnersWithMemberAndPendingRequest;
+
+    static ClubSeed()
+    {
+        RunnersWithMemberAndPendingRequest = new(WellKnownUsers.Explorer, "Trkači Dunavskog parka", "Jutarnje trčanje kroz Dunavski park.", ["https://example.com/dunavski-park.jpg"]);
+        RunnersWithMemberAndPendingRequest.RequestToJoin(WellKnownUsers.Administrator);
+        RunnersWithMemberAndPendingRequest.AcceptRequest(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+        RunnersWithMemberAndPendingRequest.RequestToJoin(WellKnownUsers.SecondExplorer);
+    }
+
+    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest];
 }

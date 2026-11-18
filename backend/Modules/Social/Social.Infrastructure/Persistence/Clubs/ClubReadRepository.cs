@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
+using Social.Application.ClubMembership;
 using Social.Application.Clubs;
 using Social.Domain.Clubs;
 
@@ -37,6 +38,41 @@ internal sealed class ClubReadRepository : IClubReadRepository
             .ToListAsync();
 
         return new PageResult<ClubDto>(items, totalCount);
+    }
+
+    public async Task<ClubMembershipDto?> GetMembershipByIdAsync(Guid id, Guid userId)
+    {
+        var club = await _dbContext.Clubs
+            .Where(club => club.Id == id)
+            .Select(club => new ClubMembershipDto(
+                club.Id,
+                club.OwnerId,
+                club.Name,
+                club.Description,
+                club.Images,
+                club.Members
+                    .OrderBy(member => member.UserId)
+                    .Select(member => new ClubMemberDto(member.UserId, member.Role))
+                    .ToList(),
+                club.OwnerId == userId || club.Members.Any(member => member.UserId == userId)
+                    ? MembershipState.Member
+                    : club.JoinRequests.Any(request => request.UserId == userId)
+                        ? MembershipState.Pending
+                        : MembershipState.None,
+                club.JoinRequests.Select(request => request.UserId).ToList()))
+            .FirstOrDefaultAsync();
+        if (club is null)
+        {
+            return null;
+        }
+
+        var canSeeRequests = club.OwnerId == userId
+            || club.Members.Any(member => member.UserId == userId && member.Role == ClubRole.Moderator);
+        return club with
+        {
+            Members = [new ClubMemberDto(club.OwnerId, ClubRole.Owner), .. club.Members],
+            PendingRequests = canSeeRequests ? club.PendingRequests : null
+        };
     }
 
     private static IQueryable<ClubDto> ProjectToDtos(IQueryable<Club> clubs)
