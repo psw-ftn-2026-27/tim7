@@ -143,6 +143,18 @@ internal sealed class TourReadRepository : ITourReadRepository
             var transport = search.Transport.Value;
             tours = tours.Where(tour => tour.TransportTimes.Any(time => time.Transport == transport));
         }
+        // A free tour has no amount and counts as 0. A tour without a price is left out
+        // as soon as either bound is set.
+        if (search.MinPrice is not null)
+        {
+            var minPrice = search.MinPrice.Value;
+            tours = tours.Where(tour => tour.Price != null && (tour.Price.Amount ?? 0) >= minPrice);
+        }
+        if (search.MaxPrice is not null)
+        {
+            var maxPrice = search.MaxPrice.Value;
+            tours = tours.Where(tour => tour.Price != null && (tour.Price.Amount ?? 0) <= maxPrice);
+        }
 
         return tours;
     }
@@ -151,16 +163,31 @@ internal sealed class TourReadRepository : ITourReadRepository
     {
         // Difficulty is stored as text, so ordering by the column would be alphabetical
         // (Easy, Hard, Moderate). The rank spells out the intended order instead.
-        if (search.DifficultySort == SortDirection.Ascending)
+        if (search.SortBy == TourSort.DifficultyAscending)
         {
             return tours
                 .OrderBy(tour => tour.Difficulty == TourDifficulty.Easy ? 0 : tour.Difficulty == TourDifficulty.Moderate ? 1 : 2)
                 .ThenByDescending(tour => tour.PublishedAt);
         }
-        if (search.DifficultySort == SortDirection.Descending)
+        if (search.SortBy == TourSort.DifficultyDescending)
         {
             return tours
                 .OrderByDescending(tour => tour.Difficulty == TourDifficulty.Easy ? 0 : tour.Difficulty == TourDifficulty.Moderate ? 1 : 2)
+                .ThenByDescending(tour => tour.PublishedAt);
+        }
+        // A tour without a price goes last in both directions; a free tour counts as 0.
+        if (search.SortBy == TourSort.PriceAscending)
+        {
+            return tours
+                .OrderBy(tour => tour.Price == null)
+                .ThenBy(tour => tour.Price!.Amount ?? 0)
+                .ThenByDescending(tour => tour.PublishedAt);
+        }
+        if (search.SortBy == TourSort.PriceDescending)
+        {
+            return tours
+                .OrderBy(tour => tour.Price == null)
+                .ThenByDescending(tour => tour.Price!.Amount ?? 0)
                 .ThenByDescending(tour => tour.PublishedAt);
         }
 

@@ -82,11 +82,39 @@
     </div>
 
     <div class="field">
+      <label for="min-price-filter">Min price</label>
+      <input
+        id="min-price-filter"
+        type="number"
+        [formField]="form.minPrice"
+        (input)="backToFirstPage()"
+      />
+      @for (message of form.minPrice().errors(); track $index) {
+        <p class="error">{{ message.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="max-price-filter">Max price</label>
+      <input
+        id="max-price-filter"
+        type="number"
+        [formField]="form.maxPrice"
+        (input)="backToFirstPage()"
+      />
+      @for (message of form.maxPrice().errors(); track $index) {
+        <p class="error">{{ message.message }}</p>
+      }
+    </div>
+
+    <div class="field">
       <label for="sort-filter">Sort</label>
-      <select id="sort-filter" [formField]="form.difficultySort" (change)="backToFirstPage()">
+      <select id="sort-filter" [formField]="form.sortBy" (change)="backToFirstPage()">
         <option value="">No sorting</option>
-        <option value="Ascending">Difficulty ascending</option>
-        <option value="Descending">Difficulty descending</option>
+        <option value="DifficultyAscending">Difficulty ascending</option>
+        <option value="DifficultyDescending">Difficulty descending</option>
+        <option value="PriceAscending">Price ascending</option>
+        <option value="PriceDescending">Price descending</option>
       </select>
     </div>
   </div>
