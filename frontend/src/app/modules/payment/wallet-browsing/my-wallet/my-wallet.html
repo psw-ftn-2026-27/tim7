@@ -15,6 +15,7 @@
       <table class="table">
         <thead>
           <tr>
+            <th scope="col">Kind</th>
             <th scope="col">Amount</th>
             <th scope="col">Time</th>
             <th scope="col">Administrator</th>
@@ -24,9 +25,10 @@
         <tbody>
           @for (transaction of wallet.value()?.transactions ?? []; track $index) {
             <tr>
+              <td>{{ transaction.kind }}</td>
               <td>{{ transaction.amount }} EC</td>
               <td>{{ formatTime(transaction.createdAt) }}</td>
-              <td>{{ transaction.administratorId }}</td>
+              <td>{{ transaction.administratorId ?? '-' }}</td>
               <td>
                 @if (transaction.isReversed) {
                   <span class="meta">reversed</span>
