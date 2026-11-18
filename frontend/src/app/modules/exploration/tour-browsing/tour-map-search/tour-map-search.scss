@@ -1,7 +1,14 @@
+// The filters sit in one panel, in columns that line up at the bottom, as on the tour list.
+// The search button takes a whole row under them.
 .filters {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: end;
+  display: grid;
   gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.filters .search-action {
+  grid-column: 1 / -1;
 }
 
 .difficulties {
@@ -26,19 +33,20 @@
   gap: var(--space-1);
 }
 
-// The map takes the larger part of the row and the list of cards stays beside it.
-.map-search {
-  align-items: start;
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: 2fr 1fr;
-}
-
+// The map is the first thing on the page, across its whole width, with the results under it.
 app-map {
-  height: 36rem;
+  height: 28rem;
 }
 
 .pages {
   display: flex;
   gap: var(--space-4);
+}
+
+// Each card takes five rows of the grid and passes them on to its parts, so the same part
+// starts at the same height on every card in a row, as on the tour list.
+.grid > app-tour-card {
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
 }
