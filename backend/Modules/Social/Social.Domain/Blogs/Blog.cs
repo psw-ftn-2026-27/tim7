@@ -14,6 +14,8 @@ public sealed class Blog : AggregateRoot
     public DateTime? LastModifiedAt { get; private set; }
     private readonly List<Comment> _comments = [];
     public IReadOnlyList<Comment> Comments => _comments;
+    private readonly List<BlogVote> _votes = [];
+    public IReadOnlyList<BlogVote> Votes => _votes;
 
     private Blog()
     {
@@ -62,7 +64,8 @@ public sealed class Blog : AggregateRoot
         Status = BlogStatus.Archived;
     }
 
-    public void Edit(string title, string description, List<string>? images)
+    // keptImages are addresses the blog already has; addedImages are addresses of newly uploaded images.
+    public void Edit(string title, string description, List<string> keptImages, List<string> addedImages)
     {
         EnsureEditable();
         if (string.IsNullOrWhiteSpace(title))
@@ -73,10 +76,14 @@ public sealed class Blog : AggregateRoot
         {
             throw new DomainException("A blog requires a description.");
         }
+        if (keptImages.Any(image => !Images.Contains(image)))
+        {
+            throw new DomainException("Only images the blog already has can be kept.");
+        }
 
         Title = title;
         Description = description;
-        Images = images ?? [];
+        Images = [.. keptImages, .. addedImages];
         LastModifiedAt = DateTime.UtcNow;
     }
 
@@ -87,18 +94,41 @@ public sealed class Blog : AggregateRoot
         _comments.Add(new Comment(userId, text));
     }
 
-    public void UpdateComment(Guid commentId, Guid userId, string text)
+    public void UpdateComment(Guid commentId, Guid userId, string text, DateTime now)
     {
         EnsurePublished();
 
-        GetOwnComment(commentId, userId).Update(text);
+        GetOwnComment(commentId, userId).Update(text, now);
     }
 
-    public void DeleteComment(Guid commentId, Guid userId)
+    public void DeleteComment(Guid commentId, Guid userId, DateTime now)
     {
         EnsurePublished();
 
-        _comments.Remove(GetOwnComment(commentId, userId));
+        var comment = GetOwnComment(commentId, userId);
+        comment.EnsureWithinEditWindow(now);
+        _comments.Remove(comment);
+    }
+
+    public void Vote(Guid userId, BlogVoteType type)
+    {
+        if (Status != BlogStatus.Published)
+        {
+            throw new DomainException("Votes are allowed only on a published blog.");
+        }
+
+        var existing = _votes.FirstOrDefault(vote => vote.UserId == userId);
+        if (existing is null)
+        {
+            _votes.Add(new BlogVote(userId, type));
+            return;
+        }
+
+        _votes.Remove(existing);
+        if (existing.Type != type)
+        {
+            _votes.Add(new BlogVote(userId, type));
+        }
     }
 
     private void EnsurePublished()

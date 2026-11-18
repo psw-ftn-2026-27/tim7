@@ -7,4 +7,6 @@ public sealed record TourSearchDto(
     List<TourDifficulty>? Difficulties,
     List<string>? Tags,
     TransportMode? Transport,
-    SortDirection? DifficultySort);
+    int? MinPrice,
+    int? MaxPrice,
+    TourSort? SortBy);

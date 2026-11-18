@@ -19,6 +19,11 @@ public sealed class Wallet : AggregateRoot
 
     public void Deposit(Guid administratorId, int amount)
     {
+        if (administratorId == UserId)
+        {
+            throw new DomainException("An administrator cannot deposit to his own wallet.");
+        }
+
         _transactions.Add(new Transaction(amount, administratorId));
     }
 
@@ -36,6 +41,21 @@ public sealed class Wallet : AggregateRoot
         }
 
         transaction.Reverse(now);
+    }
+
+    public void Spend(Guid entityId, int amount, DateTime now)
+    {
+        if (amount > Balance())
+        {
+            throw new DomainException("There is not enough EC in the wallet.");
+        }
+
+        _transactions.Add(new Transaction(TransactionKind.Purchase, entityId, amount, now));
+    }
+
+    public void Earn(Guid entityId, int amount, DateTime now)
+    {
+        _transactions.Add(new Transaction(TransactionKind.Earning, entityId, amount, now));
     }
 
     public int Balance()

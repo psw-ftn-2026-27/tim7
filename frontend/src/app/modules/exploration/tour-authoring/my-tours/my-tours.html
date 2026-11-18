@@ -41,6 +41,11 @@
             } @else {
               Length not available
             }
+            @if (tour.isFree === true) {
+              · <strong>Free</strong>
+            } @else if (tour.isFree === false) {
+              · <strong>{{ tour.amount }} EC</strong>
+            }
           </p>
 
           <p class="meta dates">
@@ -154,6 +159,10 @@
           <label for="amount">Amount</label>
           <input id="amount" type="number" [formField]="priceForm.amount" />
         </div>
+      }
+
+      @if (publishError()) {
+        <p class="error">{{ publishError() }}</p>
       }
 
       <button class="button button--primary" type="submit" [disabled]="pending()">Publish</button>

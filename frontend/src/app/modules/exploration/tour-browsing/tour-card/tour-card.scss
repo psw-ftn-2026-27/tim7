@@ -15,8 +15,26 @@
   width: var(--space-5);
 }
 
-// Each part of the card keeps the same height on every card, so titles, descriptions and
-// tags line up across a row. Text that does not fit is cut with an ellipsis.
+// The whole card is a link to the tour, so its text keeps the card's colours. The link and
+// the card pass on the five rows they get from the tour list (title, description, details,
+// tags, times), so the same part starts at the same height on every card in a row.
+.tour-link {
+  color: inherit;
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+  text-decoration: none;
+}
+
+.tour-link:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.tour-link:hover .card {
+  border-color: var(--color-accent);
+}
+
 article {
   display: grid;
   grid-row: span 5;

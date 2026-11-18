@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
 using Exploration.Tests.Integration.Seeds;
@@ -115,7 +116,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficultySort=Ascending&pageSize=100", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?sortBy=DifficultyAscending&pageSize=100", JsonOptions);
 
         tours!.Items.Should().HaveCount(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
         tours.Items.Should().BeInAscendingOrder(tour => tour.Difficulty);
@@ -126,10 +127,36 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficultySort=Descending&pageSize=100", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?sortBy=DifficultyDescending&pageSize=100", JsonOptions);
 
         tours!.Items.Should().HaveCount(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
         tours.Items.Should().BeInDescendingOrder(tour => tour.Difficulty);
+    }
+
+    [Fact]
+    public async Task Tours_sorted_by_ascending_price_go_from_free_to_the_most_expensive_and_equal_prices_from_the_newest_published()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?sortBy=PriceAscending&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().HaveCount(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
+        tours.Items.Select(tour => tour.Amount ?? 0).Should().BeInAscendingOrder();
+        tours.Items.Where(tour => tour.Amount == 50).Should().HaveCount(2)
+            .And.BeInDescendingOrder(tour => tour.PublishedAt);
+    }
+
+    [Fact]
+    public async Task Tours_sorted_by_descending_price_go_from_the_most_expensive_to_free()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?sortBy=PriceDescending&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().HaveCount(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
+        tours.Items.Select(tour => tour.Amount ?? 0).Should().BeInDescendingOrder();
+        tours.Items.Where(tour => tour.Amount == 50).Should().HaveCount(2)
+            .And.BeInDescendingOrder(tour => tour.PublishedAt);
     }
 
     [Fact]
@@ -158,11 +185,112 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Tour_is_listed_when_its_price_is_within_the_range_including_both_bounds()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?minPrice=50&maxPrice=150", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedOldTownWalk.Id);
+    }
+
+    [Fact]
+    public async Task Price_range_with_only_one_bound_limits_the_tours_only_on_that_side()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?minPrice=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedOldTownWalk.Id);
+    }
+
+    [Fact]
+    public async Task Price_range_starting_at_zero_includes_a_free_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?minPrice=0&maxPrice=40", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedOldTownWalk.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_list_published_tours()
     {
         var client = Factory.CreateClient();
 
         var response = await client.GetAsync("/api/exploration/tours/published");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Explorer_gets_another_authors_published_tour_with_its_basic_data_and_only_its_public_key_points()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var seeded = TourSeed.PublishedVineyards;
+
+        var tour = await client.GetFromJsonAsync<PublishedTourDto>($"/api/exploration/tours/{seeded.Id}", JsonOptions);
+
+        tour!.Id.Should().Be(seeded.Id);
+        tour.Name.Should().Be(seeded.Name);
+        tour.Description.Should().Be(seeded.Description);
+        tour.Difficulty.Should().Be(seeded.Difficulty);
+        tour.Tags.Should().Equal(seeded.Tags);
+        tour.Length!.Kilometers.Should().Be(seeded.Length!.Kilometers);
+        tour.TransportTimes.Should().Equal(seeded.TransportTimes.Select(time => new TransportTimeDto(time.Transport, time.Minutes)));
+        tour.KeyPoints.Should().Equal(seeded.KeyPoints
+            .Where(keyPoint => keyPoint.IsPublic)
+            .Select(keyPoint => new PublicKeyPointDto(
+                keyPoint.Id,
+                keyPoint.Name,
+                keyPoint.Description,
+                keyPoint.Image,
+                new LocationDto(keyPoint.Location.Latitude, keyPoint.Location.Longitude))));
+    }
+
+    [Fact]
+    public async Task Public_key_point_of_a_published_tour_arrives_without_its_secret()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var seeded = TourSeed.PublishedVineyards;
+        var publicKeyPoint = seeded.KeyPoints.First(keyPoint => keyPoint.IsPublic && keyPoint.Secret is not null);
+
+        var body = await client.GetStringAsync($"/api/exploration/tours/{seeded.Id}");
+
+        body.Should().Contain(publicKeyPoint.Id.ToString());
+        body.Should().NotContain(publicKeyPoint.Secret!);
+    }
+
+    public static TheoryData<Guid> ToursThatAreNotPublished => new()
+    {
+        TourSeed.FortressWalk.Id,
+        TourSeed.ArchivedLakeside.Id,
+        Guid.NewGuid()
+    };
+
+    [Theory]
+    [MemberData(nameof(ToursThatAreNotPublished))]
+    public async Task Tour_in_preparation_archived_tour_and_missing_tour_are_not_found(Guid tourId)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{tourId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_view_a_published_tour()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.PublishedVineyards.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

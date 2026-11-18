@@ -6,11 +6,20 @@
 
   <div class="description" [innerHTML]="descriptionHtml()"></div>
 
+  @if (blog().images.length > 0) {
+    <div class="thumbnails">
+      @for (image of blog().images; track $index) {
+        <img [src]="image" [alt]="blog().title" />
+      }
+    </div>
+  }
+
   <div class="footer">
     <span class="comments">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /></svg>
       Comments: {{ blog().comments.length }}
     </span>
+    <span>Score: {{ blog().score }}</span>
     <span>Status: {{ blog().status }}</span>
     @if (blog().lastModifiedAt) {
       <span>Edited {{ blog().lastModifiedAt?.slice(0, 10) }}</span>

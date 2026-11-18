@@ -4,7 +4,11 @@ export type TourStatus = 'Draft' | 'Published' | 'Archived';
 
 export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
-export type SortDirection = 'Ascending' | 'Descending';
+export type TourSort =
+  | 'DifficultyAscending'
+  | 'DifficultyDescending'
+  | 'PriceAscending'
+  | 'PriceDescending';
 
 export interface TransportTimeDto {
   transport: TransportMode;
@@ -33,6 +37,8 @@ export interface TourDto {
   recommendedGroupSize: RecommendedGroupSizeDto;
   length: TourLengthDto | null;
   transportTimes: TransportTimeDto[];
+  isFree: boolean | null;
+  amount: number | null;
 }
 
 export interface CreateTourDto {
@@ -83,6 +89,25 @@ export interface SaveKeyPointDto {
   isPublic: boolean;
 }
 
+export interface PublicKeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: LocationDto;
+}
+
+export interface PublishedTourDto {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  length: TourLengthDto | null;
+  transportTimes: TransportTimeDto[];
+  keyPoints: PublicKeyPointDto[];
+}
+
 export interface TourPriceDto {
   isFree: boolean | null;
   amount: number | null;
@@ -110,5 +135,7 @@ export interface TourSearchDto {
   difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transport: TransportMode | null;
-  difficultySort: SortDirection | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  sortBy: TourSort | null;
 }

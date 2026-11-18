@@ -33,6 +33,14 @@ public sealed class ClubManagementService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task CloseAsync(Guid clubId, Guid ownerId)
+    {
+        var club = await GetOwnedClubAsync(clubId, ownerId);
+
+        club.Close(ownerId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task DeleteAsync(Guid clubId, Guid ownerId)
     {
         var club = await GetOwnedClubAsync(clubId, ownerId);

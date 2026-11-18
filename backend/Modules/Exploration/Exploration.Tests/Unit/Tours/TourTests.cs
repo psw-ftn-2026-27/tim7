@@ -117,6 +117,16 @@ public class TourTests
     }
 
     [Fact]
+    public void Published_tour_keeps_the_price_it_was_published_with()
+    {
+        var tour = CreatePublishableTour();
+
+        tour.Publish(new TourPrice(false, 50m));
+
+        tour.Price.Should().Be(new TourPrice(false, 50m));
+    }
+
+    [Fact]
     public void Tour_with_a_short_description_cannot_be_published()
     {
         var tour = CreateTour("Kratak opis.");
@@ -212,6 +222,18 @@ public class TourTests
         tour.Status.Should().Be(TourStatus.Published);
         tour.PublishedAt.Should().BeOnOrAfter(reactivationStart);
         tour.ArchivedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void Reactivated_tour_has_the_same_price_as_before_archiving()
+    {
+        var tour = CreatePublishableTour();
+        tour.Publish(new TourPrice(false, 50m));
+        tour.Archive();
+
+        tour.Reactivate();
+
+        tour.Price.Should().Be(new TourPrice(false, 50m));
     }
 
     [Fact]

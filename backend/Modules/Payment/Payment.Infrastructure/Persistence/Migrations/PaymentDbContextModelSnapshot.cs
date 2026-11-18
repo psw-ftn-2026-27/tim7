@@ -23,12 +23,51 @@ namespace Payment.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Payment.Domain.Carts.ShoppingCart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("ShoppingCarts", "payment");
+                });
+
+            modelBuilder.Entity("Payment.Domain.Tokens.PurchaseToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "EntityId")
+                        .IsUnique();
+
+                    b.ToTable("PurchaseTokens", "payment");
+                });
+
             modelBuilder.Entity("Payment.Domain.Wallets.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AdministratorId")
+                    b.Property<Guid?>("AdministratorId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Amount")
@@ -37,8 +76,18 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsReversed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Deposit");
 
                     b.Property<Guid>("WalletId")
                         .HasColumnType("uuid");
@@ -65,6 +114,46 @@ namespace Payment.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Wallets", "payment");
+                });
+
+            modelBuilder.Entity("Payment.Domain.Carts.ShoppingCart", b =>
+                {
+                    b.OwnsMany("Payment.Domain.Carts.OrderItem", "Items", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<Guid>("EntityId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)");
+
+                            b1.Property<Guid>("OwnerId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Price")
+                                .HasColumnType("integer");
+
+                            b1.Property<Guid>("ShoppingCartId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("ShoppingCartId");
+
+                            b1.ToTable("OrderItems", "payment");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShoppingCartId");
+                        });
+
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Payment.Domain.Wallets.Transaction", b =>

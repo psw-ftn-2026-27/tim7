@@ -22,6 +22,9 @@ internal static class TourConfiguration
 
         builder.OwnsOne(tour => tour.Length);
 
+        // A draft has no price, so the price columns allow null.
+        builder.OwnsOne(tour => tour.Price);
+
         builder.OwnsMany(tour => tour.TransportTimes, transportTimes =>
         {
             transportTimes.ToJson();

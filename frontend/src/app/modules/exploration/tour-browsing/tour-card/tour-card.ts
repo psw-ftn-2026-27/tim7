@@ -1,9 +1,11 @@
 import { Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TourDto } from '../../api/exploration-api-types';
 
 const EXCERPT_LENGTH = 150;
 
 @Component({
+  imports: [RouterLink],
   selector: 'app-tour-card',
   styleUrl: './tour-card.scss',
   templateUrl: './tour-card.html',

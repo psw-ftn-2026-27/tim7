@@ -12,13 +12,15 @@ nav {
   padding-block: var(--space-3);
 }
 
-nav a {
+nav a,
+footer a {
   color: var(--color-text-muted);
   font-weight: 500;
   text-decoration: none;
 }
 
-nav a:hover {
+nav a:hover,
+footer a:hover {
   color: var(--color-accent);
 }
 
@@ -52,7 +54,10 @@ nav a.brand {
   width: var(--space-5);
 }
 
-// Keeps the end of every page away from the bottom edge of the window.
-main {
-  padding-bottom: var(--space-6);
+// Unlike the header, the footer is on every page, for a visitor and a signed-in user alike.
+footer {
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-5);
+  padding-block: var(--space-4);
 }

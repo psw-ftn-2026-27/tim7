@@ -2,6 +2,9 @@ import { Component, input, output, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { CommentDto } from '../../api/social-api-types';
 
+// The server decides the 15-minute window; the page only hides the buttons by creation time.
+const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
 export interface CommentEdit {
   commentId: string;
   text: string;
@@ -36,6 +39,10 @@ export class BlogComments {
     event.preventDefault();
     this.addComment.emit(this.form.text().value());
     this.form().reset({ text: '' });
+  }
+
+  protected isWithinEditWindow(comment: CommentDto): boolean {
+    return Date.now() - new Date(comment.createdAt).getTime() < EDIT_WINDOW_MS;
   }
 
   protected startEdit(comment: CommentDto): void {

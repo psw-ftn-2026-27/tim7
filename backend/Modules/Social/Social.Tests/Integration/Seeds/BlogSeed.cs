@@ -11,6 +11,8 @@ internal static class BlogSeed
     public static readonly Blog PublishedRiverbank;
     public static readonly Blog CommentedMuseumVisit;
     public static readonly Blog ArchivedDanubeCruise;
+    public static readonly Blog VotedLakeTrip;
+    public static readonly Blog CommentedByDemoUsers;
 
     static BlogSeed()
     {
@@ -24,7 +26,19 @@ internal static class BlogSeed
         ArchivedDanubeCruise = new(WellKnownUsers.Explorer, "Krstarenje Dunavom", "Završen dnevnik jednodnevnog krstarenja od Novog Sada do Beočina.", []);
         ArchivedDanubeCruise.Publish();
         ArchivedDanubeCruise.Archive();
+
+        VotedLakeTrip = new(WellKnownUsers.Explorer, "Izlet na jezero", "Utisci sa celodnevnog izleta na Palićko jezero.", []);
+        VotedLakeTrip.Publish();
+        VotedLakeTrip.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+        VotedLakeTrip.Vote(WellKnownUsers.SecondExplorer, BlogVoteType.Upvote);
+        VotedLakeTrip.Vote(WellKnownUsers.Explorer, BlogVoteType.Downvote);
+
+        CommentedByDemoUsers = new(WellKnownUsers.Explorer, "Šetnja Dunavskim parkom", "Utisci sa jutarnje šetnje Dunavskim parkom.", []);
+        CommentedByDemoUsers.Publish();
+        CommentedByDemoUsers.AddComment(DemoUsers.Explorer1, "Lepa preporuka.");
+        CommentedByDemoUsers.AddComment(DemoUsers.Explorer2, "Prvi utisak.");
+        CommentedByDemoUsers.UpdateComment(CommentedByDemoUsers.Comments[1].Id, DemoUsers.Explorer2, "Dopunjen utisak.", DateTime.UtcNow);
     }
 
-    public static Blog[] All => [FortressImpressions, CityNotes, SecondExplorersDiary, PublishedRiverbank, CommentedMuseumVisit, ArchivedDanubeCruise];
+    public static Blog[] All => [FortressImpressions, CityNotes, SecondExplorersDiary, PublishedRiverbank, CommentedMuseumVisit, ArchivedDanubeCruise, VotedLakeTrip, CommentedByDemoUsers];
 }

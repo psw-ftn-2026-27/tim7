@@ -55,6 +55,43 @@ public class WalletTests
         reverseAgain.Should().Throw<DomainException>();
     }
 
+    [Fact]
+    public void Deposit_by_the_owner_of_the_wallet_is_rejected()
+    {
+        var userId = Guid.NewGuid();
+        var wallet = new Wallet(userId);
+
+        var deposit = () => wallet.Deposit(userId, 50);
+
+        deposit.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Purchase_cannot_be_reversed()
+    {
+        var wallet = WalletWithDeposits(50);
+        wallet.Spend(Guid.NewGuid(), 20, DateTime.UtcNow);
+        var purchase = wallet.Transactions[1];
+
+        var reverse = () => wallet.ReverseDeposit(purchase.Id, DateTime.UtcNow);
+
+        reverse.Should().Throw<DomainException>();
+        wallet.Balance().Should().Be(30);
+    }
+
+    [Fact]
+    public void Earning_cannot_be_reversed()
+    {
+        var wallet = new Wallet(Guid.NewGuid());
+        wallet.Earn(Guid.NewGuid(), 20, DateTime.UtcNow);
+        var earning = wallet.Transactions[0];
+
+        var reverse = () => wallet.ReverseDeposit(earning.Id, DateTime.UtcNow);
+
+        reverse.Should().Throw<DomainException>();
+        wallet.Balance().Should().Be(20);
+    }
+
     private static Wallet WalletWithDeposits(params int[] amounts)
     {
         var wallet = new Wallet(Guid.NewGuid());

@@ -3,14 +3,27 @@
     <div>
       <span class="badge badge--payment">Payment</span>
       <h1>Users and wallets</h1>
-      <p>Pick a user to see their deposits or add EC to their wallet.</p>
+      <p>Find a user by e-mail to see their deposits or add EC to their wallet.</p>
     </div>
   </div>
 
+  <form class="card stack" (submit)="search($event)">
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input id="email" type="text" [formField]="searchForm.email" />
+    </div>
+    <div class="actions">
+      <button class="button button--primary" type="submit">Search</button>
+      <button class="button" type="button" (click)="clearSearch()">Clear</button>
+    </div>
+  </form>
+
   @if (users.error()) {
     <p class="alert">Could not load the users.</p>
-  } @else if (users.isLoading()) {
+  } @else if (users.isLoading() && !users.hasValue()) {
     <p class="meta">Loading users...</p>
+  } @else if (searchedEmail() !== null && users.value()?.items?.length === 0) {
+    <p class="empty">No user with that e-mail</p>
   } @else {
     <div class="card">
       <table class="table">
@@ -24,19 +37,29 @@
         <tbody>
           @for (user of users.value()?.items ?? []; track user.userId) {
             <tr>
-              <td>{{ user.userId }}</td>
+              <td>{{ user.email }}</td>
               <td>{{ user.balance }} EC</td>
               <td>
-                <button class="button" type="button" (click)="select(user.userId)">Select</button>
+                <button class="button" type="button" (click)="select(user)">Select</button>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="3">No users have a wallet yet.</td>
+              <td colspan="3">No users found.</td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="actions">
+      <button class="button" type="button" [disabled]="page() <= 1" (click)="previousPage()">
+        Previous
+      </button>
+      <span class="meta">Page {{ page() }} of {{ lastPage() }}</span>
+      <button class="button" type="button" [disabled]="page() >= lastPage()" (click)="nextPage()">
+        Next
+      </button>
     </div>
   }
 
@@ -44,9 +67,9 @@
     <p>{{ success() }}</p>
   }
 
-  @if (selectedUserId()) {
+  @if (selectedUser(); as selected) {
     <h2>Deposits</h2>
-    <p class="meta">User {{ selectedUserId() }}</p>
+    <p class="meta">User {{ selected.email }}</p>
 
     @if (reverseError()) {
       <p class="error">{{ reverseError() }}</p>
@@ -106,7 +129,7 @@
 
     <form class="card stack" (submit)="deposit($event)">
       <h2>Deposit EC</h2>
-      <p class="meta">User {{ selectedUserId() }}</p>
+      <p class="meta">User {{ selected.email }}</p>
 
       @if (error()) {
         <p class="error">{{ error() }}</p>

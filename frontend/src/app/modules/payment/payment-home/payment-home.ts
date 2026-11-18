@@ -16,6 +16,7 @@ import { Auth } from '../../../core/auth/auth';
       </div>
       <nav class="subnav" aria-label="Payment pages">
         <a routerLink="/payment/wallet">My wallet</a>
+        <a routerLink="/payment/cart">My cart</a>
         @if (isAdministrator()) {
           <a routerLink="/payment/users">Users and wallets</a>
         }

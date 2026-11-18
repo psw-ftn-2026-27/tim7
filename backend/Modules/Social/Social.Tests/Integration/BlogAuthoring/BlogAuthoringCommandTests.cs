@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Shared.Tests;
-using Social.Application.BlogAuthoring;
 using Social.Application.Blogs;
 using Social.Domain.Blogs;
 using Social.Infrastructure.Persistence;
@@ -19,11 +18,11 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Explorer_creates_a_draft_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", ["https://example.com/slika.jpg"]);
+        using var request = CreateForm("Novi blog", "Opis novog bloga.", [CreatePng()]);
         using var arrangeContext = Factory.CreateContext<SocialDbContext>();
         var blogCountBefore = arrangeContext.Blogs.Count();
 
-        var response = await client.PostAsJsonAsync("/api/social/blogs", request);
+        var response = await client.PostAsync("/api/social/blogs", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var created = await response.Content.ReadFromJsonAsync<BlogDto>(JsonOptions);
@@ -32,7 +31,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
         assertContext.Blogs.Count().Should().Be(blogCountBefore + 1);
         var stored = assertContext.Blogs.Single(blog => blog.Id == created.Id);
         stored.Status.Should().Be(BlogStatus.Draft);
-        stored.Images.Should().ContainSingle().Which.Should().Be("https://example.com/slika.jpg");
+        stored.Images.Should().ContainSingle().Which.Should().StartWith("/images/social/");
         stored.Comments.Should().BeEmpty();
     }
 
@@ -40,11 +39,11 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Explorer_cannot_create_a_blog_without_a_title()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new CreateBlogDto("   ", "Opis novog bloga.", []);
+        using var request = CreateForm("   ", "Opis novog bloga.", []);
         using var arrangeContext = Factory.CreateContext<SocialDbContext>();
         var blogCountBefore = arrangeContext.Blogs.Count();
 
-        var response = await client.PostAsJsonAsync("/api/social/blogs", request);
+        var response = await client.PostAsync("/api/social/blogs", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<SocialDbContext>();
@@ -55,9 +54,9 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Anonymous_user_cannot_create_a_blog()
     {
         var client = Factory.CreateClient();
-        var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", []);
+        using var request = CreateForm("Novi blog", "Opis novog bloga.", []);
 
-        var response = await client.PostAsJsonAsync("/api/social/blogs", request);
+        var response = await client.PostAsync("/api/social/blogs", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -66,9 +65,9 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Administrator_cannot_create_a_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", []);
+        using var request = CreateForm("Novi blog", "Opis novog bloga.", []);
 
-        var response = await client.PostAsJsonAsync("/api/social/blogs", request);
+        var response = await client.PostAsync("/api/social/blogs", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -162,16 +161,18 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Author_edits_their_own_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new EditBlogDto("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/nova.jpg"]);
+        using var request = EditForm("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/tvrdjava.jpg"], [CreatePng()]);
 
-        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
+        var response = await client.PutAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<SocialDbContext>();
         var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.FortressImpressions.Id);
         stored.Title.Should().Be("Novi utisci sa tvrđave");
         stored.Description.Should().Be("Dopunjen opis obilaska.");
-        stored.Images.Should().ContainSingle().Which.Should().Be("https://example.com/nova.jpg");
+        stored.Images.Should().HaveCount(2);
+        stored.Images[0].Should().Be("https://example.com/tvrdjava.jpg");
+        stored.Images[1].Should().StartWith("/images/social/");
         stored.LastModifiedAt.Should().NotBeNull();
     }
 
@@ -179,9 +180,9 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Explorer_cannot_edit_another_authors_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
-        var request = new EditBlogDto("Tuđa izmena", "Izmena tuđeg bloga.", []);
+        using var request = EditForm("Tuđa izmena", "Izmena tuđeg bloga.", [], []);
 
-        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
+        var response = await client.PutAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         using var assertContext = Factory.CreateContext<SocialDbContext>();
@@ -194,9 +195,9 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Author_cannot_save_a_blog_without_a_title()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new EditBlogDto("   ", "Dopunjen opis obilaska.", []);
+        using var request = EditForm("   ", "Dopunjen opis obilaska.", [], []);
 
-        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
+        var response = await client.PutAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<SocialDbContext>();
@@ -209,9 +210,9 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Anonymous_user_cannot_edit_a_blog()
     {
         var client = Factory.CreateClient();
-        var request = new EditBlogDto("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", []);
+        using var request = EditForm("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", [], []);
 
-        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
+        var response = await client.PutAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -220,10 +221,49 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Administrator_cannot_edit_a_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var request = new EditBlogDto("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", []);
+        using var request = EditForm("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", [], []);
 
-        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
+        var response = await client.PutAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    // A minimal PNG header of 1 x 1 px; the server reads the format and the dimensions from it.
+    private static byte[] CreatePng()
+    {
+        byte[] content = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, .."IHDR"u8, 0, 0, 0, 1, 0, 0, 0, 1];
+        return content;
+    }
+
+    private static MultipartFormDataContent CreateForm(string title, string description, List<byte[]> images)
+    {
+        var form = new MultipartFormDataContent
+        {
+            { new StringContent(title), "title" },
+            { new StringContent(description), "description" }
+        };
+        foreach (var image in images)
+        {
+            form.Add(new ByteArrayContent(image), "images", "slika.png");
+        }
+        return form;
+    }
+
+    private static MultipartFormDataContent EditForm(string title, string description, List<string> keptImages, List<byte[]> newImages)
+    {
+        var form = new MultipartFormDataContent
+        {
+            { new StringContent(title), "title" },
+            { new StringContent(description), "description" }
+        };
+        foreach (var address in keptImages)
+        {
+            form.Add(new StringContent(address), "keptImages");
+        }
+        foreach (var image in newImages)
+        {
+            form.Add(new ByteArrayContent(image), "images", "nova.png");
+        }
+        return form;
     }
 }
