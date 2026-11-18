@@ -1,12 +1,17 @@
 using Games.Application;
+using Games.Application.LocationChallengeAuthoring;
+using Games.Application.LocationChallenges;
 using Games.Application.SocialChallengeAuthoring;
 using Games.Application.SocialChallengeLifecycle;
 using Games.Application.SocialChallenges;
+using Games.Infrastructure.Images;
 using Games.Infrastructure.Persistence;
+using Games.Infrastructure.Persistence.LocationChallenges;
 using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
+using Shared.Infrastructure.Images;
 
 namespace Games.Infrastructure;
 
@@ -22,9 +27,16 @@ public static class GamesModuleExtensions
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
         services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
 
+        services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
+        services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
+        services.AddScoped<IImageStore, GamesImageStore>();
+        services.AddScoped<IImageUsage, GamesImageUsage>();
+
         services.AddScoped<SocialChallengeAuthoringService>();
         services.AddScoped<SocialChallengeAuthoringQueries>();
         services.AddScoped<SocialChallengeLifecycleService>();
+        services.AddScoped<LocationChallengeAuthoringService>();
+        services.AddScoped<LocationChallengeAuthoringQueries>();
 
         return services;
     }

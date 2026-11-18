@@ -1,0 +1,27 @@
+<div class="stack">
+  <h1>Lokacijski izazovi</h1>
+
+  <p><a routerLink="/games/location-challenges/create">Novi izazov</a></p>
+
+  @if (challenges.isLoading()) {
+    <p>Učitavanje izazova...</p>
+  } @else if (challenges.error()) {
+    <p class="error">Izazove nije moguće učitati.</p>
+  } @else {
+    <div class="grid">
+      @for (challenge of challenges.value(); track challenge.id) {
+        <article class="card stack">
+          <h3>{{ challenge.name }}</h3>
+          <p class="meta">
+            Početna lokacija: {{ challenge.startLocation.latitude.toFixed(5) }},
+            {{ challenge.startLocation.longitude.toFixed(5) }}
+          </p>
+          <p class="meta">XP: {{ challenge.xp }}</p>
+          <p class="meta">Skrivene tačke: {{ challenge.hiddenPointCount }}</p>
+        </article>
+      } @empty {
+        <p>Nema lokacijskih izazova.</p>
+      }
+    </div>
+  }
+</div>

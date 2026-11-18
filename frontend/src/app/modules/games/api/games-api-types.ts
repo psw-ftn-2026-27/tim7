@@ -22,6 +22,30 @@ export interface CreateSocialChallengeDto {
   exitMessage: string;
 }
 
+export interface LocationDto {
+  latitude: number;
+  longitude: number;
+}
+
+export interface LocationChallengeDto {
+  id: string;
+  name: string;
+  startLocation: LocationDto;
+  xp: number;
+  hiddenPointCount: number;
+}
+
+export interface HiddenPointDto {
+  location: LocationDto | null;
+}
+
+export interface CreateLocationChallengeDto {
+  name: string;
+  xp: number;
+  startLocation: LocationDto | null;
+  hiddenPoints: HiddenPointDto[] | null;
+}
+
 export interface UpdateSocialChallengeDto {
   name: string;
   start: string;
