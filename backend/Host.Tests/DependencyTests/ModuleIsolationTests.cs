@@ -30,4 +30,11 @@ public class ModuleIsolationTests : BaseArchitectureTests
             AssertNoDependency(assembly, "Identity");
         }
     }
+
+    [Fact]
+    public void Identity_contracts_depend_on_nothing()
+    {
+        AssertNoDependency("Identity.Contracts",
+            "Identity", "Shared.Domain", "Shared.Api", "Shared.Infrastructure");
+    }
 }

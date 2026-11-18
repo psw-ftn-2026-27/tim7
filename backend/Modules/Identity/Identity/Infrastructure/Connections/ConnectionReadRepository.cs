@@ -1,6 +1,7 @@
 using Identity.Core;
 using Identity.Core.Connections;
 using Identity.Core.Following;
+using Identity.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
 
@@ -31,13 +32,9 @@ internal sealed class ConnectionReadRepository : IConnectionReadRepository
     private IQueryable<ApplicationUser> FindOtherExplorers(Guid userId, string email)
     {
         var normalizedEmail = email.ToUpperInvariant();
-        var explorerIds = _dbContext.UserRoles
-            .Join(_dbContext.Roles.Where(role => role.Name == "explorer"),
-                userRole => userRole.RoleId, role => role.Id, (userRole, role) => userRole.UserId);
 
-        return _dbContext.Users
+        return _dbContext.Explorers()
             .Where(user => user.Id != userId
-                && explorerIds.Contains(user.Id)
                 && user.NormalizedEmail!.Contains(normalizedEmail))
             .OrderBy(user => user.Email);
     }
