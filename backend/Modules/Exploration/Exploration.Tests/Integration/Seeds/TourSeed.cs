@@ -33,14 +33,14 @@ internal static class TourSeed
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
         PublishedMonasteries.AddKeyPoint("Krušedol", "Prvi manastir na turi.", "/images/exploration/seed-krusedol.jpg", new Location(45.1192, 19.9431), null, true);
         PublishedMonasteries.AddKeyPoint("Grgeteg", "Drugi manastir na turi.", "/images/exploration/seed-grgeteg.jpg", new Location(45.1408, 19.8956), null, false);
-        PublishedMonasteries.Publish(new TourPrice(true, null));
+        PublishedMonasteries.Publish(new TourPrice(false, 150m));
 
         PublishedBikeRideToPetrovaradin = new(WellKnownUsers.SecondExplorer, "Biciklom do Petrovaradina", "Vožnja kreće sa Keja žrtava racije, prelazi Varadinski most i penje se do Petrovaradinske tvrđave, uz obilazak Sahat kule i povratak kroz Podgrađe.", TourDifficulty.Easy, ["grad", "istorija"], new RecommendedGroupSize(1, 6));
         PublishedBikeRideToPetrovaradin.AddTransportTime(TransportMode.Bicycle, 40);
         PublishedBikeRideToPetrovaradin.AddTransportTime(TransportMode.Walking, 120);
         PublishedBikeRideToPetrovaradin.AddKeyPoint("Kej žrtava racije", "Polazna tačka vožnje.", "/images/exploration/seed-kej.jpg", new Location(45.2510, 19.8550), null, true);
         PublishedBikeRideToPetrovaradin.AddKeyPoint("Sahat kula", "Cilj vožnje, na vrhu tvrđave.", "/images/exploration/seed-sahat-kula.jpg", new Location(45.2532, 19.8614), null, false);
-        PublishedBikeRideToPetrovaradin.Publish(new TourPrice(true, null));
+        PublishedBikeRideToPetrovaradin.Publish(new TourPrice(false, 50m));
 
         PublishedOldTownWalk = new(WellKnownUsers.SecondExplorer, "Peške kroz staro jezgro", "Šetnja vodi od Trga slobode, kroz Zmaj Jovinu i Dunavsku ulicu, pored Vladičanskog dvora i Saborne crkve, do Dunavskog parka i Muzeja Vojvodine.", TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 15));
         PublishedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
