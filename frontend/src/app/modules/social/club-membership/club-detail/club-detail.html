@@ -11,6 +11,10 @@
     @if (detail.value(); as club) {
       <h1>{{ club.name }}</h1>
 
+      @if (club.status === 'Closed') {
+        <p class="meta">Closed</p>
+      }
+
       <p>{{ club.description }}</p>
 
       @if (club.images.length > 0) {
@@ -21,26 +25,28 @@
         </div>
       }
 
-      @switch (club.myState) {
-        @case ('None') {
-          <p>
-            <button
-              class="button button--primary"
-              type="button"
-              [disabled]="pending()"
-              (click)="requestToJoin()"
-            >
-              Request to join
-            </button>
-          </p>
-        }
-        @case ('Pending') {
-          <p class="request">
-            Your join request is waiting for an answer.
-            <button class="button" type="button" [disabled]="pending()" (click)="withdrawRequest()">
-              Withdraw request
-            </button>
-          </p>
+      @if (club.status === 'Active') {
+        @switch (club.myState) {
+          @case ('None') {
+            <p>
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="requestToJoin()"
+              >
+                Request to join
+              </button>
+            </p>
+          }
+          @case ('Pending') {
+            <p class="request">
+              Your join request is waiting for an answer.
+              <button class="button" type="button" [disabled]="pending()" (click)="withdrawRequest()">
+                Withdraw request
+              </button>
+            </p>
+          }
         }
       }
 
@@ -55,7 +61,7 @@
           <tr>
             <th scope="col">User</th>
             <th scope="col">Role</th>
-            @if (club.myRole === 'Owner' || club.myRole === 'Moderator') {
+            @if (club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')) {
               <th scope="col">Actions</th>
             }
           </tr>
@@ -65,7 +71,7 @@
             <tr>
               <td>{{ member.userId }}</td>
               <td>{{ member.role }}</td>
-              @if (club.myRole === 'Owner' || club.myRole === 'Moderator') {
+              @if (club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')) {
                 <td>
                   <div class="actions">
                     @if (confirmingId() === member.userId) {
@@ -125,48 +131,50 @@
         </tbody>
       </table>
 
-      @if (club.pendingRequests; as requests) {
-        <h2>Pending join requests</h2>
+      @if (club.status === 'Active') {
+        @if (club.pendingRequests; as requests) {
+          <h2>Pending join requests</h2>
 
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">User</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (userId of requests; track userId) {
+          <table class="table">
+            <thead>
               <tr>
-                <td>{{ userId }}</td>
-                <td>
-                  <div class="actions">
-                    <button
-                      class="button button--primary"
-                      type="button"
-                      [disabled]="pending()"
-                      (click)="acceptRequest(userId)"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      class="button"
-                      type="button"
-                      [disabled]="pending()"
-                      (click)="rejectRequest(userId)"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </td>
+                <th scope="col">User</th>
+                <th scope="col">Actions</th>
               </tr>
-            } @empty {
-              <tr>
-                <td colspan="2">No pending join requests.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (userId of requests; track userId) {
+                <tr>
+                  <td>{{ userId }}</td>
+                  <td>
+                    <div class="actions">
+                      <button
+                        class="button button--primary"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="acceptRequest(userId)"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="rejectRequest(userId)"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="2">No pending join requests.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
       }
     }
   }

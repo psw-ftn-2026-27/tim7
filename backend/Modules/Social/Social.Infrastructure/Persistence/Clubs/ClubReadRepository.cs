@@ -52,6 +52,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
                 club.Name,
                 club.Description,
                 club.Images,
+                club.Status,
                 club.Members
                     .OrderBy(member => member.UserId)
                     .Select(member => new ClubMemberDto(member.UserId, member.Role))
@@ -76,6 +77,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
                 club.OwnerId,
                 club.Name,
                 club.Description,
-                club.Images));
+                club.Images,
+                club.Status));
     }
 }

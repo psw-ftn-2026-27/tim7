@@ -48,4 +48,15 @@ public class ClubMembershipQueryTests : BaseIntegrationTest
         club!.MyRole.Should().Be(ClubRole.Moderator);
         club.PendingRequests.Should().Contain(WellKnownUsers.Administrator);
     }
+
+    [Fact]
+    public async Task Page_of_a_closed_club_shows_that_it_is_closed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var club = await client.GetFromJsonAsync<ClubMembershipDto>(
+            $"/api/social/clubs/{ClubSeed.ClosedKayakers.Id}", JsonOptions);
+
+        club!.Status.Should().Be(ClubStatus.Closed);
+    }
 }

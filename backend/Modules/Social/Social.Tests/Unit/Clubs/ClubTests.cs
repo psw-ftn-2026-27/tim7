@@ -28,6 +28,13 @@ public class ClubTests
         return club;
     }
 
+    private static Club CreateClosedClubWithModeratorAndMember()
+    {
+        var club = CreateClubWithModeratorAndMember();
+        club.Close(WellKnownUsers.Explorer);
+        return club;
+    }
+
     [Theory]
     [InlineData("", "Vikend ture po stazama Fruške gore.")]
     [InlineData("   ", "Vikend ture po stazama Fruške gore.")]
@@ -297,5 +304,97 @@ public class ClubTests
 
         removing.Should().Throw<NotFoundException>();
         club.OwnerId.Should().Be(WellKnownUsers.Explorer);
+    }
+
+    [Fact]
+    public void Owner_closes_the_club_and_no_request_stays_pending()
+    {
+        var club = CreateClub();
+        club.RequestToJoin(WellKnownUsers.SecondExplorer);
+
+        club.Close(WellKnownUsers.Explorer);
+
+        club.Status.Should().Be(ClubStatus.Closed);
+        club.JoinRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void User_who_is_not_the_owner_cannot_close_the_club()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var closing = () => club.Close(WellKnownUsers.SecondExplorer);
+
+        closing.Should().Throw<DomainException>();
+        club.Status.Should().Be(ClubStatus.Active);
+    }
+
+    [Fact]
+    public void Closed_club_cannot_be_closed_again()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var closing = () => club.Close(WellKnownUsers.Explorer);
+
+        closing.Should().Throw<DomainException>();
+        club.Status.Should().Be(ClubStatus.Closed);
+    }
+
+    [Fact]
+    public void Nobody_can_request_to_join_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+        var userId = Guid.NewGuid();
+
+        var requesting = () => club.RequestToJoin(userId);
+
+        requesting.Should().Throw<DomainException>();
+        club.HasPendingRequest(userId).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Owner_cannot_promote_a_member_of_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var promoting = () => club.PromoteToModerator(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+
+        promoting.Should().Throw<DomainException>();
+        club.Members.Should().ContainSingle(member =>
+            member.UserId == WellKnownUsers.Administrator && member.Role == ClubRole.Member);
+    }
+
+    [Fact]
+    public void Owner_cannot_transfer_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var transferring = () => club.TransferOwnership(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        transferring.Should().Throw<DomainException>();
+        club.OwnerId.Should().Be(WellKnownUsers.Explorer);
+    }
+
+    [Fact]
+    public void Owner_cannot_remove_a_member_of_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var removing = () => club.RemoveMember(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+
+        removing.Should().Throw<DomainException>();
+        club.IsMember(WellKnownUsers.Administrator).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Owner_changes_the_name_description_and_images_of_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        club.Update("Planinari i šetači", "Ture i šetnje po Fruškoj gori.", ["https://example.com/vidikovac.jpg"]);
+
+        club.Name.Should().Be("Planinari i šetači");
+        club.Description.Should().Be("Ture i šetnje po Fruškoj gori.");
+        club.Images.Should().Equal("https://example.com/vidikovac.jpg");
     }
 }
