@@ -1,10 +1,16 @@
 <div class="stack">
-  <h1>Buy a tour</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--payment">Payment</span>
+      <h1>Buy a tour</h1>
+      <p>Add the tour to your cart and pay for it there.</p>
+    </div>
+  </div>
 
   @if (offer.error()) {
-    <p class="error">Could not load the tour.</p>
+    <p class="alert">Could not load the tour.</p>
   } @else if (offer.isLoading() && !offer.hasValue()) {
-    <p>Loading the tour...</p>
+    <p class="meta">Loading the tour...</p>
   } @else {
     <h2>{{ offer.value()?.name }}</h2>
     @if (offer.value()?.price === null) {
@@ -14,7 +20,7 @@
     }
 
     @if (error()) {
-      <p class="error">{{ error() }}</p>
+      <p class="alert">{{ error() }}</p>
     }
 
     @if (added()) {

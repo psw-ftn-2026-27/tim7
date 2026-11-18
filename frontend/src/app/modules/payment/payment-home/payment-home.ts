@@ -7,12 +7,20 @@ import { Auth } from '../../../core/auth/auth';
   selector: 'app-payment-home',
   template: `
     <div class="stack">
-      <h1>Payment</h1>
-      <p><a routerLink="/payment/wallet">My wallet</a></p>
-      <p><a routerLink="/payment/cart">My cart</a></p>
-      @if (isAdministrator()) {
-        <p><a routerLink="/payment/users">Users and wallets</a></p>
-      }
+      <div class="page-header">
+        <div>
+          <span class="badge badge--payment">Payment</span>
+          <h1>Payment</h1>
+          <p>Your wallet and, for administrators, the wallets of all users.</p>
+        </div>
+      </div>
+      <nav class="subnav" aria-label="Payment pages">
+        <a routerLink="/payment/wallet">My wallet</a>
+        <a routerLink="/payment/cart">My cart</a>
+        @if (isAdministrator()) {
+          <a routerLink="/payment/users">Users and wallets</a>
+        }
+      </nav>
     </div>
   `,
 })

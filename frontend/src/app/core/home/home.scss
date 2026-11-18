@@ -6,8 +6,8 @@
   padding-block: var(--space-3);
 }
 
+// Only this page's difference from the global .actions: wider gaps.
 .topbar-actions {
-  display: flex;
   gap: var(--space-3);
 }
 
@@ -48,9 +48,8 @@ svg {
 }
 
 // The negative margin pulls the photo up underneath the button. A signed-in user has no
-// button, so for them the photo simply starts below the text.
-.actions {
-  display: flex;
+// button, so for them the photo simply starts below the text. The row itself is the global .actions.
+.intro .actions {
   justify-content: center;
   margin-bottom: calc(-2 * var(--space-6));
 }

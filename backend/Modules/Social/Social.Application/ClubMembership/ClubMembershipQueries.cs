@@ -1,3 +1,4 @@
+using Identity.Contracts;
 using Shared.Domain.Exceptions;
 using Social.Application.Clubs;
 
@@ -7,11 +8,16 @@ public sealed class ClubMembershipQueries
 {
     private readonly IClubReadRepository _clubReadRepository;
     private readonly IClubRepository _clubRepository;
+    private readonly IIdentityApi _identityApi;
 
-    public ClubMembershipQueries(IClubReadRepository clubReadRepository, IClubRepository clubRepository)
+    public ClubMembershipQueries(
+        IClubReadRepository clubReadRepository,
+        IClubRepository clubRepository,
+        IIdentityApi identityApi)
     {
         _clubReadRepository = clubReadRepository;
         _clubRepository = clubRepository;
+        _identityApi = identityApi;
     }
 
     public async Task<ClubMembershipDto> GetByIdAsync(Guid clubId, Guid userId)
@@ -30,7 +36,20 @@ public sealed class ClubMembershipQueries
         {
             MyState = myState,
             MyRole = view.Members.FirstOrDefault(member => member.UserId == userId)?.Role,
-            PendingRequests = club.CanResolveRequests(userId) ? view.PendingRequests : null
+            PendingRequests = club.CanResolveRequests(userId) ? view.PendingRequests : null,
+            SentInvitations = club.OwnerId == userId ? await WithEmailsAsync(view.SentInvitations!) : null
         };
+    }
+
+    private async Task<List<ClubInvitationDto>> WithEmailsAsync(List<ClubInvitationDto> invitations)
+    {
+        var invitedUsers = await _identityApi.GetUsersByIdsAsync(
+            invitations.Select(invitation => invitation.UserId).ToList());
+        return invitations
+            .Select(invitation => invitation with
+            {
+                UserEmail = invitedUsers.FirstOrDefault(user => user.Id == invitation.UserId)?.Email
+            })
+            .ToList();
     }
 }
