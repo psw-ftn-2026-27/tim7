@@ -125,6 +125,14 @@ construct means adding a lesson, so treat it as a platform decision.
   signals, and a fresh one is created on every visit); `HttpClient` with
   `firstValueFrom` in the group's service for writes. Functional interceptors
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
+- Periodic refresh: only when a spec asks for data that changes while the page is
+  open (a chat), and only for the resource that shows that data. The page gives the
+  data its own `httpResource`, separate from the rest of the page, and in its
+  constructor starts `setInterval(() => this.<resource>.reload(), 5000)` and registers
+  `inject(DestroyRef).onDestroy(() => clearInterval(timer))`, so the timer stops when
+  the user leaves the page. While it reloads, the template keeps showing the old value:
+  check `<resource>.hasValue()` before `isLoading()`. No RxJS `interval`, no
+  `effect()`, no server push.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
   `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
