@@ -1,3 +1,5 @@
+import { PageResult } from '../../../shared/api/page-result';
+
 export type BlogStatus = 'Draft' | 'Published' | 'Archived';
 
 export type BlogVoteType = 'Upvote' | 'Downvote';
@@ -107,4 +109,30 @@ export interface ExplorerDto {
 export interface MyInvitationDto {
   clubId: string;
   clubName: string;
+}
+
+export interface ChatMessageDto {
+  id: string;
+  authorId: string;
+  authorEmail: string | null;
+  text: string;
+  sentAt: string;
+  authorCanBeMuted: boolean;
+}
+
+export interface ChatMutedUserDto {
+  userId: string;
+  email: string | null;
+}
+
+export interface ClubChatDto {
+  messages: PageResult<ChatMessageDto>;
+  isPrivileged: boolean;
+  isMuted: boolean;
+  isLocked: boolean;
+  mutedUsers: ChatMutedUserDto[];
+}
+
+export interface SendMessageDto {
+  text: string;
 }

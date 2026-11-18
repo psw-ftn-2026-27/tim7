@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { SendMessageDto } from '../api/social-api-types';
 
 const BASE_URL = '/api/social/clubs';
 
@@ -29,9 +30,7 @@ export class ClubMembership {
   }
 
   async promoteToModerator(id: string, userId: string): Promise<void> {
-    await firstValueFrom(
-      this.http.post<void>(`${BASE_URL}/${id}/members/${userId}/promote`, null),
-    );
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/members/${userId}/promote`, null));
   }
 
   async transferOwnership(id: string, userId: string): Promise<void> {
@@ -46,5 +45,21 @@ export class ClubMembership {
 
   async removeMember(id: string, userId: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}/members/${userId}`));
+  }
+
+  async sendMessage(id: string, dto: SendMessageDto): Promise<string> {
+    return firstValueFrom(this.http.post<string>(`${BASE_URL}/${id}/chat/messages`, dto));
+  }
+
+  async deleteMessage(id: string, messageId: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}/chat/messages/${messageId}`));
+  }
+
+  async mute(id: string, userId: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/chat/muted/${userId}`, null));
+  }
+
+  async unmute(id: string, userId: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}/chat/muted/${userId}`));
   }
 }

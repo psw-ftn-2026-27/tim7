@@ -24,6 +24,48 @@ namespace Social.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Shared.Domain.Chats.Chat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Chats", "social");
+                });
+
+            modelBuilder.Entity("Shared.Domain.Chats.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages", "social");
+                });
+
             modelBuilder.Entity("Social.Domain.Blogs.Blog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -145,6 +187,60 @@ namespace Social.Infrastructure.Persistence.Migrations
                     b.HasIndex("ClubId");
 
                     b.ToTable("ClubMembers", "social");
+                });
+
+            modelBuilder.Entity("Shared.Domain.Chats.Chat", b =>
+                {
+                    b.OwnsOne("Shared.Domain.Chats.ChatContext", "Context", b1 =>
+                        {
+                            b1.Property<Guid>("ChatId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("ContextId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Kind")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)");
+
+                            b1.HasKey("ChatId");
+
+                            b1.HasIndex("Kind", "ContextId")
+                                .IsUnique();
+
+                            b1.ToTable("Chats", "social");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ChatId");
+                        });
+
+                    b.OwnsMany("Shared.Domain.Chats.MutedUser", "MutedUsers", b1 =>
+                        {
+                            b1.Property<Guid>("ChatId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("ChatId", "Id");
+
+                            b1.ToTable("ChatMutedUsers", "social");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ChatId");
+                        });
+
+                    b.Navigation("Context")
+                        .IsRequired();
+
+                    b.Navigation("MutedUsers");
                 });
 
             modelBuilder.Entity("Social.Domain.Blogs.Blog", b =>

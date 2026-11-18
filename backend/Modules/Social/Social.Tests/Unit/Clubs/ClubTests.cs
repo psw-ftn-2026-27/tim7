@@ -516,4 +516,40 @@ public class ClubTests
 
         club.Invitations.Should().BeEmpty();
     }
+
+    [Fact]
+    public void Owner_and_moderator_are_privileged_in_the_chat_and_a_member_is_not()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var participants = new[] { WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer, WellKnownUsers.Administrator }
+            .Select(club.ChatParticipantFor);
+
+        participants.Select(participant => participant.IsPrivileged).Should().Equal(true, true, false);
+    }
+
+    [Fact]
+    public void Non_member_cannot_take_part_in_the_chat()
+    {
+        var club = CreateClub();
+
+        var joining = () => club.ChatParticipantFor(WellKnownUsers.SecondExplorer);
+
+        joining.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Only_a_member_who_is_neither_owner_nor_moderator_can_be_muted_and_a_former_member_cannot()
+    {
+        var formerMember = Guid.NewGuid();
+        var club = CreateClubWithModeratorAndMember();
+        club.RequestToJoin(formerMember);
+        club.AcceptRequest(WellKnownUsers.Explorer, formerMember);
+        club.RemoveMember(WellKnownUsers.Explorer, formerMember);
+
+        var canBeMuted = new[] { WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer, WellKnownUsers.Administrator, formerMember }
+            .Select(club.CanBeMutedInChat);
+
+        canBeMuted.Should().Equal(false, false, true, false);
+    }
 }

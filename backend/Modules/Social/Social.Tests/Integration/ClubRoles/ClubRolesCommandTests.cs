@@ -214,4 +214,18 @@ public class ClubRolesCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Member_promoted_to_moderator_is_no_longer_muted_in_the_chat()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var response = await client.PostAsync(
+            $"/api/social/clubs/{ClubSeed.SwimmersWithExplorerMemberAndPendingRequest.Id}/members/{WellKnownUsers.Explorer}/promote", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        assertContext.Chats.Single(chat => chat.Id == ChatSeed.SwimmersChatWithMutedExplorer.Id).MutedUsers
+            .Should().BeEmpty();
+    }
 }

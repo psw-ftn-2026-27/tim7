@@ -1,19 +1,22 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { Auth } from '../../../../core/auth/auth';
+import { Chat, ChatMessage, ChatMutedUser, chatMessageForm } from '../../../../shared/chat/chat';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { ClubMembershipDto, ExplorerDto } from '../../api/social-api-types';
+import { ClubChatDto, ClubMembershipDto, ExplorerDto } from '../../api/social-api-types';
 import { ClubMembership } from '../club-membership';
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [Chat, FormField, RouterLink],
   selector: 'app-club-detail',
   styleUrl: './club-detail.scss',
   templateUrl: './club-detail.html',
 })
 export class ClubDetail {
   private readonly clubMembership = inject(ClubMembership);
+  protected readonly auth = inject(Auth);
 
   readonly id = input.required<string>();
 
@@ -39,6 +42,86 @@ export class ClubDetail {
   protected readonly confirmingAction = signal<'promote' | 'transfer' | 'remove' | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  // The chat has its own resource, so refreshing it every few seconds does not reload the club.
+  // Only the owner and the members read it; for everyone else no request is sent.
+  protected readonly chat = httpResource<ClubChatDto>(() =>
+    this.detail.value()?.myState === 'Member' ? `/api/social/clubs/${this.id()}/chat` : undefined,
+  );
+
+  protected readonly chatMessages = computed<ChatMessage[]>(() =>
+    (this.chat.value()?.messages.items ?? []).map((message) => ({
+      id: message.id,
+      authorId: message.authorId,
+      authorEmail: message.authorEmail ?? message.authorId,
+      text: message.text,
+      sentAt: message.sentAt,
+      authorCanBeMuted: message.authorCanBeMuted,
+    })),
+  );
+
+  protected readonly chatMutedUsers = computed<ChatMutedUser[]>(() =>
+    (this.chat.value()?.mutedUsers ?? []).map((user) => ({
+      userId: user.userId,
+      email: user.email ?? user.userId,
+    })),
+  );
+
+  protected readonly chatForm = chatMessageForm();
+  protected readonly chatPending = signal(false);
+  protected readonly chatError = signal<string | null>(null);
+
+  constructor() {
+    const timer = setInterval(() => this.chat.reload(), 5000);
+    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+  }
+
+  protected async sendMessage(text: string): Promise<void> {
+    const sent = await this.runChat(
+      () => this.clubMembership.sendMessage(this.id(), { text }),
+      'Could not send the message.',
+    );
+    if (sent) {
+      this.chatForm().reset({ text: '' });
+    }
+  }
+
+  protected deleteMessage(messageId: string): Promise<boolean> {
+    return this.runChat(
+      () => this.clubMembership.deleteMessage(this.id(), messageId),
+      'Could not delete the message.',
+    );
+  }
+
+  protected muteAuthor(userId: string): Promise<boolean> {
+    return this.runChat(
+      () => this.clubMembership.mute(this.id(), userId),
+      'Could not mute the member.',
+    );
+  }
+
+  protected unmuteUser(userId: string): Promise<boolean> {
+    return this.runChat(
+      () => this.clubMembership.unmute(this.id(), userId),
+      'Could not lift the mute.',
+    );
+  }
+
+  // Runs one chat command, shows the server's message if it fails, and reloads the chat either way.
+  private async runChat(command: () => Promise<unknown>, fallback: string): Promise<boolean> {
+    this.chatPending.set(true);
+    this.chatError.set(null);
+    try {
+      await command();
+      return true;
+    } catch (failure) {
+      this.chatError.set(serverMessage(failure, fallback));
+      return false;
+    } finally {
+      this.chatPending.set(false);
+      this.chat.reload();
+    }
+  }
 
   protected requestToJoin(): Promise<void> {
     return this.run(
