@@ -2,7 +2,13 @@
   <h2>Chat</h2>
 
   @if (locked()) {
-    <p class="meta">This chat is locked. You can read the messages, but you cannot send new ones.</p>
+    <p class="meta">
+      This chat is locked. You can read the messages, but you cannot send new ones.
+    </p>
+  } @else if (muted()) {
+    <p class="meta">
+      You are muted in this chat. You can read the messages, but you cannot send new ones.
+    </p>
   } @else {
     <form class="stack" (submit)="submit($event)">
       <div class="field">
@@ -34,6 +40,27 @@
     <p class="alert" role="alert">{{ error() }}</p>
   }
 
+  @if (privileged() && mutedUsers().length > 0) {
+    <div class="card stack">
+      <h3>Muted</h3>
+      <ul class="stack muted-users">
+        @for (user of mutedUsers(); track user.userId) {
+          <li class="actions">
+            <span>{{ user.email }}</span>
+            <button
+              class="button"
+              type="button"
+              [disabled]="pending()"
+              (click)="unmute.emit(user.userId)"
+            >
+              Unmute
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
   @if (newestFirst().length === 0) {
     <p class="empty">No messages yet.</p>
   } @else {
@@ -42,6 +69,44 @@
         <li class="card">
           <p class="meta">{{ message.authorEmail }} &middot; {{ formatTime(message.sentAt) }}</p>
           <p class="text">{{ message.text }}</p>
+          @if (canDelete(message) || (privileged() && message.authorCanBeMuted)) {
+            <div class="actions moderation">
+              @if (confirmingId() === message.id) {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="confirmDelete(message.id)"
+                >
+                  Confirm deletion
+                </button>
+                <button class="button" type="button" (click)="confirmingId.set(null)">
+                  Cancel
+                </button>
+              } @else {
+                @if (canDelete(message)) {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="confirmingId.set(message.id)"
+                  >
+                    Delete
+                  </button>
+                }
+                @if (privileged() && message.authorCanBeMuted) {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="mute.emit(message.authorId)"
+                  >
+                    Mute
+                  </button>
+                }
+              }
+            </div>
+          }
         </li>
       }
     </ul>

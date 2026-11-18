@@ -54,19 +54,26 @@ this.chatForm().reset({ text: '' });
 
 ## Ulazi
 
-| Ulaz       | Tip                           | Podrazumevano | Značenje                                                                                     |
-| ---------- | ----------------------------- | ------------- | -------------------------------------------------------------------------------------------- |
-| `messages` | `ChatMessage[]`               | obavezan      | Poruke koje se prikazuju. Komponenta ih sama ređa po `sentAt`, najnovija na vrhu.            |
-| `form`     | `FieldTree<ChatMessageModel>` | obavezan      | Forma iz `chatMessageForm()`. Greške validacije stoje ispod polja kada ga korisnik napusti.  |
-| `locked`   | `boolean`                     | `false`       | Zaključan čet (P4): umesto forme stoji kratko obaveštenje, a poruke se i dalje vide.         |
-| `error`    | `string \| null`              | `null`        | Poruka servera posle neuspešnog slanja; stoji ispod forme kao `.alert`.                                   |
-| `pending`  | `boolean`                     | `false`       | Dok komanda traje, dugme „Send“ je onemogućeno. Onemogućeno je i dok forma nije validna.     |
+| Ulaz            | Tip                           | Podrazumevano | Značenje                                                                                                                         |
+| --------------- | ----------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `messages`      | `ChatMessage[]`               | obavezan      | Poruke koje se prikazuju. Komponenta ih sama ređa po `sentAt`, najnovija na vrhu.                                                |
+| `form`          | `FieldTree<ChatMessageModel>` | obavezan      | Forma iz `chatMessageForm()`. Greške validacije stoje ispod polja kada ga korisnik napusti.                                      |
+| `locked`        | `boolean`                     | `false`       | Zaključan čet (P4): umesto forme stoji kratko obaveštenje, a poruke se i dalje vide.                                             |
+| `error`         | `string \| null`              | `null`        | Poruka servera posle neuspešnog slanja; stoji ispod forme kao `.alert`.                                                          |
+| `pending`       | `boolean`                     | `false`       | Dok komanda traje, dugme „Send“ je onemogućeno. Onemogućeno je i dok forma nije validna.                                         |
+| `currentUserId` | `string \| null`              | `null`        | Prijavljeni korisnik; uz njegove poruke nema „Delete“.                                                                           |
+| `privileged`    | `boolean`                     | `false`       | Posmatrač je privilegovan: vidi „Delete“ uz tuđe poruke, „Mute“ uz autore za koje je `authorCanBeMuted` tačno i odeljak „Muted“. |
+| `muted`         | `boolean`                     | `false`       | Posmatrač je utišan: umesto forme stoji obaveštenje. Ako je čet i zaključan, prikazuje se obaveštenje o zaključavanju.           |
+| `mutedUsers`    | `ChatMutedUser[]`             | `[]`          | Utišani korisnici, sa e-mailom; vidi ih samo privilegovani, a prazan spisak se ne prikazuje.                                     |
 
 ## Izlazi
 
-| Izlaz  | Tip      | Kada se javlja                                                                  |
-| ------ | -------- | ------------------------------------------------------------------------------- |
-| `send` | `string` | Kada korisnik pošalje validnu formu, a komanda ne traje. Nosi tekst poruke.     |
+| Izlaz    | Tip      | Kada se javlja                                                                                     |
+| -------- | -------- | -------------------------------------------------------------------------------------------------- |
+| `send`   | `string` | Kada korisnik pošalje validnu formu, a komanda ne traje. Nosi tekst poruke.                        |
+| `delete` | `string` | Kada privilegovani potvrdi brisanje tuđe poruke („Delete“, pa „Confirm deletion“). Nosi ID poruke. |
+| `mute`   | `string` | Kada privilegovani klikne „Mute“ uz poruku. Nosi ID autora.                                        |
+| `unmute` | `string` | Kada privilegovani klikne „Unmute“ u odeljku „Muted“. Nosi ID korisnika.                           |
 
 ## Šta radi stranica
 
@@ -86,16 +93,16 @@ Stranica modula drži sve što ima veze sa serverom:
 
 ```html
 @if (messages.hasValue()) {
-  <app-chat
-    [messages]="chatMessages()"
-    [form]="chatForm"
-    [locked]="locked()"
-    [error]="chatError()"
-    [pending]="chatPending()"
-    (send)="sendMessage($event)"
-  />
+<app-chat
+  [messages]="chatMessages()"
+  [form]="chatForm"
+  [locked]="locked()"
+  [error]="chatError()"
+  [pending]="chatPending()"
+  (send)="sendMessage($event)"
+/>
 } @else if (messages.isLoading()) {
-  <p>Loading...</p>
+<p>Loading...</p>
 }
 ```
 

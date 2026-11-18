@@ -4,9 +4,18 @@ import { FieldTree, FormField, form, maxLength, validate } from '@angular/forms/
 // A message as the chat shows it. The page builds it from its own module's DTO.
 export interface ChatMessage {
   id: string;
+  authorId: string;
   authorEmail: string;
   text: string;
   sentAt: string;
+  // Whether a privileged viewer may mute the author; the page takes it from its module's DTO.
+  authorCanBeMuted: boolean;
+}
+
+// A muted user as the chat's privileged participants see it.
+export interface ChatMutedUser {
+  userId: string;
+  email: string;
 }
 
 export interface ChatMessageModel {
@@ -46,9 +55,20 @@ export class Chat {
   readonly error = input<string | null>(null);
   readonly pending = input(false);
   readonly form = input.required<FieldTree<ChatMessageModel>>();
+  readonly currentUserId = input<string | null>(null);
+  readonly privileged = input(false);
+  readonly muted = input(false);
+  readonly mutedUsers = input<ChatMutedUser[]>([]);
 
   // Carries the text of a valid message; the page sends it to the server.
   readonly send = output<string>();
+  // Carry the ID of the message to delete, of the author to mute and of the user to unmute.
+  readonly delete = output<string>();
+  readonly mute = output<string>();
+  readonly unmute = output<string>();
+
+  // The message whose deletion waits for confirmation, since a deletion cannot be undone.
+  protected readonly confirmingId = signal<string | null>(null);
 
   // A page may show more than one chat, so every chat gets its own id for the field's label.
   protected readonly fieldId = `chat-message-${nextChatNumber++}`;
@@ -67,6 +87,15 @@ export class Chat {
       return;
     }
     this.send.emit(form.text().value());
+  }
+
+  protected canDelete(message: ChatMessage): boolean {
+    return this.privileged() && message.authorId !== this.currentUserId();
+  }
+
+  protected confirmDelete(messageId: string): void {
+    this.confirmingId.set(null);
+    this.delete.emit(messageId);
   }
 
   protected formatTime(value: string): string {

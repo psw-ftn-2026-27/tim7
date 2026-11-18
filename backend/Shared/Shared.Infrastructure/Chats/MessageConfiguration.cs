@@ -15,5 +15,8 @@ public static class MessageConfiguration
     {
         builder.ToTable("Messages");
         builder.Property(message => message.Text).HasMaxLength(Message.MaxTextLength);
+
+        // A deleted message is never read again, by any module's repository (P9).
+        builder.HasQueryFilter(message => !message.IsDeleted);
     }
 }

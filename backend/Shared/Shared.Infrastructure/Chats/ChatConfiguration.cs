@@ -22,5 +22,10 @@ public static class ChatConfiguration
             context.HasIndex(c => new { c.Kind, c.ContextId }).IsUnique();
         });
         builder.Navigation(chat => chat.Context).IsRequired();
+        builder.OwnsMany(chat => chat.MutedUsers, mutedUsers =>
+        {
+            mutedUsers.ToTable("ChatMutedUsers");
+            mutedUsers.WithOwner().HasForeignKey("ChatId");
+        });
     }
 }

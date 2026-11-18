@@ -10,6 +10,7 @@ public sealed class Message : AggregateRoot
     public Guid AuthorId { get; private set; }
     public string Text { get; private set; }
     public DateTime SentAt { get; private set; }
+    public bool IsDeleted { get; private set; }
 
     private Message()
     {
@@ -33,5 +34,20 @@ public sealed class Message : AggregateRoot
         AuthorId = authorId;
         Text = text;
         SentAt = sentAt;
+    }
+
+    // Allowed in a locked chat too: a message never sees whether its chat is locked.
+    public void DeleteBy(ChatParticipant participant)
+    {
+        if (!participant.IsPrivileged)
+        {
+            throw new DomainException("Only a privileged participant can delete another participant's message.");
+        }
+        if (participant.UserId == AuthorId)
+        {
+            throw new DomainException("You cannot delete your own message.");
+        }
+
+        IsDeleted = true;
     }
 }

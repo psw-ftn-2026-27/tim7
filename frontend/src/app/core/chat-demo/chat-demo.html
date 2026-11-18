@@ -38,3 +38,31 @@
     (send)="sendFailing()"
   />
 </section>
+
+<section class="demo stack">
+  <h2>Privileged viewer</h2>
+
+  <p>
+    A moderator sees Delete next to other people's messages, with a confirmation, and Mute next to
+    authors who may be muted. Muted users are listed above the messages, each with Unmute.
+  </p>
+
+  <app-chat
+    [messages]="moderatedMessages()"
+    [form]="moderatedForm"
+    currentUserId="moderator"
+    [privileged]="true"
+    [mutedUsers]="mutedUsers()"
+    (delete)="deleteMessage($event)"
+    (mute)="muteAuthor($event)"
+    (unmute)="unmuteUser($event)"
+  />
+</section>
+
+<section class="demo stack">
+  <h2>Muted viewer</h2>
+
+  <p>The messages can be read, and a notice stands in place of the form.</p>
+
+  <app-chat [messages]="messages" [form]="mutedForm" [muted]="true" />
+</section>
