@@ -34,6 +34,8 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          IIdentityApi, the only part other modules
+                                   may reference                             [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -64,7 +66,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references `Identity`. Other modules carry a `UserId` as a plain ID and
+  resolve it through `Identity.Contracts`, which a module may reference like any other
+  module's `Contracts`.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -93,6 +97,12 @@ that students use but never modify or reference. It holds ASP.NET Core Identity 
 (`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
 `Connection` (following between users), with a `Following` use-case group that follows the
 application-layer patterns below; the details live in the project itself.
+
+Its public surface for other modules is the separate `Identity.Contracts` project with
+`IIdentityApi`: `GetUsersAsync` returns a `UserSummary` (ID and username) for each known
+ID and leaves unknown IDs out; `SearchExplorersAsync` finds at most ten explorers by part
+of the username. The username is the email address the user registered with. The
+interface is implemented by `IdentityApi` in `Core/Users`.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the
@@ -330,6 +340,11 @@ mirror the application layer's use-case groups, with `<Group>CommandTests` and
 `<Group>QueryTests` side by side. Feature-module tests authenticate with
 `Factory.CreateClientFor(userId, role)` and `WellKnownUsers`; only `Identity.Tests`
 uses the real register and login endpoints.
+
+A contract implementation has no HTTP endpoint, so its integration tests are the one
+exception to the HTTP channel: the test resolves `I<Name>Api` from a scope of
+`Factory.Services` and the single call to it is the Act, exactly as the calling module
+would make it. Seeds and assertions follow the rules above.
 
 **Test doubles.** Only for an out-of-process dependency whose effects other systems see
 and that has no test instance. Never for the database or the module's own classes.

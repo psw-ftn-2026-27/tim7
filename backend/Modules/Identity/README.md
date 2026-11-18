@@ -1,6 +1,6 @@
 # Modul Identity
 
-Modul Identity je platformski modul zadužen za registraciju korisnika, prijavu i izdavanje JWT-a (JSON Web Token). Sastoji se od dva projekta. Projekat `Identity` sadrži sam modul, a projekat `Identity.Tests` njegove testove. Studenti ovaj modul koriste kroz njegove krajnje tačke, ali ga ne menjaju i ne referenciraju iz svojih modula.
+Modul Identity je platformski modul zadužen za registraciju korisnika, prijavu i izdavanje JWT-a (JSON Web Token). Sastoji se od tri projekta. Projekat `Identity` sadrži sam modul, projekat `Identity.Contracts` njegovu javnu površinu za druge module, a projekat `Identity.Tests` njegove testove. Studenti ovaj modul koriste kroz njegove krajnje tačke i kroz `Identity.Contracts`, ali ga ne menjaju i ne referenciraju projekat `Identity` iz svojih modula.
 
 ## Problem koji rešava
 
@@ -15,6 +15,12 @@ Posao oko tokena podeljen je na dva mesta. Modul Identity izdaje token, a projek
 Funkcionalni moduli imaju pet projekata, po jedan za svaki sloj. Modul Identity ima jedan projekat.
 
 Podela na pet projekata postoji da bi štitila domenska pravila i granice između timova. Logiku naloga, lozinki i uloga preuzima gotova biblioteka ASP.NET Core Identity, a jedina domenska pravila modula, ona o praćenju korisnika, staju u jedan agregat. Nema ni granice između timova, jer modul u celosti pripada platformskom timu i nijedan drugi modul ga ne referencira. Pet projekata bi u ovoj situaciji bila nepotrebna apstrakcija. Ovaj modul ujedno prikazuje snagu modular monolit arhitekture, koja dozvoljava da pratimo različite arhitekture na nivou pojedinačnih modula.
+
+## Projekat Identity.Contracts
+
+Funkcionalni moduli korisnika poznaju samo po identifikatoru, a ponekad treba da prikažu ko je to ili da pronađu korisnika. Zato modul ima javnu površinu, projekat `Identity.Contracts`, koji ne referencira ništa i koji drugi moduli smeju da referenciraju kao `Contracts` bilo kog modula. Sadrži interfejs `IIdentityApi` i tip `UserSummary` sa identifikatorom i korisničkim imenom, i ništa više. Korisničko ime je adresa elektronske pošte sa kojom se korisnik registrovao.
+
+Metoda `GetUsersAsync` za listu identifikatora vraća po jedan `UserSummary` za svakog postojećeg korisnika, a nepostojeće identifikatore izostavlja. Metoda `SearchExplorersAsync` pronalazi najviše deset korisnika sa ulogom `explorer` čije korisničko ime sadrži zadati tekst, bez obzira na velika i mala slova; za prazan tekst ne vraća nikoga. Interfejs implementira klasa `IdentityApi` u direktorijumu `Core/Users`, koja podatke čita kroz `IUserReadRepository`.
 
 ## Elementi projekta Identity
 
@@ -44,6 +50,6 @@ Metoda `AddIdentityModule` registruje sve delove modula i jedino je mesto koje `
 
 ## Projekat Identity.Tests
 
-Projekat sadrži jedinične testove agregata `Connection` u direktorijumu `Unit` i integracione testove. Integracioni testovi registracije i prijave šalju prave HTTP zahteve tim krajnjim tačkama i proveravaju odgovore, uključujući sadržaj vraćenog tokena. Testovi grupe `Following` prijavljenog korisnika dobijaju kroz `Factory.CreateClientFor`, kao u funkcionalnim modulima. Ovo je jedini projekat koji te dve krajnje tačke testira, jer su jedino ovde one predmet testa. Testovi ostalih modula prijavljenog korisnika dobijaju direktno od test infrastrukture, bez prolaska kroz modul Identity.
+Projekat sadrži jedinične testove agregata `Connection` u direktorijumu `Unit` i integracione testove. Integracioni testovi u direktorijumu `Contracts` proveravaju `IIdentityApi` tako što ga uzmu iz kontejnera zavisnosti i pozovu direktno, kao što bi to uradio drugi modul, jer ugovor nema krajnju tačku. Integracioni testovi registracije i prijave šalju prave HTTP zahteve tim krajnjim tačkama i proveravaju odgovore, uključujući sadržaj vraćenog tokena. Testovi grupe `Following` prijavljenog korisnika dobijaju kroz `Factory.CreateClientFor`, kao u funkcionalnim modulima. Ovo je jedini projekat koji te dve krajnje tačke testira, jer su jedino ovde one predmet testa. Testovi ostalih modula prijavljenog korisnika dobijaju direktno od test infrastrukture, bez prolaska kroz modul Identity.
 
 Početni podaci ovog projekta imaju jednu posebnost. U funkcionalnim modulima početni podaci nastaju pozivom domenskih konstruktora. Korisnički nalog se u pravom radu pravi kroz klasu `UserManager`, koja usput računa heš lozinke i normalizovane kolone. Mehanizam za vraćanje baze na početno stanje upisuje redove direktno u bazu i taj korak zaobilazi, pa klasa `UserSeed` te vrednosti popunjava sama. Identifikator korisnika dolazi iz klase `WellKnownUsers`, tako da testovi svih modula govore o istim korisnicima.
