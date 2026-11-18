@@ -20,15 +20,21 @@ backend/
   Host.Tests/                      ArchUnitNET architecture tests            [platform]
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
-                                   DomainException, NotFoundException       [platform]
-    Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
+                                   DomainException, NotFoundException,
+                                   Images/ (ImageFile, ImageSelection)       [platform]
+    Shared.Api/                    ClaimsPrincipal.GetUserId(),
+                                   Images/ (ImageUploadReader, UploadedImage,
+                                   ImageUploadLimits)                        [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
-                                   module, per-schema migrations history)    [platform]
+                                   module, per-schema migrations history),
+                                   Images/ (ImageStore, AddImageStorage)     [platform]
     Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
                                    reseed, test JWTs), WellKnownUsers        [platform]
+    Shared.UnitTests/              unit tests of the shared code             [platform]
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          IIdentityApi, the module's only public surface [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -59,7 +65,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references `Identity`. Other modules carry a `UserId` as a plain ID and, when
+  they need more about a user, ask `IIdentityApi` in `Identity.Contracts`, which follows
+  the same rules as any other `Contracts` project.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -77,15 +85,26 @@ carry versionless `PackageReference` lines. `Directory.Build.props` turns on nul
 reference types and treats warnings as errors, solution-wide. Both files are
 platform-owned.
 
-AutoMapper is pinned to 16.1.1 and runs without a license key; this is a settled
+AutoMapper is pinned to 16.3.0 and runs without a license key; this is a settled
 platform decision. Do not change the version or add a license key.
 
 ## Identity
 
 Identity is a deliberate exception to the module structure: one platform-owned project
-that students use but never modify or reference. It holds ASP.NET Core Identity on the
+that students use but never modify or reference, plus `Identity.Contracts`, which other
+modules may reference like any other module's `Contracts`. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
-(`administrator`, `explorer`); the details live in the project itself.
+(`administrator`, `explorer`). Its `Core` folder also holds the module's two aggregates,
+each with a use-case group that follows the application-layer patterns below: `Connection`
+(following between users) with `Following`, and `UserPosition` (a user's one current
+position, marked by hand on a map until GPS exists) with `PositionSimulation`, open to any
+signed-in user; the details live in the project itself. `Core/IdentityApi`
+implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
+whether a user exists, finding a user by e-mail, which serves as the username, the
+users for a list of IDs (unknown IDs are left out, no error), and a search for at most ten
+explorers by part of the username (a blank text finds nobody). The search reads the role
+tables through `IUserReadRepository` in `Core/Users`; who counts as an explorer is decided
+in one place, `Infrastructure/Users/ExplorerUsers`, shared with the search for users to follow.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the
@@ -190,6 +209,30 @@ enforced in aggregate constructors and methods, which throw `DomainException` (o
 middleware in `Host.Api` maps `DomainException` to 400, `NotFoundException` to 404, and
 anything else to a logged 500, all as ProblemDetails. Services and controllers contain no
 try/catch and no validation code.
+
+## Image upload
+
+A module that accepts images adopts the shared component; it never writes its own checks.
+The controller action carries `[RequestSizeLimit(ImageUploadLimits.MaxRequestBytes)]`,
+binds the `IFormFile`s, turns each into `UploadedImage` with `ImageUploadReader.ReadAsync`
+and copies it into the module's own `ImageUploadDto` (file name, content, width, height).
+The command service builds an `ImageFile` per image and an `ImageSelection` from them
+(the constructors enforce format, size, dimensions and count), saves them through the
+module's own `IImageStore` port declared in `Application`, and passes the returned
+addresses to its aggregate, which keeps them as strings. The module's `Infrastructure`
+implements the port by calling `ImageStore.SaveAsync(module, selection)` from
+`Shared.Infrastructure`, passing the module's name, so the files land in the module's own
+subfolder. Files are served as static files at `/images/<module>/<name>` by `Host.Api`.
+The frontend half is the presentational component `shared/image-picker`.
+
+A module that adopts upload also implements `IImageUsage` from `Shared.Infrastructure` in
+its `Infrastructure`: `Module` is the same name it passes to `SaveAsync`, and
+`GetUsedAddressesAsync()` returns every image address its aggregates keep, whatever their
+status. It registers the implementation as scoped in its `AddXxxModule`. The platform's
+image cleanup job (`AddImageCleanup` in `Host.Api`) periodically deletes images that no
+module uses and that are older than `ImageCleanup:MinAge`, and it only touches the
+subfolders of modules that registered an `IImageUsage`; a module without one keeps all of
+its files.
 
 ## Events
 
@@ -299,6 +342,11 @@ mirror the application layer's use-case groups, with `<Group>CommandTests` and
 `<Group>QueryTests` side by side. Feature-module tests authenticate with
 `Factory.CreateClientFor(userId, role)` and `WellKnownUsers`; only `Identity.Tests`
 uses the real register and login endpoints.
+
+A contract implementation has no HTTP endpoint, so its integration tests are the one
+exception to the HTTP channel: the test resolves `I<Name>Api` from a scope of
+`Factory.Services` and the single call to it is the Act, exactly as the calling module
+would make it. Seeds and assertions follow the rules above.
 
 **Test doubles.** Only for an out-of-process dependency whose effects other systems see
 and that has no test instance. Never for the database or the module's own classes.

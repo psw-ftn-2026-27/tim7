@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormField, email, form, minLength, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { Analytics } from '../../../shared/analytics/analytics';
 import { serverMessage } from '../../../shared/util/server-message';
 import { Auth } from '../auth';
 
@@ -13,6 +14,7 @@ import { Auth } from '../auth';
 export class Register {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  private readonly analytics = inject(Analytics);
 
   protected readonly form = form(signal({ email: '', password: '' }), (path) => {
     required(path.email, { message: 'Email is required.' });
@@ -30,6 +32,9 @@ export class Register {
     this.error.set(null);
     try {
       await this.auth.register(this.form.email().value(), this.form.password().value());
+      // The server confirmed the registration and the user is already signed in, so the event
+      // carries the role 'explorer'. It is recorded before the navigation away from this page.
+      this.analytics.record('user_registered', {});
       await this.router.navigate(['/']);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Registration failed. Please try again.'));

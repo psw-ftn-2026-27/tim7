@@ -1,0 +1,157 @@
+<div class="stack">
+  <div class="page-header">
+    <div>
+      <span class="badge badge--payment">Payment</span>
+      <h1>Users and wallets</h1>
+      <p>Find a user by e-mail to see their deposits or add EC to their wallet.</p>
+    </div>
+  </div>
+
+  <form class="card stack" (submit)="search($event)">
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input id="email" type="text" [formField]="searchForm.email" />
+    </div>
+    <div class="actions">
+      <button class="button button--primary" type="submit">Search</button>
+      <button class="button" type="button" (click)="clearSearch()">Clear</button>
+    </div>
+  </form>
+
+  @if (users.error()) {
+    <p class="alert">Could not load the users.</p>
+  } @else if (users.isLoading() && !users.hasValue()) {
+    <p class="meta">Loading users...</p>
+  } @else if (searchedEmail() !== null && users.value()?.items?.length === 0) {
+    <p class="empty">No user with that e-mail</p>
+  } @else {
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">User</th>
+            <th scope="col">Balance</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users.value()?.items ?? []; track user.userId) {
+            <tr>
+              <td>{{ user.email }}</td>
+              <td>{{ user.balance }} EC</td>
+              <td>
+                <button class="button" type="button" (click)="select(user)">Select</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">No users found.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="button" type="button" [disabled]="page() <= 1" (click)="previousPage()">
+        Previous
+      </button>
+      <span class="meta">Page {{ page() }} of {{ lastPage() }}</span>
+      <button class="button" type="button" [disabled]="page() >= lastPage()" (click)="nextPage()">
+        Next
+      </button>
+    </div>
+  }
+
+  @if (success()) {
+    <p>{{ success() }}</p>
+  }
+
+  @if (selectedUser(); as selected) {
+    <h2>Deposits</h2>
+    <p class="meta">User {{ selected.email }}</p>
+
+    @if (reverseError()) {
+      <p class="error">{{ reverseError() }}</p>
+    }
+
+    @if (deposits.error()) {
+      <p class="alert">Could not load the deposits.</p>
+    } @else if (deposits.isLoading() && !deposits.hasValue()) {
+      <p class="meta">Loading deposits...</p>
+    } @else {
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Administrator</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (deposit of deposits.value() ?? []; track deposit.id) {
+              <tr>
+                <td>{{ formatTime(deposit.createdAt) }}</td>
+                <td>{{ deposit.amount }} EC</td>
+                <td>{{ deposit.administratorId }}</td>
+                <td>
+                  @if (deposit.isReversed) {
+                    <span class="status">reversed</span>
+                  } @else {
+                    <span class="status status--active">active</span>
+                  }
+                </td>
+                <td>
+                  @if (!deposit.isReversed) {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="reverse(deposit.id)"
+                    >
+                      Reverse
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">This user has no deposits yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <form class="card stack" (submit)="deposit($event)">
+      <h2>Deposit EC</h2>
+      <p class="meta">User {{ selected.email }}</p>
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" type="number" [formField]="form.amount" />
+        @if (form.amount().touched()) {
+          @for (message of form.amount().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!form().valid() || pending()"
+      >
+        Deposit
+      </button>
+    </form>
+  }
+</div>

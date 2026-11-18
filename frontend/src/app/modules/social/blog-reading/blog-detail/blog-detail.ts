@@ -1,9 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { marked } from 'marked';
 import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { BlogDto } from '../../api/social-api-types';
+import { BlogDto, BlogVoteType } from '../../api/social-api-types';
 import { BlogComments, CommentEdit } from '../blog-comments/blog-comments';
 import { BlogReading } from '../blog-reading';
 
@@ -21,7 +22,13 @@ export class BlogDetail {
 
   protected readonly detail = httpResource<BlogDto>(() => `/api/social/blogs/${this.id()}`);
 
+  protected readonly descriptionHtml = computed(() =>
+    marked.parse(this.detail.value()?.description ?? '', { async: false }),
+  );
+
   protected readonly error = signal<string | null>(null);
+
+  protected readonly pending = signal(false);
 
   protected async add(text: string): Promise<void> {
     this.error.set(null);
@@ -40,6 +47,8 @@ export class BlogDetail {
       this.detail.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not update the comment.'));
+      // A rejected change may mean the edit window closed; reloading hides the buttons.
+      this.detail.reload();
     }
   }
 
@@ -50,6 +59,21 @@ export class BlogDetail {
       this.detail.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not delete the comment.'));
+      // A rejected change may mean the edit window closed; reloading hides the buttons.
+      this.detail.reload();
+    }
+  }
+
+  protected async vote(type: BlogVoteType): Promise<void> {
+    this.error.set(null);
+    this.pending.set(true);
+    try {
+      await this.blogReading.vote(this.id(), { type });
+      this.detail.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not save the vote.'));
+    } finally {
+      this.pending.set(false);
     }
   }
 }

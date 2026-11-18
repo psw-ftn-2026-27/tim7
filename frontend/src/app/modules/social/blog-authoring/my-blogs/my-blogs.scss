@@ -1,3 +1,9 @@
 .table td:last-child {
-  width: 8rem;
+  width: 14rem;
+}
+
+// Only this page's difference from the global .actions: centred items that wrap.
+.actions {
+  align-items: center;
+  flex-wrap: wrap;
 }

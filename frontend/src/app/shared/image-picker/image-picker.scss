@@ -1,0 +1,96 @@
+.image-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.image-picker h2 {
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+// The file input is hidden; the label around it is the visible "Add images" button.
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.add:has(input:focus-visible) {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+// Same look as a disabled .button; a label cannot be disabled itself, its input is.
+.add--disabled,
+.add--disabled:hover {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.thumbnails {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.thumbnail {
+  aspect-ratio: 1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+}
+
+.thumbnail img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.thumbnail .error {
+  overflow-wrap: anywhere;
+  padding: var(--space-2);
+  padding-right: var(--space-6);
+}
+
+.remove {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  height: 1.75rem;
+  line-height: 1;
+  position: absolute;
+  right: var(--space-1);
+  top: var(--space-1);
+  width: 1.75rem;
+}
+
+.remove:hover {
+  background: var(--color-bg);
+}
+
+.remove:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}

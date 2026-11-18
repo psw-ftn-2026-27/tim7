@@ -1,0 +1,226 @@
+<section class="stack">
+  <h1>Map demo</h1>
+
+  <p>
+    Every way of embedding the shared map, with hard-coded pins. Nothing on this page is saved,
+    except the position in the position simulator.
+  </p>
+</section>
+
+<section class="demo stack">
+  <h2>Display</h2>
+
+  <p>Pins with labels and no path. The map is framed so that every pin is visible.</p>
+
+  <app-map [pins]="sights" />
+</section>
+
+<section class="demo stack">
+  <h2>Challenges in a city</h2>
+
+  <p>
+    How Games would show its challenges: pins with no path, so there is no order. Click a pin to see
+    its label and location.
+  </p>
+
+  <app-map [pins]="challenges" />
+</section>
+
+<section class="demo stack">
+  <h2>Path</h2>
+
+  <p>
+    Pins joined in order. Add or remove a point and the length is reported again. Click a pin to see
+    its order and location.
+  </p>
+
+  <p class="actions">
+    <button
+      class="button"
+      type="button"
+      [disabled]="pathPins().length === route.length"
+      (click)="addPoint()"
+    >
+      Add point
+    </button>
+    <button
+      class="button"
+      type="button"
+      [disabled]="pathPins().length === 0"
+      (click)="removePoint()"
+    >
+      Remove point
+    </button>
+  </p>
+
+  <app-map [pins]="pathPins()" [showPath]="true" (pathLength)="pathLength.set($event)" />
+
+  <p>Points: {{ pathPins().length }}. Length: {{ pathLength().toFixed(2) }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Location picking</h2>
+
+  <p>Click the map to place the selected pin. The other pins stay where they are.</p>
+
+  <h3>Without an initial location</h3>
+
+  <app-map [pins]="sights" [picking]="true" (locationPicked)="pickedWithout.set($event)" />
+
+  <p>
+    @if (pickedWithout(); as picked) {
+      Picked: {{ picked.latitude.toFixed(5) }}, {{ picked.longitude.toFixed(5) }}
+    } @else {
+      Nothing picked yet.
+    }
+  </p>
+
+  <h3>With an initial location</h3>
+
+  <app-map
+    [pins]="sights"
+    [picking]="true"
+    [initialLocation]="initialLocation"
+    (locationPicked)="pickedWith.set($event)"
+  />
+
+  <p>
+    @if (pickedWith(); as picked) {
+      Picked: {{ picked.latitude.toFixed(5) }}, {{ picked.longitude.toFixed(5) }}
+    } @else {
+      Initial location: {{ initialLocation.latitude }}, {{ initialLocation.longitude }}
+    }
+  </p>
+</section>
+
+<section class="demo stack">
+  <h2>Building a tour</h2>
+
+  <p>
+    Picking and path together, as an author would use them: click the map, then add the picked
+    location as the next point. On a real page the point is saved first.
+  </p>
+
+  <app-map
+    [pins]="tourPins()"
+    [showPath]="true"
+    [picking]="true"
+    [initialLocation]="tourPicked()"
+    (locationPicked)="tourPicked.set($event)"
+    (pathLength)="tourLength.set($event)"
+  />
+
+  <p class="actions">
+    <button class="button" type="button" [disabled]="!tourPicked()" (click)="addToTour()">
+      Add as next point
+    </button>
+  </p>
+
+  <p>Points: {{ tourPins().length }}. Length: {{ tourLength().toFixed(2) }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Location challenge area</h2>
+
+  <p>
+    The start point of a location challenge and the circle around it, as Games would show them. The
+    radius comes from Games; the hidden locations are not shown, because the user does not see them
+    either.
+  </p>
+
+  <app-map
+    [pins]="challengePins"
+    [circleCenter]="challengeStart"
+    [circleRadiusKm]="challengeRadiusKm"
+  />
+
+  <p>Radius: {{ challengeRadiusKm }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Location search</h2>
+
+  <p>
+    Click the map to place the centre and enter a radius; the circle is redrawn on every change.
+    Search only prints what the page would send to the server. The pins do not change, because the
+    server decides which of them are inside the circle.
+  </p>
+
+  <app-map
+    [pins]="challenges"
+    [picking]="true"
+    [circleRadiusKm]="searchModel().radiusKm ?? 0"
+    (locationPicked)="searchCenter.set($event)"
+  />
+
+  <p>
+    @if (searchCenter(); as center) {
+      Centre: {{ center.latitude.toFixed(5) }}, {{ center.longitude.toFixed(5) }}
+    } @else {
+      No centre yet. Click the map.
+    }
+  </p>
+
+  <div class="field">
+    <label for="search-radius">Radius in km</label>
+    <input id="search-radius" type="number" [formField]="searchForm.radiusKm" />
+    @for (message of searchForm.radiusKm().errors(); track $index) {
+      <p class="error">{{ message.message }}</p>
+    }
+  </div>
+
+  <p class="actions">
+    <button
+      class="button"
+      type="button"
+      [disabled]="!searchCenter() || !searchForm().valid()"
+      (click)="search()"
+    >
+      Search
+    </button>
+  </p>
+
+  <p>
+    @if (searchSent(); as sent) {
+      Would send: centre {{ sent.center.latitude.toFixed(5) }},
+      {{ sent.center.longitude.toFixed(5) }}, radius {{ sent.radiusKm }} km.
+    } @else {
+      Nothing sent yet.
+    }
+  </p>
+</section>
+
+<section class="demo stack">
+  <h2>Path to the next key point</h2>
+
+  <p>
+    The tourist's position as a pin labelled "You" and the next key point, joined by the path. On a
+    real page the position comes from the position simulator.
+  </p>
+
+  <app-map [pins]="pathToNext" [showPath]="true" (pathLength)="distanceToNext.set($event)" />
+
+  <p>Distance: {{ distanceToNext().toFixed(2) }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Position simulator</h2>
+
+  <p>
+    How a field page marks where the tourist is until GPS exists: click the map, then confirm the
+    position, and the server saves it. The red pin is your saved position, the blue pins are the
+    page's own. Log in first.
+  </p>
+
+  <app-position-simulator [pins]="challenges" (positionChanged)="position.set($event)" />
+
+  <p>
+    @if (position() === undefined) {
+      Position reported: nothing yet.
+    } @else if (position(); as reported) {
+      Position reported: {{ reported.latitude.toFixed(5) }}, {{ reported.longitude.toFixed(5) }}
+    } @else {
+      Position reported: null (no saved position).
+    }
+  </p>
+</section>

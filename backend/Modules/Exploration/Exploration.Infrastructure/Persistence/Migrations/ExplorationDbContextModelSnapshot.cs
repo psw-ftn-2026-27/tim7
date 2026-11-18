@@ -24,11 +24,123 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Exploration.Domain.LocationSearches.LocationSearch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<string[]>("Difficulties")
+                        .HasColumnType("text[]");
+
+                    b.Property<decimal?>("MaxLength")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("MaxPrice")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MinLength")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("MinPrice")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ResultCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SearchedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.PrimitiveCollection<List<string>>("Tags")
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Transport")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LocationSearches", "exploration");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.TourExecutions.TourExecution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastActivityAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TouristId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TouristId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Active'");
+
+                    b.ToTable("TourExecutions", "exploration");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.TourPreferences.TourPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("ApplyPreferencesAutomatically")
+                        .HasColumnType("boolean");
+
+                    b.PrimitiveCollection<string[]>("Difficulties")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("PreferredTransportMode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.PrimitiveCollection<List<string>>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("TourPreferences", "exploration");
+                });
+
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("AuthorId")
                         .HasColumnType("uuid");
@@ -64,8 +176,193 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.ToTable("Tours", "exploration");
                 });
 
+            modelBuilder.Entity("Exploration.Domain.LocationSearches.LocationSearch", b =>
+                {
+                    b.OwnsOne("Exploration.Domain.Tours.Location", "Center", b1 =>
+                        {
+                            b1.Property<Guid>("LocationSearchId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("LocationSearchId");
+
+                            b1.ToTable("LocationSearches", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationSearchId");
+                        });
+
+                    b.OwnsOne("Exploration.Domain.LocationSearches.SearchRadius", "Radius", b1 =>
+                        {
+                            b1.Property<Guid>("LocationSearchId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Kilometers")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("LocationSearchId");
+
+                            b1.ToTable("LocationSearches", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationSearchId");
+                        });
+
+                    b.Navigation("Center")
+                        .IsRequired();
+
+                    b.Navigation("Radius")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Exploration.Domain.TourExecutions.TourExecution", b =>
+                {
+                    b.OwnsOne("Exploration.Domain.Tours.Location", "StartLocation", b1 =>
+                        {
+                            b1.Property<Guid>("TourExecutionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("TourExecutionId");
+
+                            b1.ToTable("TourExecutions", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourExecutionId");
+                        });
+
+                    b.Navigation("StartLocation")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
+                    b.OwnsMany("Exploration.Domain.Tours.KeyPoint", "KeyPoints", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Description")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Image")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsPublic")
+                                .HasColumnType("boolean");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)");
+
+                            b1.Property<int>("Order")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Secret")
+                                .HasColumnType("text");
+
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("TourId");
+
+                            b1.ToTable("KeyPoints", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+
+                            b1.OwnsOne("Exploration.Domain.Tours.Location", "Location", b2 =>
+                                {
+                                    b2.Property<Guid>("KeyPointId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<double>("Latitude")
+                                        .HasColumnType("double precision");
+
+                                    b2.Property<double>("Longitude")
+                                        .HasColumnType("double precision");
+
+                                    b2.HasKey("KeyPointId");
+
+                                    b2.ToTable("KeyPoints", "exploration");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("KeyPointId");
+                                });
+
+                            b1.Navigation("Location")
+                                .IsRequired();
+                        });
+
+                    b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("From")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("To")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
+                    b.OwnsOne("Exploration.Domain.Tours.TourLength", "Length", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Kilometers")
+                                .HasColumnType("numeric");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
+                    b.OwnsOne("Exploration.Domain.Tours.TourPrice", "Price", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int?>("Amount")
+                                .HasColumnType("integer");
+
+                            b1.Property<bool>("IsFree")
+                                .HasColumnType("boolean");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
                     b.OwnsMany("Exploration.Domain.Tours.TransportTime", "TransportTimes", b1 =>
                         {
                             b1.Property<Guid>("TourId");
@@ -89,6 +386,15 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourId");
                         });
+
+                    b.Navigation("KeyPoints");
+
+                    b.Navigation("Length");
+
+                    b.Navigation("Price");
+
+                    b.Navigation("RecommendedGroupSize")
+                        .IsRequired();
 
                     b.Navigation("TransportTimes");
                 });
