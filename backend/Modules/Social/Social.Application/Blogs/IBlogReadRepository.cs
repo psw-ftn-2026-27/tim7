@@ -4,7 +4,7 @@ namespace Social.Application.Blogs;
 
 public interface IBlogReadRepository
 {
-    Task<BlogDto?> GetByIdAsync(Guid id);
+    Task<BlogDto?> GetByIdAsync(Guid id, Guid readerId);
     Task<List<BlogDto>> GetByAuthorAsync(Guid authorId);
-    Task<PageResult<BlogDto>> GetPublishedAsync(int page, int pageSize);
+    Task<PageResult<BlogDto>> GetVisibleAsync(int page, int pageSize);
 }

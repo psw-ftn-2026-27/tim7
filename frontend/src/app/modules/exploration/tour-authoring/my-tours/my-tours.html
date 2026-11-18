@@ -18,7 +18,12 @@
           <th scope="col">Name</th>
           <th scope="col">Difficulty</th>
           <th scope="col">Status</th>
+          <th scope="col">Group size</th>
+          <th scope="col">Length</th>
           <th scope="col">Transport times</th>
+          <th scope="col">Price</th>
+          <th scope="col">Published at</th>
+          <th scope="col">Archived at</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -28,6 +33,14 @@
             <td>{{ tour.name }}</td>
             <td>{{ tour.difficulty }}</td>
             <td>{{ tour.status }}</td>
+            <td>{{ tour.recommendedGroupSize.from }}–{{ tour.recommendedGroupSize.to }}</td>
+            <td>
+              @if (tour.length) {
+                {{ tour.length.kilometers }} km
+              } @else {
+                <span class="meta">Length not available</span>
+              }
+            </td>
             <td>
               @for (time of tour.transportTimes; track time.transport) {
                 <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
@@ -35,23 +48,53 @@
                 <span class="meta">none</span>
               }
             </td>
+            <td>
+              @if (tour.isFree === true) {
+                Free
+              } @else if (tour.isFree === false) {
+                {{ tour.amount }} EC
+              }
+            </td>
+            <td>{{ tour.publishedAt }}</td>
+            <td>{{ tour.archivedAt }}</td>
             <td class="actions">
+              <a [routerLink]="['/exploration/mine', tour.id]">Key points</a>
               <button class="button" type="button" (click)="select(tour.id)">Add time</button>
               @if (tour.status === 'Draft') {
                 <button
                   class="button button--primary"
                   type="button"
                   [disabled]="pending()"
-                  (click)="publish(tour.id)"
+                  (click)="selectForPublish(tour.id)"
                 >
                   Publish
+                </button>
+              }
+              @if (tour.status === 'Published') {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="archive(tour.id)"
+                >
+                  Archive
+                </button>
+              }
+              @if (tour.status === 'Archived') {
+                <button
+                  class="button button--primary"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="reactivate(tour.id)"
+                >
+                  Reactivate
                 </button>
               }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">You have no tours yet.</td>
+            <td colspan="10">You have no tours yet.</td>
           </tr>
         }
       </tbody>
@@ -88,6 +131,34 @@
       >
         Save
       </button>
+    </form>
+  }
+
+  @if (publishingTourId()) {
+    <form class="card stack" (submit)="publish($event)">
+      <h2>Publish tour</h2>
+
+      <div class="field">
+        <label for="price">Price</label>
+        <select id="price" [formField]="priceForm.price">
+          <option value="">Choose...</option>
+          <option value="free">Free</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+
+      @if (priceForm.price().value() === 'paid') {
+        <div class="field">
+          <label for="amount">Amount</label>
+          <input id="amount" type="number" [formField]="priceForm.amount" />
+        </div>
+      }
+
+      @if (publishError()) {
+        <p class="error">{{ publishError() }}</p>
+      }
+
+      <button class="button button--primary" type="submit" [disabled]="pending()">Publish</button>
     </form>
   }
 </div>

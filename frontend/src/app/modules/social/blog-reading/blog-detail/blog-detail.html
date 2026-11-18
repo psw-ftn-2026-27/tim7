@@ -13,13 +13,50 @@
     @if (detail.value(); as blog) {
       <h1>{{ blog.title }}</h1>
 
-      <p>{{ blog.description }}</p>
+      @if (blog.lastModifiedAt) {
+        <p class="meta">Edited {{ blog.lastModifiedAt }}</p>
+      }
+
+      <div [innerHTML]="descriptionHtml()"></div>
+
+      @if (blog.images.length > 0) {
+        <ul class="gallery">
+          @for (image of blog.images; track $index) {
+            <li><img [src]="image" [alt]="blog.title" /></li>
+          }
+        </ul>
+      }
 
       <p class="meta">Status: {{ blog.status }}</p>
+
+      <div class="voting">
+        <button
+          class="button"
+          type="button"
+          aria-label="Upvote"
+          [class.button--primary]="blog.myVote === 'Upvote'"
+          [disabled]="pending() || blog.status !== 'Published'"
+          (click)="vote('Upvote')"
+        >
+          &#9650;
+        </button>
+        <span class="score">{{ blog.score }}</span>
+        <button
+          class="button"
+          type="button"
+          aria-label="Downvote"
+          [class.button--primary]="blog.myVote === 'Downvote'"
+          [disabled]="pending() || blog.status !== 'Published'"
+          (click)="vote('Downvote')"
+        >
+          &#9660;
+        </button>
+      </div>
 
       <app-blog-comments
         [comments]="blog.comments"
         [currentUserId]="auth.user()?.id ?? null"
+        [readOnly]="blog.status === 'Archived'"
         (addComment)="add($event)"
         (editComment)="edit($event)"
         (deleteComment)="remove($event)"

@@ -1,0 +1,117 @@
+<section class="stack">
+  <h1>Map demo</h1>
+
+  <p>Every way of embedding the shared map, with hard-coded pins. Nothing on this page is saved.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Display</h2>
+
+  <p>Pins with labels and no path. The map is framed so that every pin is visible.</p>
+
+  <app-map [pins]="sights" />
+</section>
+
+<section class="demo stack">
+  <h2>Challenges in a city</h2>
+
+  <p>
+    How Games would show its challenges: pins with no path, so there is no order. Click a pin to see
+    its label and location.
+  </p>
+
+  <app-map [pins]="challenges" />
+</section>
+
+<section class="demo stack">
+  <h2>Path</h2>
+
+  <p>
+    Pins joined in order. Add or remove a point and the length is reported again. Click a pin to see
+    its order and location.
+  </p>
+
+  <p class="actions">
+    <button
+      class="button"
+      type="button"
+      [disabled]="pathPins().length === route.length"
+      (click)="addPoint()"
+    >
+      Add point
+    </button>
+    <button
+      class="button"
+      type="button"
+      [disabled]="pathPins().length === 0"
+      (click)="removePoint()"
+    >
+      Remove point
+    </button>
+  </p>
+
+  <app-map [pins]="pathPins()" [showPath]="true" (pathLength)="pathLength.set($event)" />
+
+  <p>Points: {{ pathPins().length }}. Length: {{ pathLength().toFixed(2) }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Location picking</h2>
+
+  <p>Click the map to place the selected pin. The other pins stay where they are.</p>
+
+  <h3>Without an initial location</h3>
+
+  <app-map [pins]="sights" [picking]="true" (locationPicked)="pickedWithout.set($event)" />
+
+  <p>
+    @if (pickedWithout(); as picked) {
+      Picked: {{ picked.latitude.toFixed(5) }}, {{ picked.longitude.toFixed(5) }}
+    } @else {
+      Nothing picked yet.
+    }
+  </p>
+
+  <h3>With an initial location</h3>
+
+  <app-map
+    [pins]="sights"
+    [picking]="true"
+    [initialLocation]="initialLocation"
+    (locationPicked)="pickedWith.set($event)"
+  />
+
+  <p>
+    @if (pickedWith(); as picked) {
+      Picked: {{ picked.latitude.toFixed(5) }}, {{ picked.longitude.toFixed(5) }}
+    } @else {
+      Initial location: {{ initialLocation.latitude }}, {{ initialLocation.longitude }}
+    }
+  </p>
+</section>
+
+<section class="demo stack">
+  <h2>Building a tour</h2>
+
+  <p>
+    Picking and path together, as an author would use them: click the map, then add the picked
+    location as the next point. On a real page the point is saved first.
+  </p>
+
+  <app-map
+    [pins]="tourPins()"
+    [showPath]="true"
+    [picking]="true"
+    [initialLocation]="tourPicked()"
+    (locationPicked)="tourPicked.set($event)"
+    (pathLength)="tourLength.set($event)"
+  />
+
+  <p class="actions">
+    <button class="button" type="button" [disabled]="!tourPicked()" (click)="addToTour()">
+      Add as next point
+    </button>
+  </p>
+
+  <p>Points: {{ tourPins().length }}. Length: {{ tourLength().toFixed(2) }} km.</p>
+</section>

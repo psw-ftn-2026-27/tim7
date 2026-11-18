@@ -1,17 +1,153 @@
-.actions {
+// The landing page's own top bar. Only a visitor sees it; the shared header is hidden then.
+.topbar {
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  padding-block: var(--space-3);
+}
+
+.topbar-actions {
+  display: flex;
   gap: var(--space-3);
 }
 
-.actions a {
-  text-decoration: none;
+.brand {
+  align-items: center;
+  display: inline-flex;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  gap: var(--space-2);
 }
 
-.features {
-  margin-top: var(--space-6);
+.brand-icon {
+  color: var(--color-accent);
+  height: var(--space-5);
+  width: var(--space-5);
 }
 
-.card p {
-  margin: 0;
+// Every icon on the page is drawn as an outline in the colour of its parent.
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+// The intro overlaps the top of the photo. Being positioned keeps its text and button in
+// front of the photo where the two overlap.
+.intro {
+  margin-inline: auto;
+  max-width: 40rem;
+  padding-top: var(--space-6);
+  position: relative;
+  text-align: center;
+}
+
+.lead {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+}
+
+// The negative margin pulls the photo up underneath the button. A signed-in user has no
+// button, so for them the photo simply starts below the text.
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: calc(-2 * var(--space-6));
+}
+
+// The photo is a background so that two gradients can be painted over it. Each runs from the
+// page colour to transparent and back, so every edge of the photo fades into the page.
+.photo {
+  aspect-ratio: 3 / 2;
+  background:
+    linear-gradient(to bottom, var(--color-bg), transparent 35%, transparent 80%, var(--color-bg)),
+    linear-gradient(to right, var(--color-bg), transparent 12%, transparent 88%, var(--color-bg)),
+    url('/home-hero.jpg') center / cover;
+}
+
+.overview {
+  text-align: center;
+}
+
+.tiles {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.tiles h3 {
+  font-size: var(--font-size-md);
+  margin: var(--space-3) 0 0;
+}
+
+.icon {
+  align-items: center;
+  background: var(--color-accent-tint);
+  border-radius: 50%;
+  color: var(--color-accent);
+  display: inline-flex;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.icon svg {
+  height: var(--space-5);
+  width: var(--space-5);
+}
+
+// A section with text beside a photo. On a narrow screen the two stack.
+.feature {
+  align-items: center;
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  margin-top: calc(2 * var(--space-6));
+}
+
+// Keeps the last section away from the end of the page.
+.feature:last-child {
+  padding-bottom: var(--space-6);
+}
+
+.feature p,
+.feature li {
+  color: var(--color-text-muted);
+}
+
+// Each of these photos is an enlarged part of the hero photo.
+.feature-photo {
+  aspect-ratio: 4 / 3;
+  background-image: url('/home-hero.jpg');
+  background-size: 200%;
+  border-radius: var(--radius);
+}
+
+.feature-photo--trail {
+  background-position: 62% 85%;
+}
+
+.feature-photo--peaks {
+  background-position: 12% 8%;
+}
+
+.feature-photo--slope {
+  background-position: 98% 4%;
+}
+
+.checks {
+  list-style: none;
+  padding: 0;
+}
+
+.checks li + li {
+  margin-top: var(--space-2);
+}
+
+// \2713 is the check mark character.
+.checks li::before {
+  color: var(--color-accent);
+  content: '\2713';
+  font-weight: 600;
+  margin-right: var(--space-2);
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Api;
 using Shared.Domain;
 using Social.Application.BlogReading;
 using Social.Application.Blogs;
@@ -18,15 +19,15 @@ public sealed class BlogReadingController : ControllerBase
         _readingQueries = readingQueries;
     }
 
-    [HttpGet("published")]
-    public async Task<ActionResult<PageResult<BlogDto>>> GetPublished([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    [HttpGet("visible")]
+    public async Task<ActionResult<PageResult<BlogDto>>> GetVisible([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        return await _readingQueries.GetPublishedAsync(page, pageSize);
+        return await _readingQueries.GetVisibleAsync(page, pageSize);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<BlogDto>> GetById(Guid id)
     {
-        return await _readingQueries.GetByIdAsync(id);
+        return await _readingQueries.GetByIdAsync(id, User.GetUserId());
     }
 }

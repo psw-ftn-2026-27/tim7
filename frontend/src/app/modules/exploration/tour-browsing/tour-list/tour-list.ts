@@ -1,11 +1,20 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
-import { TourDto } from '../../api/exploration-api-types';
+import {
+  MyTourPreferencesDto,
+  TourDifficulty,
+  TourDto,
+  TourSearchDto,
+  TourSort,
+  TransportMode,
+} from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
+
+const PAGE_SIZE = 20;
 
 @Component({
   imports: [FormField, RouterLink, TourCard],
@@ -16,22 +25,164 @@ import { TourCard } from '../tour-card/tour-card';
 export class TourList {
   protected readonly auth = inject(Auth);
 
-  protected readonly tours = httpResource<PageResult<TourDto>>(
-    () => '/api/exploration/tours/published?page=1&pageSize=20',
+  private readonly model = signal({
+    name: '',
+    easy: false,
+    moderate: false,
+    hard: false,
+    tags: '',
+    transport: '' as TransportMode | '',
+    minPrice: null as number | null,
+    maxPrice: null as number | null,
+    sortBy: '' as TourSort | '',
+  });
+
+  // Both prices are optional, so an empty field (null) is valid. Prices are whole EC.
+  protected readonly form = form(this.model, (path) => {
+    min(path.minPrice, 0, { message: 'Min price cannot be negative.' });
+    min(path.maxPrice, 0, { message: 'Max price cannot be negative.' });
+    validate(path.minPrice, ({ value }) => {
+      const minPrice = value();
+      if (minPrice !== null && !Number.isInteger(minPrice)) {
+        return { kind: 'notWhole', message: 'Min price must be a whole number of EC.' };
+      }
+      return null;
+    });
+    validate(path.maxPrice, ({ value }) => {
+      const maxPrice = value();
+      if (maxPrice !== null && !Number.isInteger(maxPrice)) {
+        return { kind: 'notWhole', message: 'Max price must be a whole number of EC.' };
+      }
+      return null;
+    });
+    validate(path.maxPrice, ({ value }) => {
+      const maxPrice = value();
+      const minPrice = this.model().minPrice;
+      if (maxPrice !== null && minPrice !== null && maxPrice < minPrice) {
+        return { kind: 'belowMin', message: 'Max price cannot be less than min price.' };
+      }
+      return null;
+    });
+  });
+
+  protected readonly page = signal(1);
+
+  // The criteria the user entered, in the shape the server expects; null means "not set".
+  private readonly search = computed<TourSearchDto>(() => {
+    const criteria = this.model();
+
+    const difficulties: TourDifficulty[] = [];
+    if (criteria.easy) {
+      difficulties.push('Easy');
+    }
+    if (criteria.moderate) {
+      difficulties.push('Moderate');
+    }
+    if (criteria.hard) {
+      difficulties.push('Hard');
+    }
+
+    const tags = criteria.tags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== '');
+
+    return {
+      name: criteria.name === '' ? null : criteria.name,
+      difficulties: difficulties.length === 0 ? null : difficulties,
+      tags: tags.length === 0 ? null : tags,
+      transport: criteria.transport === '' ? null : criteria.transport,
+      minPrice: criteria.minPrice,
+      maxPrice: criteria.maxPrice,
+      sortBy: criteria.sortBy === '' ? null : criteria.sortBy,
+    };
+  });
+
+  // Reloads from the server whenever the criteria or the page change.
+  // Invalid criteria (a bad price range) return undefined, which means "do not read".
+  protected readonly tours = httpResource<PageResult<TourDto>>(() => {
+    if (!this.form().valid()) {
+      return undefined;
+    }
+    const search = this.search();
+    const params = new URLSearchParams();
+    params.set('page', String(this.page()));
+    params.set('pageSize', String(PAGE_SIZE));
+    if (search.name !== null) {
+      params.set('name', search.name);
+    }
+    for (const difficulty of search.difficulties ?? []) {
+      params.append('difficulties', difficulty);
+    }
+    for (const tag of search.tags ?? []) {
+      params.append('tags', tag);
+    }
+    if (search.transport !== null) {
+      params.set('transport', search.transport);
+    }
+    if (search.minPrice !== null) {
+      params.set('minPrice', String(search.minPrice));
+    }
+    if (search.maxPrice !== null) {
+      params.set('maxPrice', String(search.maxPrice));
+    }
+    if (search.sortBy !== null) {
+      params.set('sortBy', search.sortBy);
+    }
+    return `/api/exploration/tours/published?${params}`;
+  });
+
+  // Only explorers have tour preferences.
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
 
-  private readonly model = signal({ name: '', difficulty: '' });
+  // Read in the background when the page opens; undefined means "do not read".
+  protected readonly myPreferences = httpResource<MyTourPreferencesDto>(() =>
+    this.isExplorer() ? '/api/exploration/tour-preferences/mine' : undefined,
+  );
 
-  protected readonly form = form(this.model);
+  protected readonly preferencesNotSetUp = signal(false);
 
-  protected readonly visibleTours = computed<TourDto[]>(() => {
-    const all = this.tours.value()?.items ?? [];
-    const name = this.model().name.toLowerCase();
-    const difficulty = this.model().difficulty;
-    return all.filter(
-      (tour) =>
-        tour.name.toLowerCase().includes(name) &&
-        (difficulty === '' || tour.difficulty === difficulty),
-    );
+  protected readonly hasNextPage = computed(() => {
+    if (!this.tours.hasValue()) {
+      return false;
+    }
+    return this.page() * PAGE_SIZE < this.tours.value().totalCount;
   });
+
+  // Called on every change of a filter or the sort, so the new results start from page 1.
+  protected backToFirstPage(): void {
+    this.page.set(1);
+  }
+
+  // Copies the saved difficulties, transport and tags into the filters; name, prices and sort stay.
+  protected applyMyPreferences(): void {
+    const preferences = this.myPreferences.value()?.preferences ?? null;
+    if (preferences === null) {
+      this.preferencesNotSetUp.set(true);
+      return;
+    }
+    const criteria = this.model();
+    this.form().reset({
+      name: criteria.name,
+      easy: preferences.difficulties.includes('Easy'),
+      moderate: preferences.difficulties.includes('Moderate'),
+      hard: preferences.difficulties.includes('Hard'),
+      tags: preferences.tags.join(', '),
+      transport: preferences.preferredTransportMode ?? '',
+      minPrice: criteria.minPrice,
+      maxPrice: criteria.maxPrice,
+      sortBy: criteria.sortBy,
+    });
+    this.backToFirstPage();
+  }
+
+  protected previousPage(): void {
+    this.page.update((page) => page - 1);
+  }
+
+  protected nextPage(): void {
+    this.page.update((page) => page + 1);
+  }
 }

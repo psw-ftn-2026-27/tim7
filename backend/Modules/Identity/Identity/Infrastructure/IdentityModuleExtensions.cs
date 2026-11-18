@@ -1,4 +1,10 @@
+using Identity.Contracts;
 using Identity.Core;
+using Identity.Core.Connections;
+using Identity.Core.Following;
+using Identity.Core.Users;
+using Identity.Infrastructure.Connections;
+using Identity.Infrastructure.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +24,16 @@ public static class IdentityModuleExtensions
         services.AddIdentityCore<ApplicationUser>(options => options.User.RequireUniqueEmail = true)
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<IdentityModuleDbContext>();
+
+        services.AddScoped<IConnectionRepository, ConnectionRepository>();
+        services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<IdentityModuleDbContext>());
+        services.AddScoped<IConnectionReadRepository, ConnectionReadRepository>();
+
+        services.AddScoped<FollowingService>();
+        services.AddScoped<FollowingQueries>();
+
+        services.AddScoped<IUserReadRepository, UserReadRepository>();
+        services.AddScoped<IIdentityApi, IdentityApi>();
 
         return services;
     }

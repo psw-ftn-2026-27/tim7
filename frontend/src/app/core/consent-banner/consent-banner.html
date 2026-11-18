@@ -1,0 +1,12 @@
+<section class="card consent" aria-label="Analytics consent">
+  <p>
+    With your permission, we use Google Analytics to record which pages of Explorer you open, so
+    that we can see what is used and improve it. Nothing is sent to Google unless you accept, and
+    you can change your choice at any time on the Privacy page.
+  </p>
+
+  <div class="actions">
+    <button class="button" type="button" (click)="accepted.emit()">Accept</button>
+    <button class="button" type="button" (click)="declined.emit()">Decline</button>
+  </div>
+</section>

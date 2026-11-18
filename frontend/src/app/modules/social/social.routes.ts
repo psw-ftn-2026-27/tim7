@@ -1,12 +1,26 @@
 import { Routes } from '@angular/router';
 import { CreateBlog } from './blog-authoring/create-blog/create-blog';
+import { MyBlogDetail } from './blog-authoring/my-blog-detail/my-blog-detail';
 import { MyBlogs } from './blog-authoring/my-blogs/my-blogs';
 import { BlogDetail } from './blog-reading/blog-detail/blog-detail';
 import { BlogList } from './blog-reading/blog-list/blog-list';
+import { ClubList } from './club-browsing/club-list/club-list';
+import { MyInvitations } from './club-invitations/my-invitations/my-invitations';
+import { ClubDetail } from './club-membership/club-detail/club-detail';
+import { CreateClub } from './club-management/create-club/create-club';
+import { MyClubDetail } from './club-management/my-club-detail/my-club-detail';
+import { MyClubs } from './club-management/my-clubs/my-clubs';
 
 export const socialRoutes: Routes = [
   { path: '', component: BlogList },
   { path: 'mine', component: MyBlogs },
   { path: 'create', component: CreateBlog },
+  { path: 'mine/:id', component: MyBlogDetail },
+  { path: 'clubs', component: ClubList },
+  { path: 'clubs/mine', component: MyClubs },
+  { path: 'clubs/create', component: CreateClub },
+  { path: 'clubs/mine/:id', component: MyClubDetail },
+  { path: 'clubs/invitations', component: MyInvitations },
+  { path: 'clubs/:id', component: ClubDetail },
   { path: ':id', component: BlogDetail },
 ];

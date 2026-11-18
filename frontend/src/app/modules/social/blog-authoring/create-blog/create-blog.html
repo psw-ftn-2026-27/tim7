@@ -13,7 +13,7 @@
     </div>
 
     <div class="field">
-      <label for="description">Description</label>
+      <label for="description">Description (Markdown supported)</label>
       <textarea id="description" rows="6" [formField]="form.description"></textarea>
       @if (form.description().touched()) {
         @for (message of form.description().errors(); track $index) {
@@ -22,11 +22,17 @@
       }
     </div>
 
+    <app-image-picker (filesChange)="images.set($event)" (validChange)="imagesValid.set($event)" />
+
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+    <button
+      class="button button--primary"
+      type="submit"
+      [disabled]="!form().valid() || !imagesValid() || pending()"
+    >
       Create
     </button>
   </form>

@@ -1,0 +1,55 @@
+<div class="stack">
+  <h1>My cart</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (paid()) {
+    <p>Payment successful. <a routerLink="/exploration">Go to the tours</a></p>
+  }
+
+  @if (cart.error()) {
+    <p class="error">Could not load your cart.</p>
+  } @else if (cart.isLoading() && !cart.hasValue()) {
+    <p>Loading your cart...</p>
+  } @else if (cart.value()?.items?.length === 0) {
+    <p>Your cart is empty.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Tour</th>
+          <th scope="col">Price</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of cart.value()?.items ?? []; track item.entityId) {
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.price }} EC</td>
+            <td>
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="remove(item.entityId)"
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p>Total: {{ cart.value()?.totalPrice }} EC</p>
+
+    <div>
+      <button class="button button--primary" type="button" [disabled]="pending()" (click)="pay()">
+        Pay
+      </button>
+    </div>
+  }
+</div>

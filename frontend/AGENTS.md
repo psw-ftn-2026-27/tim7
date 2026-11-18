@@ -34,6 +34,7 @@ frontend/src/
       util/
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
+      analytics/             analytics consent decision, page views, events    [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -50,6 +51,9 @@ frontend/src/
         <name>.routes.ts     the module's routes, lazy-loaded by core/app.routes.ts; the
                              only module file imported from outside the module
 ```
+
+Besides the four feature modules, `modules/identity/` holds Identity's screens for
+following other users; login and register stay in `core/auth`.
 
 A module is a flat list of use-case groups. A group is a flat list of component
 folders plus at most one service file. That is the whole layout, and it follows the
@@ -93,8 +97,12 @@ nothing.
   another module's endpoints, and never shares state with it.
 - A module's route paths are its only surface toward other modules. Renaming or
   removing a path another module links to is a cross-team change; flag it.
-- The one legitimately shared state is the current user (identity, roles) in `core/`.
-  Modules read it; only the platform team writes it.
+- The only legitimately shared state is the current user (identity, roles) in `core/`
+  and the analytics consent decision in `shared/analytics`. Modules read them; only
+  platform code writes them.
+- Modules record analytics events only through `Analytics` in `shared/analytics` and
+  never call Google Analytics directly. Event names and parameters are listed in
+  `shared/analytics/analytics-events.ts`, which is platform-owned.
 
 ## The Angular subset
 
@@ -108,6 +116,8 @@ construct means adding a lesson, so treat it as a platform decision.
 - Templates: built-in control flow (`@if`, `@for`, `@switch`), `class` and `style`
   bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`. No template reference
   variables (`#name`); every value the user types goes through Signal Forms.
+  `[innerHTML]` only to show Markdown converted to HTML with `marked`; never bypass
+  Angular's sanitizer (`DomSanitizer.bypassSecurityTrust*`).
 - State: `signal()` and `computed()`. `effect()` only when a signal must
   drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
@@ -130,6 +140,11 @@ lean files that students extend, not a design system. The four global partials i
 `src/styles/` are platform-owned and short. Theming means editing `_tokens.scss` and
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
+
+Colours have two roles. `--color-accent` is the platform colour and the only colour of an
+action: buttons, links, focus. Each module has `--color-module-<name>` and a
+`.badge--<name>` class that mark where the user is; a module colour never goes on a
+button or a link.
 
 Where a style goes, in order:
 

@@ -1,3 +1,10 @@
 .table td:last-child {
-  width: 8rem;
+  width: 14rem;
+}
+
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }

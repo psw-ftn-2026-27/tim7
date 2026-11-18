@@ -1,0 +1,100 @@
+<div class="stack">
+  <h1>My clubs</h1>
+
+  <p><a routerLink="/social">All blogs</a> · <a routerLink="/social/clubs">All clubs</a> · <a routerLink="/social/clubs/create">Create club</a></p>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (clubs.isLoading()) {
+    <p>Loading your clubs...</p>
+  } @else if (clubs.error()) {
+    <p class="error">Could not load your clubs. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Description</th>
+          <th scope="col">Images</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (club of clubs.value() ?? []; track club.id) {
+          <tr>
+            <td>
+              {{ club.name }}
+              @if (club.status === 'Closed') {
+                <p class="meta">Closed</p>
+              }
+            </td>
+            <td>{{ club.description }}</td>
+            <td class="images">
+              <ul>
+                @for (image of club.images; track $index) {
+                  <li [title]="image">{{ image }}</li>
+                }
+              </ul>
+            </td>
+            <td>
+              <div class="actions">
+                @if (confirmingId() === club.id && confirmingAction() === 'close') {
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="confirmClose(club.id)"
+                  >
+                    Confirm
+                  </button>
+                  <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+                    Cancel
+                  </button>
+                } @else if (confirmingId() === club.id) {
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="confirmDelete(club.id)"
+                  >
+                    Confirm delete
+                  </button>
+                  <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+                    Cancel
+                  </button>
+                } @else {
+                  <a class="button" [routerLink]="['/social/clubs/mine', club.id]">Details</a>
+                  <a class="button" [routerLink]="['/social/clubs', club.id]">Members</a>
+                  @if (club.status === 'Active') {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="askConfirm(club.id, 'close')"
+                    >
+                      Close
+                    </button>
+                  }
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="askConfirm(club.id, 'delete')"
+                  >
+                    Delete
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4">You have no clubs yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

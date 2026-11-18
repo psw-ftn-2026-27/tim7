@@ -1,0 +1,119 @@
+<div class="stack">
+  <p><a routerLink="/exploration">Back to tours</a></p>
+
+  @if (tour.isLoading()) {
+    <p>Loading tour...</p>
+  } @else if (tour.statusCode() === 404) {
+    <p class="error">Tour not found</p>
+  } @else if (tour.error()) {
+    <p class="error">Could not load the tour. Log in and try again.</p>
+  } @else {
+    @if (tour.value(); as current) {
+      <h1>{{ current.name }}</h1>
+
+      <p class="meta">Difficulty: {{ current.difficulty }}</p>
+
+      <p>{{ current.description }}</p>
+
+      @if (!current.isFree) {
+        <p><a [routerLink]="['/payment/tours', current.id]">Buy</a></p>
+      }
+
+      <p>
+        Length:
+        @if (current.length) {
+          {{ current.length.kilometers }} km
+        } @else {
+          <span class="meta">not available</span>
+        }
+      </p>
+
+      @if (current.tags.length > 0) {
+        <ul class="tags">
+          @for (tag of current.tags; track tag) {
+            <li>{{ tag }}</li>
+          }
+        </ul>
+      }
+
+      @if (current.transportTimes.length > 0) {
+        <ul class="times">
+          @for (time of current.transportTimes; track time.transport) {
+            <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
+          }
+        </ul>
+      } @else {
+        <p class="meta">No transport times yet.</p>
+      }
+
+      @if (current.keyPoints.length > 0) {
+        <h2>Key points</h2>
+
+        <app-map [pins]="pins()" />
+
+        <ul class="key-points">
+          @for (point of current.keyPoints; track point.id) {
+            <li class="card key-point">
+              <img [src]="point.image" [alt]="point.name" />
+              <div class="stack">
+                <h3>{{ point.name }}</h3>
+                <p>{{ point.description }}</p>
+                <p class="meta">
+                  Location: {{ point.location.latitude.toFixed(5) }},
+                  {{ point.location.longitude.toFixed(5) }}
+                </p>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+
+      <section class="stack">
+        <h2>Start the tour</h2>
+
+        @if (active.isLoading()) {
+          <p>Loading your active tour...</p>
+        } @else if (active.error()) {
+          <p class="error">Could not load your active tour.</p>
+        } @else {
+          <p class="meta">Click on the map where you are.</p>
+
+          <app-map [picking]="true" (locationPicked)="onLocationPicked($event)" />
+
+          @if (active.value()?.execution; as execution) {
+            @if (execution.tourId === current.id) {
+              <p><a routerLink="/exploration/active">Continue tour</a></p>
+            } @else {
+              <p>
+                Your active tour is {{ execution.tourName }}.
+                <a routerLink="/exploration/active">Continue tour</a>
+              </p>
+              @if (startError()) {
+                <p class="error">{{ startError() }}</p>
+              }
+              <p>
+                <button class="button button--primary" type="button" [disabled]="true">
+                  Start tour
+                </button>
+              </p>
+            }
+          } @else {
+            @if (startError()) {
+              <p class="error">{{ startError() }}</p>
+            }
+            <p>
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="!canStart()"
+                (click)="start()"
+              >
+                Start tour
+              </button>
+            </p>
+          }
+        }
+      </section>
+    }
+  }
+</div>

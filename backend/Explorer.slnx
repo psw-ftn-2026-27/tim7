@@ -17,6 +17,7 @@
     <Project Path="Modules/Games/Games.Tests/Games.Tests.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/">
+    <Project Path="Modules/Identity/Identity.Contracts/Identity.Contracts.csproj" />
     <Project Path="Modules/Identity/Identity.Tests/Identity.Tests.csproj" />
     <Project Path="Modules/Identity/Identity/Identity.csproj" />
   </Folder>
@@ -41,6 +42,7 @@
     <Project Path="Shared/Shared.Domain/Shared.Domain.csproj" />
     <Project Path="Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
     <Project Path="Shared/Shared.Tests/Shared.Tests.csproj" />
+    <Project Path="Shared/Shared.UnitTests/Shared.UnitTests.csproj" />
   </Folder>
   <Project Path="Host.Api/Host.Api.csproj" />
   <Project Path="Host.Tests/Host.Tests.csproj" />

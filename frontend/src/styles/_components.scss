@@ -1,17 +1,44 @@
 .button {
+  align-items: center;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius);
   color: var(--color-text);
   cursor: pointer;
+  display: inline-flex;
   font: inherit;
+  gap: var(--space-2);
+  min-height: 2.75rem;
   padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+}
+
+.button:hover {
+  background: var(--color-bg);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
 }
 
 .button--primary {
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-accent-text);
+  font-weight: 600;
+}
+
+.button--primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .card {
@@ -36,10 +63,20 @@
 .field select,
 .field textarea {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius);
+  color: var(--color-text);
   font: inherit;
-  padding: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0;
 }
 
 .table {
@@ -58,6 +95,39 @@
   color: var(--color-danger);
   font-size: var(--font-size-sm);
   margin: 0;
+}
+
+// Marks which module a page belongs to. Use the variant of your own module;
+// the colour is a marker only, never put it on a button.
+.badge {
+  align-items: center;
+  align-self: flex-start;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+}
+
+.badge--exploration {
+  background: var(--color-module-exploration-tint);
+  color: var(--color-module-exploration);
+}
+
+.badge--games {
+  background: var(--color-module-games-tint);
+  color: var(--color-module-games);
+}
+
+.badge--social {
+  background: var(--color-module-social-tint);
+  color: var(--color-module-social);
+}
+
+.badge--payment {
+  background: var(--color-module-payment-tint);
+  color: var(--color-module-payment);
 }
 
 .meta {
