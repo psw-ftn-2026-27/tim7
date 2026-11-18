@@ -34,6 +34,7 @@ frontend/src/
       util/
       api/                   shared types (PageResult, ProblemDetails),
                              mirror the server, no client-only fields          [platform]
+      analytics/             analytics consent decision, page views, events    [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -96,8 +97,12 @@ nothing.
   another module's endpoints, and never shares state with it.
 - A module's route paths are its only surface toward other modules. Renaming or
   removing a path another module links to is a cross-team change; flag it.
-- The one legitimately shared state is the current user (identity, roles) in `core/`.
-  Modules read it; only the platform team writes it.
+- The only legitimately shared state is the current user (identity, roles) in `core/`
+  and the analytics consent decision in `shared/analytics`. Modules read them; only
+  platform code writes them.
+- Modules record analytics events only through `Analytics` in `shared/analytics` and
+  never call Google Analytics directly. Event names and parameters are listed in
+  `shared/analytics/analytics-events.ts`, which is platform-owned.
 
 ## The Angular subset
 

@@ -2,6 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form, min, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { Analytics } from '../../../../shared/analytics/analytics';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDto, TransportMode } from '../../api/exploration-api-types';
 import { TourAuthoring } from '../tour-authoring';
@@ -14,6 +15,7 @@ import { TourAuthoring } from '../tour-authoring';
 })
 export class MyTours {
   private readonly tourAuthoring = inject(TourAuthoring);
+  private readonly analytics = inject(Analytics);
 
   protected readonly tours = httpResource<TourDto[]>(() => '/api/exploration/tours/mine');
 
@@ -61,6 +63,7 @@ export class MyTours {
         isFree: price === '' ? null : price === 'free',
         amount: price === 'paid' ? this.priceForm.amount().value() : null,
       });
+      this.analytics.record('tour_published', { tour_id: tourId });
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not publish the tour.'));
     } finally {
