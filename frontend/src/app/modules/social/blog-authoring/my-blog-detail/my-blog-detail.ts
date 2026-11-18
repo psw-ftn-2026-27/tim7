@@ -3,12 +3,13 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { marked } from 'marked';
+import { ImagePicker } from '../../../../shared/image-picker/image-picker';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { BlogDto } from '../../api/social-api-types';
 import { BlogAuthoring } from '../blog-authoring';
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [FormField, ImagePicker, RouterLink],
   selector: 'app-my-blog-detail',
   styleUrl: './my-blog-detail.scss',
   templateUrl: './my-blog-detail.html',
@@ -29,19 +30,30 @@ export class MyBlogDetail {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  protected readonly form = form(signal({ title: '', description: '', images: '' }), (path) => {
+  protected readonly form = form(signal({ title: '', description: '' }), (path) => {
     required(path.title, { message: 'Title is required.' });
     required(path.description, { message: 'Description is required.' });
   });
+
+  // Addresses of the blog's current images that the author keeps, and newly picked files.
+  protected readonly keptImages = signal<string[]>([]);
+  protected readonly newImages = signal<File[]>([]);
+  protected readonly newImagesValid = signal(true);
 
   protected startEdit(blog: BlogDto): void {
     this.error.set(null);
     this.form().reset({
       title: blog.title,
       description: blog.description,
-      images: blog.images.join('\n'),
     });
+    this.keptImages.set(blog.images);
+    this.newImages.set([]);
+    this.newImagesValid.set(true);
     this.editing.set(true);
+  }
+
+  protected removeImage(address: string): void {
+    this.keptImages.update((images) => images.filter((image) => image !== address));
   }
 
   protected async submit(event: Event): Promise<void> {
@@ -49,17 +61,15 @@ export class MyBlogDetail {
     this.pending.set(true);
     this.error.set(null);
     try {
-      const images = this.form
-        .images()
-        .value()
-        .split('\n')
-        .map((address) => address.trim())
-        .filter((address) => address !== '');
-      await this.blogAuthoring.edit(this.id(), {
-        title: this.form.title().value(),
-        description: this.form.description().value(),
-        images,
-      });
+      await this.blogAuthoring.edit(
+        this.id(),
+        {
+          title: this.form.title().value(),
+          description: this.form.description().value(),
+          keptImages: this.keptImages(),
+        },
+        this.newImages(),
+      );
       await this.router.navigate(['/social/mine']);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not save the changes.'));
