@@ -55,6 +55,25 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Blog_is_read_with_the_e_mail_of_each_commenter_and_the_time_of_the_last_edit()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var unedited = BlogSeed.CommentedByDemoUsers.Comments[0];
+        var edited = BlogSeed.CommentedByDemoUsers.Comments[1];
+
+        var blog = await client.GetFromJsonAsync<BlogDto>(
+            $"/api/social/blogs/{BlogSeed.CommentedByDemoUsers.Id}", JsonOptions);
+
+        var uneditedDto = blog!.Comments.Single(comment => comment.Id == unedited.Id);
+        uneditedDto.UserEmail.Should().Be("explorer1@explorer.dev");
+        uneditedDto.LastModifiedAt.Should().BeNull();
+        var editedDto = blog.Comments.Single(comment => comment.Id == edited.Id);
+        editedDto.UserEmail.Should().Be("explorer2@explorer.dev");
+        editedDto.Text.Should().Be(edited.Text);
+        editedDto.LastModifiedAt.Should().BeCloseTo(edited.LastModifiedAt!.Value, TimeSpan.FromMilliseconds(1));
+    }
+
+    [Fact]
     public async Task Draft_blog_cannot_be_read()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

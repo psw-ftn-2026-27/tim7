@@ -33,6 +33,8 @@ export interface TourDto {
   recommendedGroupSize: RecommendedGroupSizeDto;
   length: TourLengthDto | null;
   transportTimes: TransportTimeDto[];
+  isFree: boolean | null;
+  amount: number | null;
 }
 
 export interface CreateTourDto {

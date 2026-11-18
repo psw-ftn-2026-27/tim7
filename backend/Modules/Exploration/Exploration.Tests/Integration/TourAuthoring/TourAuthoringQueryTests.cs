@@ -32,4 +32,20 @@ public class TourAuthoringQueryTests : BaseIntegrationTest
         archived.ArchivedAt.Should().NotBeNull();
         archived.PublishedAt.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Author_sees_the_price_of_a_published_tour_and_no_price_for_a_draft()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<List<TourDto>>("/api/exploration/tours/mine", JsonOptions);
+
+        var seededPrice = TourSeed.PublishedVineyards.Price!;
+        var published = tours.Should().ContainSingle(tour => tour.Id == TourSeed.PublishedVineyards.Id).Which;
+        published.IsFree.Should().Be(seededPrice.IsFree);
+        published.Amount.Should().Be(seededPrice.Amount);
+        var draft = tours.Should().ContainSingle(tour => tour.Id == TourSeed.FortressWalk.Id).Which;
+        draft.IsFree.Should().BeNull();
+        draft.Amount.Should().BeNull();
+    }
 }

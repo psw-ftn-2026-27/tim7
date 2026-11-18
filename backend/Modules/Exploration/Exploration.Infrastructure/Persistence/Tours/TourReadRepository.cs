@@ -1,6 +1,7 @@
 using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
+using Exploration.Contracts;
 using Exploration.Domain.Tours;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
@@ -97,6 +98,20 @@ internal sealed class TourReadRepository : ITourReadRepository
             .FirstOrDefaultAsync();
     }
 
+    public Task<TourForSaleDto?> GetTourForSaleAsync(Guid tourId)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId)
+            .Select(tour => new TourForSaleDto(
+                tour.Id,
+                tour.Name,
+                tour.AuthorId,
+                tour.Price == null ? null : tour.Price.IsFree,
+                tour.Price == null ? null : tour.Price.Amount,
+                tour.Status == TourStatus.Published))
+            .FirstOrDefaultAsync();
+    }
+
     public Task<List<string>> GetPublishedTagsAsync()
     {
         return _dbContext.Tours
@@ -169,6 +184,8 @@ internal sealed class TourReadRepository : ITourReadRepository
                 tour.Length == null ? null : new TourLengthDto(tour.Length.Kilometers),
                 tour.TransportTimes
                     .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
-                    .ToList()));
+                    .ToList(),
+                tour.Price == null ? null : tour.Price.IsFree,
+                tour.Price == null ? null : tour.Price.Amount));
     }
 }

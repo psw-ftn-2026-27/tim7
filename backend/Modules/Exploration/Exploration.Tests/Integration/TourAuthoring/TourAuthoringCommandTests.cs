@@ -120,6 +120,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
         var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
         stored.Status.Should().Be(TourStatus.Published);
         stored.PublishedAt.Should().NotBeNull();
+        stored.Price.Should().Be(new TourPrice(false, 1500m));
     }
 
     [Fact]
@@ -135,6 +136,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
         var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
         stored.Status.Should().Be(TourStatus.Draft);
         stored.PublishedAt.Should().BeNull();
+        stored.Price.Should().BeNull();
     }
 
     [Fact]
