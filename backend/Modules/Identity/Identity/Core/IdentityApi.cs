@@ -33,4 +33,10 @@ public sealed class IdentityApi : IIdentityApi
     {
         return await _userManager.FindByIdAsync(userId.ToString()) is not null;
     }
+
+    public async Task<UserSummary?> FindUserByEmailAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        return user is null ? null : new UserSummary(user.Id, user.Email!);
+    }
 }
