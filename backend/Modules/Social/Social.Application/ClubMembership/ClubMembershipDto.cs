@@ -1,3 +1,5 @@
+using Social.Domain.Clubs;
+
 namespace Social.Application.ClubMembership;
 
 public sealed record ClubMembershipDto(
@@ -8,4 +10,5 @@ public sealed record ClubMembershipDto(
     List<string> Images,
     List<ClubMemberDto> Members,
     MembershipState MyState,
+    ClubRole? MyRole,
     List<Guid>? PendingRequests);

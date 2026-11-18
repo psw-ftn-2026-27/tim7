@@ -10,6 +10,7 @@ using Social.Application.ClubBrowsing;
 using Social.Application.Blogs;
 using Social.Application.ClubManagement;
 using Social.Application.ClubMembership;
+using Social.Application.ClubRoles;
 using Social.Application.Clubs;
 using Social.Infrastructure.Images;
 using Social.Infrastructure.Persistence;
@@ -43,6 +44,7 @@ public static class SocialModuleExtensions
         services.AddScoped<ClubBrowsingQueries>();
         services.AddScoped<ClubMembershipService>();
         services.AddScoped<ClubMembershipQueries>();
+        services.AddScoped<ClubRolesService>();
 
         return services;
     }

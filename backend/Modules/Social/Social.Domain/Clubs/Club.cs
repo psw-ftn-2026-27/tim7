@@ -53,8 +53,7 @@ public sealed class Club : AggregateRoot
 
     public bool CanResolveRequests(Guid userId)
     {
-        return OwnerId == userId
-            || _members.Any(member => member.UserId == userId && member.Role == ClubRole.Moderator);
+        return OwnerId == userId || IsModerator(userId);
     }
 
     public void RequestToJoin(Guid userId)
@@ -90,6 +89,63 @@ public sealed class Club : AggregateRoot
         EnsureCanResolveRequests(resolverId);
 
         _joinRequests.Remove(GetPendingRequest(userId));
+    }
+
+    public void PromoteToModerator(Guid promoterId, Guid userId)
+    {
+        EnsureIsOwner(promoterId, "Only the owner can promote a member to moderator.");
+        var member = GetMember(userId);
+
+        member.PromoteToModerator();
+    }
+
+    public void TransferOwnership(Guid ownerId, Guid newOwnerId)
+    {
+        EnsureIsOwner(ownerId, "Only the owner can transfer the ownership of a club.");
+        var newOwner = GetMember(newOwnerId);
+
+        _members.Remove(newOwner);
+        _members.Add(new ClubMember(OwnerId, ClubRole.Member));
+        OwnerId = newOwnerId;
+    }
+
+    public void RemoveMember(Guid removerId, Guid userId)
+    {
+        var removerIsModerator = IsModerator(removerId);
+        if (OwnerId != removerId && !removerIsModerator)
+        {
+            throw new DomainException("Only the owner or a moderator can remove a member from a club.");
+        }
+        var member = GetMember(userId);
+        if (removerIsModerator && member.Role != ClubRole.Member)
+        {
+            throw new DomainException("A moderator can remove only regular members from a club.");
+        }
+
+        _members.Remove(member);
+    }
+
+    private bool IsModerator(Guid userId)
+    {
+        return _members.Any(member => member.UserId == userId && member.Role == ClubRole.Moderator);
+    }
+
+    private void EnsureIsOwner(Guid userId, string message)
+    {
+        if (OwnerId != userId)
+        {
+            throw new DomainException(message);
+        }
+    }
+
+    private ClubMember GetMember(Guid userId)
+    {
+        var member = _members.FirstOrDefault(member => member.UserId == userId);
+        if (member is null)
+        {
+            throw new NotFoundException($"User {userId} is not a member of this club.");
+        }
+        return member;
     }
 
     private void EnsureCanResolveRequests(Guid resolverId)

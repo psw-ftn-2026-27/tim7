@@ -36,4 +36,16 @@ public class ClubMembershipQueryTests : BaseIntegrationTest
         club!.MyState.Should().Be(MembershipState.Pending);
         club.PendingRequests.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Moderator_gets_their_role_and_the_pending_requests()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var club = await client.GetFromJsonAsync<ClubMembershipDto>(
+            $"/api/social/clubs/{ClubSeed.ClimbersWithExplorerModeratorAndPendingRequest.Id}", JsonOptions);
+
+        club!.MyRole.Should().Be(ClubRole.Moderator);
+        club.PendingRequests.Should().Contain(WellKnownUsers.Administrator);
+    }
 }

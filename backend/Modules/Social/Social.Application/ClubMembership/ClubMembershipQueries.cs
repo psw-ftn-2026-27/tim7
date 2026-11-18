@@ -29,6 +29,7 @@ public sealed class ClubMembershipQueries
         return view with
         {
             MyState = myState,
+            MyRole = view.Members.FirstOrDefault(member => member.UserId == userId)?.Role,
             PendingRequests = club.CanResolveRequests(userId) ? view.PendingRequests : null
         };
     }
