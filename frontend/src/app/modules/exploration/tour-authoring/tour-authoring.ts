@@ -7,6 +7,7 @@ import {
   TourDto,
   TourPriceDto,
   TransportTimeDto,
+  SendMessageDto,
 } from '../api/exploration-api-types';
 
 const BASE_URL = '/api/exploration/tours';
@@ -58,6 +59,30 @@ export class TourAuthoring {
 
   async removeKeyPoint(id: string, keyPointId: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}/key-points/${keyPointId}`));
+  }
+
+  async sendMessage(tourId: string, dto: SendMessageDto): Promise<string> {
+    return firstValueFrom(
+      this.http.post<string>(`/api/exploration/tours/${tourId}/chat/messages`, dto),
+    );
+  }
+
+  async deleteMessage(tourId: string, messageId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete<void>(`/api/exploration/tours/${tourId}/chat/messages/${messageId}`),
+    );
+  }
+
+  async mute(tourId: string, userId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`/api/exploration/tours/${tourId}/chat/muted/${userId}`, null),
+    );
+  }
+
+  async unmute(tourId: string, userId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete<void>(`/api/exploration/tours/${tourId}/chat/muted/${userId}`),
+    );
   }
 }
 

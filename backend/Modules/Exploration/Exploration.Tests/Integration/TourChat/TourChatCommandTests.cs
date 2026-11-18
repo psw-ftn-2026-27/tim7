@@ -104,21 +104,17 @@ public class TourChatCommandTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    [Theory]
-    [InlineData("POST", "messages")]
-    [InlineData("DELETE", "messages/00000000-0000-0000-0000-0000000000aa")]
-    [InlineData("POST", "muted/00000000-0000-0000-0000-0000000000aa")]
-    [InlineData("DELETE", "muted/00000000-0000-0000-0000-0000000000aa")]
-    public async Task Administrator_cannot_change_a_tour_chat(string method, string path)
+    [Fact]
+    public async Task Administrator_can_write_in_a_tours_chat()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var request = new HttpRequestMessage(new HttpMethod(method), $"/api/exploration/tours/{TourSeed.PublishedVineyards.Id}/chat/{path}")
-        {
-            Content = JsonContent.Create(new SendMessageDto("Zdravo!"))
-        };
 
-        var response = await client.SendAsync(request);
+        var response = await client.PostAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.PublishedVineyards.Id}/chat/messages", new SendMessageDto("Pozdrav od administratora."));
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.Messages.Should().Contain(message =>
+            message.ChatId == ChatSeed.VineyardsChat.Id && message.AuthorId == WellKnownUsers.Administrator);
     }
 }

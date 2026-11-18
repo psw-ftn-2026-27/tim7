@@ -7,7 +7,8 @@ namespace Exploration.Api;
 
 [ApiController]
 [Route("api/exploration/tours/{tourId:guid}/chat")]
-[Authorize(Roles = "explorer")]
+// Every signed-in user takes part in a tour's chat, whatever their role (P2).
+[Authorize]
 public sealed class TourChatController : ControllerBase
 {
     private readonly TourChatService _chatService;
