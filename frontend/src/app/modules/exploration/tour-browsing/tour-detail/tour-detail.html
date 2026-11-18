@@ -120,6 +120,30 @@
           }
         }
       </section>
+
+      @if (chat.hasValue()) {
+        @if (chat.value(); as chatView) {
+          <app-chat
+            [messages]="chatMessages()"
+            [form]="chatForm"
+            [locked]="chatView.isLocked"
+            [error]="chatError()"
+            [pending]="chatPending()"
+            [currentUserId]="auth.user()?.id ?? null"
+            [privileged]="chatView.isPrivileged"
+            [muted]="chatView.isMuted"
+            [mutedUsers]="chatMutedUsers()"
+            (send)="sendMessage($event)"
+            (delete)="deleteMessage($event)"
+            (mute)="muteAuthor($event)"
+            (unmute)="unmuteUser($event)"
+          />
+        }
+      } @else if (chat.error()) {
+        <p class="alert">Could not load the chat. Log in as an explorer to join it.</p>
+      } @else {
+        <p class="meta">Loading chat...</p>
+      }
     }
   }
 </div>

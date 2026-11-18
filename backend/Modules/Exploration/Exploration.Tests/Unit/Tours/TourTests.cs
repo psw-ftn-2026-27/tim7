@@ -396,4 +396,38 @@ public class TourTests
 
         removal.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void Author_is_the_only_privileged_participant_of_a_published_tours_chat()
+    {
+        var tour = CreatePublishableTour();
+        tour.Publish(FreePrice);
+
+        var privileged = new[] { WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer }
+            .Select(userId => tour.ChatParticipantFor(userId).IsPrivileged);
+
+        privileged.Should().Equal(true, false);
+    }
+
+    [Fact]
+    public void Draft_tour_has_no_chat()
+    {
+        var tour = CreatePublishableTour();
+
+        var joining = () => tour.ChatParticipantFor(WellKnownUsers.SecondExplorer);
+
+        joining.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Chat_opened_for_an_archived_tour_is_locked()
+    {
+        var tour = CreatePublishableTour();
+        tour.Publish(FreePrice);
+        tour.Archive();
+
+        var chat = tour.OpenChat();
+
+        chat.IsLocked.Should().BeTrue();
+    }
 }

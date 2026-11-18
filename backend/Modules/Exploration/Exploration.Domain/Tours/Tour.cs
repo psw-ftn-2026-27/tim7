@@ -1,4 +1,5 @@
 using Shared.Domain;
+using Shared.Domain.Chats;
 using Shared.Domain.Exceptions;
 
 namespace Exploration.Domain.Tours;
@@ -116,6 +117,45 @@ public sealed class Tour : AggregateRoot
         Price = price;
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
+    }
+
+    // The tour's chat is found by this context; the kind is local to the Exploration module.
+    public ChatContext ChatContext => new("tour", Id);
+
+    // A draft tour has no chat. Every signed-in user takes part in the chat of a published or archived
+    // tour, and the author is its only privileged participant.
+    public ChatParticipant ChatParticipantFor(Guid userId)
+    {
+        EnsureHasChat();
+        return new ChatParticipant(userId, userId == AuthorId);
+    }
+
+    public bool CanBeMutedInChat(Guid userId)
+    {
+        return Status != TourStatus.Draft && userId != AuthorId;
+    }
+
+    // Nobody writes in the chat of an archived tour (P4).
+    public bool ChatIsLocked => Status == TourStatus.Archived;
+
+    // Opens the tour's chat, locked from the start when the tour is already archived.
+    public Chat OpenChat()
+    {
+        EnsureHasChat();
+        var chat = Chat.Open(ChatContext);
+        if (ChatIsLocked)
+        {
+            chat.Lock();
+        }
+        return chat;
+    }
+
+    private void EnsureHasChat()
+    {
+        if (Status == TourStatus.Draft)
+        {
+            throw new DomainException("A draft tour has no chat.");
+        }
     }
 
     public void Archive()

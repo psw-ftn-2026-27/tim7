@@ -1,4 +1,5 @@
 using AutoMapper;
+using Exploration.Application.Chats;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
 using Shared.Domain.Exceptions;
@@ -8,12 +9,14 @@ namespace Exploration.Application.TourAuthoring;
 public sealed class TourAuthoringService
 {
     private readonly ITourRepository _tourRepository;
+    private readonly IChatRepository _chatRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public TourAuthoringService(ITourRepository tourRepository, IUnitOfWork unitOfWork, IMapper mapper)
+    public TourAuthoringService(ITourRepository tourRepository, IChatRepository chatRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _tourRepository = tourRepository;
+        _chatRepository = chatRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -51,6 +54,8 @@ public sealed class TourAuthoringService
         var tour = await GetOwnedTourAsync(tourId, authorId);
 
         tour.Archive();
+        var chat = await _chatRepository.GetByContextAsync(tour.ChatContext);
+        chat?.Lock();
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -59,6 +64,8 @@ public sealed class TourAuthoringService
         var tour = await GetOwnedTourAsync(tourId, authorId);
 
         tour.Reactivate();
+        var chat = await _chatRepository.GetByContextAsync(tour.ChatContext);
+        chat?.Unlock();
         await _unitOfWork.SaveChangesAsync();
     }
 

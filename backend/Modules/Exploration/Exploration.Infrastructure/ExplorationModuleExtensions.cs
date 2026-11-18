@@ -18,6 +18,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
 using Shared.Infrastructure.Images;
+using Exploration.Application.Chats;
+using Exploration.Application.TourChat;
+using Exploration.Infrastructure.Persistence.Chats;
 
 namespace Exploration.Infrastructure;
 
@@ -36,6 +39,10 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourPreferenceReadRepository, TourPreferenceReadRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionRepository>();
         services.AddScoped<ITourExecutionReadRepository, TourExecutionReadRepository>();
+        services.AddScoped<IChatRepository, ChatRepository>();
+        services.AddScoped<IChatReadRepository, ChatReadRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IMessageReadRepository, MessageReadRepository>();
         services.AddScoped<IImageStore, ExplorationImageStore>();
         services.AddScoped<IImageUsage, ExplorationImageUsage>();
 
@@ -44,6 +51,8 @@ public static class ExplorationModuleExtensions
         services.AddScoped<KeyPointAuthoringService>();
         services.AddScoped<KeyPointAuthoringQueries>();
         services.AddScoped<TourBrowsingQueries>();
+        services.AddScoped<TourChatService>();
+        services.AddScoped<TourChatQueries>();
         services.AddScoped<TourPreferenceSetupService>();
         services.AddScoped<TourPreferenceSetupQueries>();
         services.AddScoped<TourExecutionStarter>();
