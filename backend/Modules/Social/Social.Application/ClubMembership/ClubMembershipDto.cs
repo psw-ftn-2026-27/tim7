@@ -8,6 +8,7 @@ public sealed record ClubMembershipDto(
     string Name,
     string Description,
     List<string> Images,
+    ClubStatus Status,
     List<ClubMemberDto> Members,
     MembershipState MyState,
     ClubRole? MyRole,

@@ -35,6 +35,13 @@ public sealed class ClubManagementController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/close")]
+    public async Task<ActionResult> Close(Guid id)
+    {
+        await _managementService.CloseAsync(id, User.GetUserId());
+        return NoContent();
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> Delete(Guid id)
     {

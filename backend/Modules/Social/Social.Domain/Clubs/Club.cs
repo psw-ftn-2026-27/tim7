@@ -9,6 +9,7 @@ public sealed class Club : AggregateRoot
     public string Name { get; private set; }
     public string Description { get; private set; }
     public List<string> Images { get; private set; }
+    public ClubStatus Status { get; private set; }
     private readonly List<ClubMember> _members = [];
     public IReadOnlyList<ClubMember> Members => _members;
     private readonly List<JoinRequest> _joinRequests = [];
@@ -30,6 +31,7 @@ public sealed class Club : AggregateRoot
         Name = name;
         Description = description;
         Images = validImages;
+        Status = ClubStatus.Active;
     }
 
     public void Update(string name, string description, List<string>? images)
@@ -56,8 +58,21 @@ public sealed class Club : AggregateRoot
         return OwnerId == userId || IsModerator(userId);
     }
 
+    public void Close(Guid userId)
+    {
+        EnsureIsOwner(userId, "Only the owner can close a club.");
+        if (Status == ClubStatus.Closed)
+        {
+            throw new DomainException("The club is already closed.");
+        }
+
+        Status = ClubStatus.Closed;
+        _joinRequests.Clear();
+    }
+
     public void RequestToJoin(Guid userId)
     {
+        EnsureActive();
         if (IsMember(userId))
         {
             throw new DomainException("A member of a club cannot request to join it.");
@@ -72,11 +87,13 @@ public sealed class Club : AggregateRoot
 
     public void WithdrawRequest(Guid userId)
     {
+        EnsureActive();
         _joinRequests.Remove(GetPendingRequest(userId));
     }
 
     public void AcceptRequest(Guid resolverId, Guid userId)
     {
+        EnsureActive();
         EnsureCanResolveRequests(resolverId);
         var request = GetPendingRequest(userId);
 
@@ -86,6 +103,7 @@ public sealed class Club : AggregateRoot
 
     public void RejectRequest(Guid resolverId, Guid userId)
     {
+        EnsureActive();
         EnsureCanResolveRequests(resolverId);
 
         _joinRequests.Remove(GetPendingRequest(userId));
@@ -93,6 +111,7 @@ public sealed class Club : AggregateRoot
 
     public void PromoteToModerator(Guid promoterId, Guid userId)
     {
+        EnsureActive();
         EnsureIsOwner(promoterId, "Only the owner can promote a member to moderator.");
         var member = GetMember(userId);
 
@@ -101,6 +120,7 @@ public sealed class Club : AggregateRoot
 
     public void TransferOwnership(Guid ownerId, Guid newOwnerId)
     {
+        EnsureActive();
         EnsureIsOwner(ownerId, "Only the owner can transfer the ownership of a club.");
         var newOwner = GetMember(newOwnerId);
 
@@ -111,6 +131,7 @@ public sealed class Club : AggregateRoot
 
     public void RemoveMember(Guid removerId, Guid userId)
     {
+        EnsureActive();
         var removerIsModerator = IsModerator(removerId);
         if (OwnerId != removerId && !removerIsModerator)
         {
@@ -123,6 +144,14 @@ public sealed class Club : AggregateRoot
         }
 
         _members.Remove(member);
+    }
+
+    private void EnsureActive()
+    {
+        if (Status == ClubStatus.Closed)
+        {
+            throw new DomainException("Membership in a closed club cannot change.");
+        }
     }
 
     private bool IsModerator(Guid userId)

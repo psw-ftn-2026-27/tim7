@@ -1,3 +1,5 @@
+using Social.Domain.Clubs;
+
 namespace Social.Application.Clubs;
 
 public sealed record ClubDto(
@@ -5,4 +7,5 @@ public sealed record ClubDto(
     Guid OwnerId,
     string Name,
     string Description,
-    List<string> Images);
+    List<string> Images,
+    ClubStatus Status);

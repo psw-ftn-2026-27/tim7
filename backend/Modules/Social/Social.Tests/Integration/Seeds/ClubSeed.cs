@@ -15,6 +15,7 @@ internal static class ClubSeed
     public static readonly Club RunnersWithMemberAndPendingRequest;
     public static readonly Club SwimmersWithExplorerMemberAndPendingRequest;
     public static readonly Club ClimbersWithExplorerModeratorAndPendingRequest;
+    public static readonly Club ClosedKayakers;
 
     static ClubSeed()
     {
@@ -33,7 +34,10 @@ internal static class ClubSeed
         ClimbersWithExplorerModeratorAndPendingRequest.AcceptRequest(WellKnownUsers.SecondExplorer, WellKnownUsers.Explorer);
         ClimbersWithExplorerModeratorAndPendingRequest.PromoteToModerator(WellKnownUsers.SecondExplorer, WellKnownUsers.Explorer);
         ClimbersWithExplorerModeratorAndPendingRequest.RequestToJoin(WellKnownUsers.Administrator);
+
+        ClosedKayakers = new(WellKnownUsers.Explorer, "Kajakaši Tise", "Veslanje kajakom niz Tisu.", ["https://example.com/tisa.jpg"]);
+        ClosedKayakers.Close(WellKnownUsers.Explorer);
     }
 
-    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest, SwimmersWithExplorerMemberAndPendingRequest, ClimbersWithExplorerModeratorAndPendingRequest];
+    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest, SwimmersWithExplorerMemberAndPendingRequest, ClimbersWithExplorerModeratorAndPendingRequest, ClosedKayakers];
 }

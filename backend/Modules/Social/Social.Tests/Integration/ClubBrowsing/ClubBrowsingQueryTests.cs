@@ -4,6 +4,7 @@ using FluentAssertions;
 using Shared.Domain;
 using Shared.Tests;
 using Social.Application.Clubs;
+using Social.Domain.Clubs;
 using Social.Tests.Integration.Seeds;
 using Xunit;
 
@@ -43,6 +44,17 @@ public class ClubBrowsingQueryTests : BaseIntegrationTest
         var clubs = await client.GetFromJsonAsync<PageResult<ClubDto>>("/api/social/clubs?page=0&pageSize=0", JsonOptions);
 
         clubs!.Items.Select(club => club.Id).Should().Equal(expectedIds);
+    }
+
+    [Fact]
+    public async Task Closed_club_stays_in_the_list_marked_as_closed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var clubs = await client.GetFromJsonAsync<PageResult<ClubDto>>($"/api/social/clubs?pageSize={ClubSeed.All.Length}", JsonOptions);
+
+        clubs!.Items.Should().ContainSingle(club => club.Id == ClubSeed.ClosedKayakers.Id)
+            .Which.Status.Should().Be(ClubStatus.Closed);
     }
 
     [Fact]
