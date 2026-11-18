@@ -12,7 +12,7 @@ ih ti ne odlučuješ ponovo u svom `.scss`. Klase su definisane u `_layout.scss`
 | razmak između elemenata jedan ispod drugog | `.stack` | Kada deca treba da stoje jedno pored drugog; tada `.actions` ili `.grid`. |
 | usku formu ili karticu u sredini stranice | `.narrow` | Za listu ili tabelu, koje koriste punu širinu stranice. |
 | kartice poređane u kolone koje se same prelamaju | `.grid` | Za red dugmadi ili za tabelarne podatke; tada `.actions` ili `.table`. |
-| red dugmadi ili linkova jedan pored drugog | `.actions` | Za glavnu navigaciju i za elemente koji nisu akcije (oznake, sličice). |
+| red dugmadi ili linkova jedan pored drugog | `.actions` | Za glavnu navigaciju i za elemente koji nisu akcije (oznake, sličice). Nikad direktno na `<td>`: u ćeliji tabele stavi `<div class="actions">` unutar `<td>`. |
 | dugme ili link koji izgleda kao dugme | `.button` | Za običan link u tekstu; on ostaje `<a>` bez klase. |
 | glavnu akciju forme ili stranice | `.button--primary` (uz `.button`) | Za više dugmadi u istom redu; glavno je samo jedno. |
 | uokviren blok sadržaja (forma, stavka liste) | `.card` | Za ceo sadržaj stranice; on je već u `.container`. |
