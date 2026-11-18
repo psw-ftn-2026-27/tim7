@@ -106,6 +106,7 @@ export interface PublishedTourDto {
   length: TourLengthDto | null;
   transportTimes: TransportTimeDto[];
   keyPoints: PublicKeyPointDto[];
+  isFree: boolean;
 }
 
 export interface TourPriceDto {
@@ -159,4 +160,29 @@ export interface RecordLocationSearchDto {
   minLength: number | null;
   maxLength: number | null;
   resultCount: number;
+}
+
+export interface StartTourDto {
+  tourId: string;
+  startLocation: LocationDto;
+}
+
+export interface TourExecutionKeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: LocationDto;
+}
+
+export interface ActiveTourExecutionDto {
+  id: string;
+  tourId: string;
+  tourName: string;
+  startLocation: LocationDto;
+  firstKeyPoint: TourExecutionKeyPointDto | null;
+}
+
+export interface MyActiveTourExecutionDto {
+  execution: ActiveTourExecutionDto | null;
 }

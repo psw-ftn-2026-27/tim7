@@ -15,6 +15,10 @@
 
       <p>{{ current.description }}</p>
 
+      @if (!current.isFree) {
+        <p><a [routerLink]="['/payment/tours', current.id]">Buy</a></p>
+      }
+
       <p>
         Length:
         @if (current.length) {
@@ -63,6 +67,53 @@
           }
         </ul>
       }
+
+      <section class="stack">
+        <h2>Start the tour</h2>
+
+        @if (active.isLoading()) {
+          <p>Loading your active tour...</p>
+        } @else if (active.error()) {
+          <p class="error">Could not load your active tour.</p>
+        } @else {
+          <p class="meta">Click on the map where you are.</p>
+
+          <app-map [picking]="true" (locationPicked)="onLocationPicked($event)" />
+
+          @if (active.value()?.execution; as execution) {
+            @if (execution.tourId === current.id) {
+              <p><a routerLink="/exploration/active">Continue tour</a></p>
+            } @else {
+              <p>
+                Your active tour is {{ execution.tourName }}.
+                <a routerLink="/exploration/active">Continue tour</a>
+              </p>
+              @if (startError()) {
+                <p class="error">{{ startError() }}</p>
+              }
+              <p>
+                <button class="button button--primary" type="button" [disabled]="true">
+                  Start tour
+                </button>
+              </p>
+            }
+          } @else {
+            @if (startError()) {
+              <p class="error">{{ startError() }}</p>
+            }
+            <p>
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="!canStart()"
+                (click)="start()"
+              >
+                Start tour
+              </button>
+            </p>
+          }
+        }
+      </section>
     }
   }
 </div>
