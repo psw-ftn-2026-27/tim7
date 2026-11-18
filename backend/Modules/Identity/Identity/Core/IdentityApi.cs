@@ -1,4 +1,5 @@
 using Identity.Contracts;
+using Identity.Core.Connections;
 using Identity.Core.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,25 @@ public sealed class IdentityApi : IIdentityApi
     private const int MaxSearchResults = 10;
 
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IUserReadRepository _userReadRepository;
+    private const int MaxFollowedUsers = 1000;
 
-    public IdentityApi(UserManager<ApplicationUser> userManager, IUserReadRepository userReadRepository)
+    private readonly IUserReadRepository _userReadRepository;
+    private readonly IConnectionReadRepository _connectionReadRepository;
+
+    public IdentityApi(
+        UserManager<ApplicationUser> userManager,
+        IUserReadRepository userReadRepository,
+        IConnectionReadRepository connectionReadRepository)
     {
         _userManager = userManager;
         _userReadRepository = userReadRepository;
+        _connectionReadRepository = connectionReadRepository;
+    }
+
+    public async Task<List<UserSummary>> GetFollowedUsersAsync(Guid userId)
+    {
+        var followed = await _connectionReadRepository.GetFollowingAsync(userId, 1, MaxFollowedUsers);
+        return followed.Items.Select(user => new UserSummary(user.Id, user.Email)).ToList();
     }
 
     public async Task<UserSummaryPage> GetUsersAsync(int page, int pageSize)
