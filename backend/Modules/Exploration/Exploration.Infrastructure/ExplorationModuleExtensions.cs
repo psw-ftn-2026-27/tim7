@@ -51,6 +51,7 @@ public static class ExplorationModuleExtensions
         services.AddScoped<TourPreferenceSetupService>();
         services.AddScoped<TourPreferenceSetupQueries>();
         services.AddScoped<TourExecutionStarter>();
+        services.AddScoped<TourProgress>();
         services.AddScoped<TourExecutionTrackingService>();
         services.AddScoped<TourExecutionTrackingQueries>();
         services.AddScoped<IExplorationApi, ExplorationApi>();
