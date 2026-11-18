@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { marked } from 'marked';
 import { Auth } from '../../../../core/auth/auth';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { BlogDto } from '../../api/social-api-types';
+import { BlogDto, BlogVoteType } from '../../api/social-api-types';
 import { BlogComments, CommentEdit } from '../blog-comments/blog-comments';
 import { BlogReading } from '../blog-reading';
 
@@ -27,6 +27,8 @@ export class BlogDetail {
   );
 
   protected readonly error = signal<string | null>(null);
+
+  protected readonly pending = signal(false);
 
   protected async add(text: string): Promise<void> {
     this.error.set(null);
@@ -55,6 +57,19 @@ export class BlogDetail {
       this.detail.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not delete the comment.'));
+    }
+  }
+
+  protected async vote(type: BlogVoteType): Promise<void> {
+    this.error.set(null);
+    this.pending.set(true);
+    try {
+      await this.blogReading.vote(this.id(), { type });
+      this.detail.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not save the vote.'));
+    } finally {
+      this.pending.set(false);
     }
   }
 }

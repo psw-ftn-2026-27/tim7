@@ -11,6 +11,7 @@ internal static class BlogSeed
     public static readonly Blog PublishedRiverbank;
     public static readonly Blog CommentedMuseumVisit;
     public static readonly Blog ArchivedDanubeCruise;
+    public static readonly Blog VotedLakeTrip;
 
     static BlogSeed()
     {
@@ -24,7 +25,13 @@ internal static class BlogSeed
         ArchivedDanubeCruise = new(WellKnownUsers.Explorer, "Krstarenje Dunavom", "Završen dnevnik jednodnevnog krstarenja od Novog Sada do Beočina.", []);
         ArchivedDanubeCruise.Publish();
         ArchivedDanubeCruise.Archive();
+
+        VotedLakeTrip = new(WellKnownUsers.Explorer, "Izlet na jezero", "Utisci sa celodnevnog izleta na Palićko jezero.", []);
+        VotedLakeTrip.Publish();
+        VotedLakeTrip.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+        VotedLakeTrip.Vote(WellKnownUsers.SecondExplorer, BlogVoteType.Upvote);
+        VotedLakeTrip.Vote(WellKnownUsers.Explorer, BlogVoteType.Downvote);
     }
 
-    public static Blog[] All => [FortressImpressions, CityNotes, SecondExplorersDiary, PublishedRiverbank, CommentedMuseumVisit, ArchivedDanubeCruise];
+    public static Blog[] All => [FortressImpressions, CityNotes, SecondExplorersDiary, PublishedRiverbank, CommentedMuseumVisit, ArchivedDanubeCruise, VotedLakeTrip];
 }

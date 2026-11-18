@@ -73,4 +73,30 @@ public class BlogReadingQueryTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task Blog_is_read_with_its_score_and_the_vote_of_its_reader()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var blog = await client.GetFromJsonAsync<BlogDto>(
+            $"/api/social/blogs/{BlogSeed.VotedLakeTrip.Id}", JsonOptions);
+
+        blog!.Score.Should().Be(ScoreOf(BlogSeed.VotedLakeTrip));
+        blog.MyVote.Should().Be(BlogSeed.VotedLakeTrip.Votes.Single(vote => vote.UserId == WellKnownUsers.Administrator).Type);
+    }
+
+    [Fact]
+    public async Task Every_listed_blog_carries_its_score()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/visible", JsonOptions);
+
+        blogs!.Items.Should().Contain(blog => blog.Id == BlogSeed.VotedLakeTrip.Id);
+        blogs.Items.Should().OnlyContain(blog => blog.Score == ScoreOf(BlogSeed.All.Single(seed => seed.Id == blog.Id)));
+    }
+
+    private static int ScoreOf(Blog blog) =>
+        blog.Votes.Count(vote => vote.Type == BlogVoteType.Upvote) - blog.Votes.Count(vote => vote.Type == BlogVoteType.Downvote);
 }

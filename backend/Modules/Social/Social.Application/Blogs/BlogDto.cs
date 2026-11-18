@@ -11,4 +11,6 @@ public sealed record BlogDto(
     List<string> Images,
     BlogStatus Status,
     DateTime? LastModifiedAt,
-    List<CommentDto> Comments);
+    List<CommentDto> Comments,
+    int Score,
+    BlogVoteType? MyVote);
