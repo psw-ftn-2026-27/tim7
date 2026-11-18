@@ -6,20 +6,30 @@ namespace Social.Application.ClubMembership;
 public sealed class ClubMembershipQueries
 {
     private readonly IClubReadRepository _clubReadRepository;
+    private readonly IClubRepository _clubRepository;
 
-    public ClubMembershipQueries(IClubReadRepository clubReadRepository)
+    public ClubMembershipQueries(IClubReadRepository clubReadRepository, IClubRepository clubRepository)
     {
         _clubReadRepository = clubReadRepository;
+        _clubRepository = clubRepository;
     }
 
     public async Task<ClubMembershipDto> GetByIdAsync(Guid clubId, Guid userId)
     {
-        var club = await _clubReadRepository.GetMembershipByIdAsync(clubId, userId);
-        if (club is null)
+        var view = await _clubReadRepository.GetMembershipByIdAsync(clubId);
+        var club = await _clubRepository.GetByIdAsync(clubId);
+        if (view is null || club is null)
         {
             throw new NotFoundException($"Club {clubId} does not exist.");
         }
 
-        return club;
+        var myState = club.IsMember(userId)
+            ? MembershipState.Member
+            : club.HasPendingRequest(userId) ? MembershipState.Pending : MembershipState.None;
+        return view with
+        {
+            MyState = myState,
+            PendingRequests = club.CanResolveRequests(userId) ? view.PendingRequests : null
+        };
     }
 }

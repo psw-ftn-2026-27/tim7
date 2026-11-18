@@ -46,13 +46,24 @@ public sealed class Club : AggregateRoot
         return OwnerId == userId || _members.Any(member => member.UserId == userId);
     }
 
+    public bool HasPendingRequest(Guid userId)
+    {
+        return _joinRequests.Any(request => request.UserId == userId);
+    }
+
+    public bool CanResolveRequests(Guid userId)
+    {
+        return OwnerId == userId
+            || _members.Any(member => member.UserId == userId && member.Role == ClubRole.Moderator);
+    }
+
     public void RequestToJoin(Guid userId)
     {
         if (IsMember(userId))
         {
             throw new DomainException("A member of a club cannot request to join it.");
         }
-        if (_joinRequests.Any(request => request.UserId == userId))
+        if (HasPendingRequest(userId))
         {
             throw new DomainException("A user can have only one pending request to join a club.");
         }
@@ -83,8 +94,7 @@ public sealed class Club : AggregateRoot
 
     private void EnsureCanResolveRequests(Guid resolverId)
     {
-        var isModerator = _members.Any(member => member.UserId == resolverId && member.Role == ClubRole.Moderator);
-        if (OwnerId != resolverId && !isModerator)
+        if (!CanResolveRequests(resolverId))
         {
             throw new DomainException("Only the owner or a moderator can resolve requests to join a club.");
         }

@@ -40,7 +40,9 @@ internal sealed class ClubReadRepository : IClubReadRepository
         return new PageResult<ClubDto>(items, totalCount);
     }
 
-    public async Task<ClubMembershipDto?> GetMembershipByIdAsync(Guid id, Guid userId)
+    // Projects what the club page shows. Whether the caller is a member and may see the
+    // pending requests is decided by the Club aggregate in ClubMembershipQueries.
+    public async Task<ClubMembershipDto?> GetMembershipByIdAsync(Guid id)
     {
         var club = await _dbContext.Clubs
             .Where(club => club.Id == id)
@@ -54,11 +56,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
                     .OrderBy(member => member.UserId)
                     .Select(member => new ClubMemberDto(member.UserId, member.Role))
                     .ToList(),
-                club.OwnerId == userId || club.Members.Any(member => member.UserId == userId)
-                    ? MembershipState.Member
-                    : club.JoinRequests.Any(request => request.UserId == userId)
-                        ? MembershipState.Pending
-                        : MembershipState.None,
+                MembershipState.None,
                 club.JoinRequests.Select(request => request.UserId).ToList()))
             .FirstOrDefaultAsync();
         if (club is null)
@@ -66,13 +64,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
             return null;
         }
 
-        var canSeeRequests = club.OwnerId == userId
-            || club.Members.Any(member => member.UserId == userId && member.Role == ClubRole.Moderator);
-        return club with
-        {
-            Members = [new ClubMemberDto(club.OwnerId, ClubRole.Owner), .. club.Members],
-            PendingRequests = canSeeRequests ? club.PendingRequests : null
-        };
+        return club with { Members = [new ClubMemberDto(club.OwnerId, ClubRole.Owner), .. club.Members] };
     }
 
     private static IQueryable<ClubDto> ProjectToDtos(IQueryable<Club> clubs)

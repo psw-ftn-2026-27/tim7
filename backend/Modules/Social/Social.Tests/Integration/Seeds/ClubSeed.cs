@@ -13,6 +13,7 @@ internal static class ClubSeed
     public static readonly Club SecondExplorersBirdWatchers = new(WellKnownUsers.SecondExplorer, "Posmatrači ptica", "Posmatranje ptica na Carskoj bari.", ["https://example.com/carska-bara.jpg"]);
 
     public static readonly Club RunnersWithMemberAndPendingRequest;
+    public static readonly Club SwimmersWithExplorerMemberAndPendingRequest;
 
     static ClubSeed()
     {
@@ -20,7 +21,12 @@ internal static class ClubSeed
         RunnersWithMemberAndPendingRequest.RequestToJoin(WellKnownUsers.Administrator);
         RunnersWithMemberAndPendingRequest.AcceptRequest(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
         RunnersWithMemberAndPendingRequest.RequestToJoin(WellKnownUsers.SecondExplorer);
+
+        SwimmersWithExplorerMemberAndPendingRequest = new(WellKnownUsers.SecondExplorer, "Plivači Štranda", "Jutarnje plivanje na Štrandu.", ["https://example.com/strand.jpg"]);
+        SwimmersWithExplorerMemberAndPendingRequest.RequestToJoin(WellKnownUsers.Explorer);
+        SwimmersWithExplorerMemberAndPendingRequest.AcceptRequest(WellKnownUsers.SecondExplorer, WellKnownUsers.Explorer);
+        SwimmersWithExplorerMemberAndPendingRequest.RequestToJoin(WellKnownUsers.Administrator);
     }
 
-    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest];
+    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest, SwimmersWithExplorerMemberAndPendingRequest];
 }

@@ -126,6 +126,21 @@ public class ClubMembershipCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Regular_member_cannot_accept_a_request_and_the_request_stays()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PostAsync(
+            $"/api/social/clubs/{ClubSeed.SwimmersWithExplorerMemberAndPendingRequest.Id}/join-requests/{WellKnownUsers.Administrator}/accept", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Clubs.Single(club => club.Id == ClubSeed.SwimmersWithExplorerMemberAndPendingRequest.Id);
+        stored.JoinRequests.Should().Contain(request => request.UserId == WellKnownUsers.Administrator);
+        stored.Members.Should().NotContain(member => member.UserId == WellKnownUsers.Administrator);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_accept_a_request()
     {
         var client = Factory.CreateClient();
@@ -160,6 +175,20 @@ public class ClubMembershipCommandTests : BaseIntegrationTest
         var stored = assertContext.Clubs.Single(club => club.Id == ClubSeed.RunnersWithMemberAndPendingRequest.Id);
         stored.JoinRequests.Should().NotContain(request => request.UserId == WellKnownUsers.SecondExplorer);
         stored.Members.Should().NotContain(member => member.UserId == WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
+    public async Task Regular_member_cannot_reject_a_request_and_the_request_stays()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PostAsync(
+            $"/api/social/clubs/{ClubSeed.SwimmersWithExplorerMemberAndPendingRequest.Id}/join-requests/{WellKnownUsers.Administrator}/reject", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Clubs.Single(club => club.Id == ClubSeed.SwimmersWithExplorerMemberAndPendingRequest.Id);
+        stored.JoinRequests.Should().Contain(request => request.UserId == WellKnownUsers.Administrator);
     }
 
     [Fact]
