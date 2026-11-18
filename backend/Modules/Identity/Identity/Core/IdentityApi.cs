@@ -1,4 +1,5 @@
 using Identity.Contracts;
+using Identity.Core.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,11 +7,15 @@ namespace Identity.Core;
 
 public sealed class IdentityApi : IIdentityApi
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private const int MaxSearchResults = 10;
 
-    public IdentityApi(UserManager<ApplicationUser> userManager)
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserReadRepository _userReadRepository;
+
+    public IdentityApi(UserManager<ApplicationUser> userManager, IUserReadRepository userReadRepository)
     {
         _userManager = userManager;
+        _userReadRepository = userReadRepository;
     }
 
     public async Task<UserSummaryPage> GetUsersAsync(int page, int pageSize)
@@ -46,5 +51,16 @@ public sealed class IdentityApi : IIdentityApi
             .Where(user => userIds.Contains(user.Id))
             .Select(user => new UserSummary(user.Id, user.Email!))
             .ToListAsync();
+    }
+
+    // Searching by role needs the role tables, which UserManager does not query, so it goes through the read repository.
+    public async Task<List<UserSummary>> SearchExplorersAsync(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return [];
+        }
+
+        return await _userReadRepository.SearchExplorersAsync(username.Trim(), MaxSearchResults);
     }
 }
