@@ -23,4 +23,19 @@ public sealed class Transaction : Entity
         AdministratorId = administratorId;
         CreatedAt = DateTime.UtcNow;
     }
+
+    internal void Reverse(DateTime now)
+    {
+        if (now - CreatedAt > TimeSpan.FromHours(24))
+        {
+            throw new DomainException("The deposit can only be reversed within 24 hours of being made.");
+        }
+
+        if (IsReversed)
+        {
+            throw new DomainException("The deposit has already been reversed.");
+        }
+
+        IsReversed = true;
+    }
 }

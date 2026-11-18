@@ -1,15 +1,18 @@
 using Exploration.Application;
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.TourPreferences;
 using Exploration.Application.TourPreferenceSetup;
 using Exploration.Application.Tours;
+using Exploration.Infrastructure.Images;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Infrastructure.Persistence.TourPreferences;
 using Exploration.Infrastructure.Persistence.Tours;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
+using Shared.Infrastructure.Images;
 
 namespace Exploration.Infrastructure;
 
@@ -26,9 +29,13 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourReadRepository, TourReadRepository>();
         services.AddScoped<ITourPreferenceRepository, TourPreferenceRepository>();
         services.AddScoped<ITourPreferenceReadRepository, TourPreferenceReadRepository>();
+        services.AddScoped<IImageStore, ExplorationImageStore>();
+        services.AddScoped<IImageUsage, ExplorationImageUsage>();
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();
+        services.AddScoped<KeyPointAuthoringService>();
+        services.AddScoped<KeyPointAuthoringQueries>();
         services.AddScoped<TourBrowsingQueries>();
         services.AddScoped<TourPreferenceSetupService>();
         services.AddScoped<TourPreferenceSetupQueries>();

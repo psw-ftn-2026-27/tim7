@@ -15,7 +15,9 @@ internal sealed class WalletRepository : IWalletRepository
 
     public Task<Wallet?> GetByUserIdAsync(Guid userId)
     {
-        return _dbContext.Wallets.FirstOrDefaultAsync(wallet => wallet.UserId == userId);
+        return _dbContext.Wallets
+            .Include(wallet => wallet.Transactions)
+            .FirstOrDefaultAsync(wallet => wallet.UserId == userId);
     }
 
     public Task<List<Wallet>> GetPageAsync(int page, int pageSize)

@@ -1,9 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormField, form, min, required, validate } from '@angular/forms/signals';
+import { FormField, form, min, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { Analytics } from '../../../../shared/analytics/analytics';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { TourDifficulty, TourLengthDto } from '../../api/exploration-api-types';
+import { TourDifficulty } from '../../api/exploration-api-types';
 import { TourAuthoring } from '../tour-authoring';
 
 @Component({
@@ -25,7 +25,6 @@ export class CreateTour {
       tags: '',
       groupSizeFrom: 1,
       groupSizeTo: 1,
-      lengthKilometers: null as number | null,
     }),
     (path) => {
       required(path.name, { message: 'Name is required.' });
@@ -33,21 +32,6 @@ export class CreateTour {
       required(path.groupSizeFrom, { message: 'From is required.' });
       min(path.groupSizeFrom, 1, { message: 'From must be at least 1.' });
       required(path.groupSizeTo, { message: 'To is required.' });
-      // The length is optional, so an empty field (null) is valid.
-      validate(path.lengthKilometers, ({ value }) => {
-        const kilometers = value();
-        if (kilometers !== null && kilometers <= 0) {
-          return { kind: 'positive', message: 'Length must be greater than 0.' };
-        }
-        return null;
-      });
-      validate(path.lengthKilometers, ({ value }) => {
-        const kilometers = value();
-        if (kilometers !== null && kilometers !== Number(kilometers.toFixed(1))) {
-          return { kind: 'oneDecimal', message: 'Length can have at most one decimal.' };
-        }
-        return null;
-      });
     },
   );
 
@@ -73,7 +57,6 @@ export class CreateTour {
           from: this.form.groupSizeFrom().value(),
           to: this.form.groupSizeTo().value(),
         },
-        length: this.lengthDto(),
       });
       this.analytics.record('tour_created', { tour_id: tour.id });
       await this.router.navigate(['/exploration/mine']);
@@ -82,11 +65,5 @@ export class CreateTour {
     } finally {
       this.pending.set(false);
     }
-  }
-
-  // An empty length field means the author did not enter a length.
-  private lengthDto(): TourLengthDto | null {
-    const kilometers = this.form.lengthKilometers().value();
-    return kilometers === null ? null : { kilometers };
   }
 }

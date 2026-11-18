@@ -34,6 +34,7 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          IIdentityApi, the module's only public surface [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -64,7 +65,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references `Identity`. Other modules carry a `UserId` as a plain ID and, when
+  they need more about a user, ask `IIdentityApi` in `Identity.Contracts`, which follows
+  the same rules as any other `Contracts` project.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -88,11 +91,14 @@ platform decision. Do not change the version or add a license key.
 ## Identity
 
 Identity is a deliberate exception to the module structure: one platform-owned project
-that students use but never modify or reference. It holds ASP.NET Core Identity on the
+that students use but never modify or reference, plus `Identity.Contracts`, which other
+modules may reference like any other module's `Contracts`. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
 (`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
 `Connection` (following between users), with a `Following` use-case group that follows the
-application-layer patterns below; the details live in the project itself.
+application-layer patterns below; the details live in the project itself. `Core/IdentityApi`
+implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
+whether a user exists, and finding a user by e-mail, which serves as the username.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the

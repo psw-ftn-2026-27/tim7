@@ -109,7 +109,7 @@ public class BlogTests
     {
         var blog = CreateArchivedBlog();
 
-        var edit = () => blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", []);
+        var edit = () => blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", [], []);
 
         edit.Should().Throw<DomainException>();
     }
@@ -198,12 +198,32 @@ public class BlogTests
     {
         var blog = CreatePublishedBlog();
 
-        blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/nova.jpg"]);
+        blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/tvrdjava.jpg"], ["/images/social/nova.jpg"]);
 
         blog.Title.Should().Be("Novi utisci sa tvrđave");
         blog.Description.Should().Be("Dopunjen opis obilaska.");
-        blog.Images.Should().ContainSingle().Which.Should().Be("https://example.com/nova.jpg");
+        blog.Images.Should().Equal("https://example.com/tvrdjava.jpg", "/images/social/nova.jpg");
         blog.LastModifiedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void Edited_blog_drops_the_images_it_does_not_keep()
+    {
+        var blog = CreateBlog();
+
+        blog.Edit("Utisci sa tvrđave", "Opis obilaska tvrđave.", [], []);
+
+        blog.Images.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Edited_blog_cannot_keep_an_image_it_does_not_have()
+    {
+        var blog = CreateBlog();
+
+        var edit = () => blog.Edit("Utisci sa tvrđave", "Opis obilaska tvrđave.", ["https://example.com/tudja.jpg"], []);
+
+        edit.Should().Throw<DomainException>();
     }
 
     [Theory]
@@ -215,7 +235,7 @@ public class BlogTests
     {
         var blog = CreateBlog();
 
-        var edit = () => blog.Edit(title, description, []);
+        var edit = () => blog.Edit(title, description, [], []);
 
         edit.Should().Throw<DomainException>();
     }
