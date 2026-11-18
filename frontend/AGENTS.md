@@ -149,6 +149,9 @@ lean files that students extend, not a design system. The four global partials i
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
 
+Every shared class, when to use it and when not, plus a checklist for a page, is in
+`src/styles/README.md` (in Serbian). Read it before styling a page.
+
 Colours have two roles. `--color-accent` is the platform colour and the only colour of an
 action: buttons, links, focus. Each module has `--color-module-<name>` and a
 `.badge--<name>` class that mark where the user is; a module colour never goes on a

@@ -20,7 +20,9 @@
     <fieldset>
       <legend>Tags</legend>
       @for (item of form.tags; track $index) {
-        <label><input type="checkbox" [formField]="item.selected" /> {{ item.tag().value() }}</label>
+        <label
+          ><input type="checkbox" [formField]="item.selected" /> {{ item.tag().value() }}</label
+        >
       } @empty {
         <p class="meta">No tags to choose from yet.</p>
       }
@@ -35,7 +37,11 @@
     }
 
     <div class="actions">
-      <button class="button button--primary" type="submit" [disabled]="!hasCriterion() || pending()">
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!hasCriterion() || pending()"
+      >
         Save
       </button>
     </div>
@@ -43,7 +49,9 @@
 } @else {
   @if (preferences(); as saved) {
     <div class="card stack">
-      <p>Difficulty: {{ saved.difficulties.length > 0 ? saved.difficulties.join(', ') : 'None' }}</p>
+      <p>
+        Difficulty: {{ saved.difficulties.length > 0 ? saved.difficulties.join(', ') : 'None' }}
+      </p>
       <p>Preferred transport: {{ saved.preferredTransportMode ?? 'No transport' }}</p>
       <p>Tags: {{ saved.tags.length > 0 ? saved.tags.join(', ') : 'None' }}</p>
 

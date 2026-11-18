@@ -2,8 +2,8 @@
   margin-top: var(--space-6);
 }
 
+// Only this page's difference from the global .actions: the row wraps, with wider gaps.
 .actions {
-  display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }

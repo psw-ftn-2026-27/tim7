@@ -1,5 +1,11 @@
 <div class="stack">
-  <h1>My preferences</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--exploration">Exploration</span>
+      <h1>My preferences</h1>
+      <p>The kinds of tours you like, used to filter the tour list for you.</p>
+    </div>
+  </div>
 
   @if (confirmation()) {
     <p>{{ confirmation() }}</p>
@@ -10,9 +16,9 @@
   }
 
   @if (myPreferences.isLoading() || availableTags.isLoading()) {
-    <p>Loading your preferences...</p>
+    <p class="meta">Loading your preferences...</p>
   } @else if (myPreferences.error() || availableTags.error()) {
-    <p class="error">Could not load your preferences. Log in and try again.</p>
+    <p class="alert">Could not load your preferences. Log in and try again.</p>
   } @else {
     @if (myPreferences.value(); as mine) {
       <app-tour-preference-form

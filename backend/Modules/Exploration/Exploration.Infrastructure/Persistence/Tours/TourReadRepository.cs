@@ -94,7 +94,8 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.Description,
                         keyPoint.Image,
                         new LocationDto(keyPoint.Location.Latitude, keyPoint.Location.Longitude)))
-                    .ToList()))
+                    .ToList(),
+                tour.Price != null && tour.Price.IsFree))
             .FirstOrDefaultAsync();
     }
 

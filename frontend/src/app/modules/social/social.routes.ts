@@ -5,6 +5,7 @@ import { MyBlogs } from './blog-authoring/my-blogs/my-blogs';
 import { BlogDetail } from './blog-reading/blog-detail/blog-detail';
 import { BlogList } from './blog-reading/blog-list/blog-list';
 import { ClubList } from './club-browsing/club-list/club-list';
+import { MyInvitations } from './club-invitations/my-invitations/my-invitations';
 import { ClubDetail } from './club-membership/club-detail/club-detail';
 import { CreateClub } from './club-management/create-club/create-club';
 import { MyClubDetail } from './club-management/my-club-detail/my-club-detail';
@@ -19,6 +20,7 @@ export const socialRoutes: Routes = [
   { path: 'clubs/mine', component: MyClubs },
   { path: 'clubs/create', component: CreateClub },
   { path: 'clubs/mine/:id', component: MyClubDetail },
+  { path: 'clubs/invitations', component: MyInvitations },
   { path: 'clubs/:id', component: ClubDetail },
   { path: ':id', component: BlogDetail },
 ];

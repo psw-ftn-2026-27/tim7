@@ -1,13 +1,63 @@
-.actions {
+// The pin in the module colour marks the card as a tour; it is a marker, not an action.
+.title {
+  align-items: flex-start;
   display: flex;
   gap: var(--space-2);
 }
 
-.time {
-  margin-right: var(--space-2);
-  white-space: nowrap;
+.title svg {
+  fill: none;
+  flex: none;
+  height: var(--space-5);
+  margin-top: var(--space-1);
+  stroke: var(--color-module-exploration);
+  stroke-width: 2;
+  width: var(--space-5);
 }
 
-form.card {
-  max-width: 24rem;
+// Each part of the card keeps the same height on every card, so the parts line up across a
+// row and the buttons sit at the bottom.
+// Each card takes six rows of the grid (title, status, details, dates, times, buttons) and
+// passes them on to its parts, so the same part starts at the same height on every card in
+// a row.
+.grid > .card {
+  display: grid;
+  grid-row: span 6;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-3);
+}
+
+.grid > .card > * {
+  margin: 0;
+}
+
+.title h2 {
+  margin: 0;
+}
+
+.meta strong {
+  color: var(--color-text);
+}
+
+// Transport times sit at the bottom of the card, under a line.
+.times {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) 0 0;
+}
+
+// The buttons wrap when the card is narrow.
+.actions {
+  flex-wrap: wrap;
+}
+
+// An empty list spans the whole grid instead of one column.
+.empty {
+  grid-column: 1 / -1;
 }

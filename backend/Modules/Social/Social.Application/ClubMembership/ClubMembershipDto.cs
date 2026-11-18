@@ -12,4 +12,5 @@ public sealed record ClubMembershipDto(
     List<ClubMemberDto> Members,
     MembershipState MyState,
     ClubRole? MyRole,
-    List<Guid>? PendingRequests);
+    List<Guid>? PendingRequests,
+    List<ClubInvitationDto>? SentInvitations);

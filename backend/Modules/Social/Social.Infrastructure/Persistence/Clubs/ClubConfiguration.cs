@@ -32,6 +32,12 @@ internal static class ClubConfiguration
             joinRequests.ToTable("ClubJoinRequests");
             joinRequests.WithOwner().HasForeignKey("ClubId");
         });
+
+        builder.OwnsMany(club => club.Invitations, invitations =>
+        {
+            invitations.ToTable("ClubInvitations");
+            invitations.WithOwner().HasForeignKey("ClubId");
+        });
     }
 
     private static void ConfigureClubMember(EntityTypeBuilder<ClubMember> builder)
