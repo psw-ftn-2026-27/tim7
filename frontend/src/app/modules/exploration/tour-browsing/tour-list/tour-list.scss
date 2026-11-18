@@ -1,10 +1,48 @@
+// The filters sit in one panel, in columns that line up at the bottom. The search field
+// takes a whole row, so it reads first.
 .filters {
+  align-items: end;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.filters .search {
+  grid-column: 1 / -1;
+}
+
+.difficulties {
+  border: none;
   display: flex;
   flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.difficulties legend {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.difficulties label {
+  align-items: center;
+  display: flex;
+  gap: var(--space-1);
+}
+
+.pages {
+  display: flex;
   gap: var(--space-4);
 }
 
-.links {
-  display: flex;
-  gap: var(--space-4);
+// Each card takes five rows of the grid (title, description, details, tags, times) and
+// passes them on to its parts, so the same part starts at the same height on every card in
+// a row.
+.grid > app-tour-card {
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
 }

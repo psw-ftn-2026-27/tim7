@@ -1,0 +1,21 @@
+<article class="card stack">
+  <h2>{{ club().name }}</h2>
+
+  @if (club().status === 'Closed') {
+    <span class="status">Closed</span>
+  }
+
+  <p>{{ club().description }}</p>
+
+  @if (club().images.length > 0) {
+    <div class="thumbnails">
+      @for (image of club().images; track $index) {
+        <img [src]="image" [alt]="club().name" />
+      }
+    </div>
+  }
+
+  <p class="open">
+    <a class="button" [routerLink]="['/social/clubs', club().id]">Open club</a>
+  </p>
+</article>

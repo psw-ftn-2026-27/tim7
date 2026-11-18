@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 using Exploration.Api;
@@ -8,14 +9,21 @@ using Host.Api;
 using Identity.Api;
 using Identity.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Payment.Api;
 using Payment.Infrastructure;
 using Scalar.AspNetCore;
+using Shared.Api.Images;
+using Shared.Infrastructure.Images;
 using Social.Api;
 using Social.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Kestrel's default of 30 MB would cut an image upload before the action's own 51 MB limit applies.
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = ImageUploadLimits.MaxRequestBytes);
 
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
@@ -45,11 +53,28 @@ builder.Services
     .AddExplorationModule(builder.Configuration)
     .AddGamesModule(builder.Configuration)
     .AddSocialModule(builder.Configuration)
-    .AddPaymentModule(builder.Configuration);
+    .AddPaymentModule(builder.Configuration)
+    .AddImageStorage(builder.Configuration)
+    .AddImageCleanup(builder.Configuration);
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Form values (the multipart image uploads) are parsed with the request culture;
+// fixing it to the invariant culture makes "45.25" mean the same on every machine.
+app.UseRequestLocalization(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(CultureInfo.InvariantCulture);
+    options.SupportedCultures = [CultureInfo.InvariantCulture];
+    options.SupportedUICultures = [CultureInfo.InvariantCulture];
+});
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(app.Services.GetRequiredService<ImageStore>().Folder),
+    RequestPath = "/images"
+});
 
 if (app.Environment.IsDevelopment())
 {

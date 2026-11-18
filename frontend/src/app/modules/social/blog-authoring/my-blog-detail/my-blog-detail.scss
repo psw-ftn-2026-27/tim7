@@ -1,0 +1,26 @@
+.card > button {
+  align-self: flex-start;
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gallery img {
+  width: 8rem;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}

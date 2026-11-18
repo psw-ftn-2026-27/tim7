@@ -5,9 +5,12 @@ namespace Social.Domain.Blogs;
 
 public sealed class Comment : Entity
 {
+    private static readonly TimeSpan EditWindow = TimeSpan.FromMinutes(15);
+
     public Guid UserId { get; private set; }
     public string Text { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime? LastModifiedAt { get; private set; }
 
     private Comment()
     {
@@ -26,13 +29,24 @@ public sealed class Comment : Entity
         CreatedAt = DateTime.UtcNow;
     }
 
-    public void Update(string text)
+    public void Update(string text, DateTime now)
     {
+        EnsureWithinEditWindow(now);
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new DomainException("A comment requires text.");
         }
 
         Text = text;
+        LastModifiedAt = now;
+    }
+
+    // The window is counted from CreatedAt, which an update never moves, so editing does not extend it.
+    internal void EnsureWithinEditWindow(DateTime now)
+    {
+        if (now > CreatedAt + EditWindow)
+        {
+            throw new DomainException("A comment can be changed only within 15 minutes of being posted.");
+        }
     }
 }

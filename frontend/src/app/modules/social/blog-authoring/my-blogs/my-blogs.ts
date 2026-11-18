@@ -18,6 +18,21 @@ export class MyBlogs {
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly confirmingArchiveId = signal<string | null>(null);
+
+  protected async archive(blogId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.blogAuthoring.archive(blogId);
+      this.confirmingArchiveId.set(null);
+      this.blogs.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not archive the blog.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
 
   protected async publish(blogId: string): Promise<void> {
     this.pending.set(true);

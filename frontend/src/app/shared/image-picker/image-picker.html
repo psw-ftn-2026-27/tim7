@@ -1,0 +1,45 @@
+<section class="image-picker">
+  <h2>Images</h2>
+
+  <div class="toolbar">
+    <label class="button add" [class.add--disabled]="full()">
+      Add images
+      <input
+        type="file"
+        class="visually-hidden"
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        [disabled]="full()"
+        (change)="onFilesPicked($event)"
+      />
+    </label>
+    <span class="meta">{{ validCount() }} / {{ maxImages }}</span>
+    @if (droppedCount() > 0) {
+      <p class="error">
+        Only {{ maxImages }} images are allowed; {{ droppedCount() }} were not added.
+      </p>
+    }
+  </div>
+
+  @if (entries().length > 0) {
+    <ul class="thumbnails">
+      @for (entry of entries(); track entry.id) {
+        <li class="thumbnail">
+          @if (entry.preview) {
+            <img [src]="entry.preview" [alt]="entry.file.name" />
+          } @else {
+            <p class="error">{{ entry.file.name }}: {{ entry.error }}</p>
+          }
+          <button
+            type="button"
+            class="remove"
+            [attr.aria-label]="'Remove ' + entry.file.name"
+            (click)="remove(entry)"
+          >
+            ×
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</section>

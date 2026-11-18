@@ -38,19 +38,23 @@ internal sealed class ExplorationModuleInitializer : IHostedService
     {
         var fortress = new Tour(FirstExplorer, "Šetnja Petrovaradinskom tvrđavom",
             "Šetnja počinje na Gornjem platou Petrovaradinske tvrđave, vodi pored Sahat kule i podzemnih vojnih galerija, a završava se pogledom na Dunav i stari deo Novog Sada.",
-            TourDifficulty.Easy, ["istorija", "priroda"]);
+            TourDifficulty.Easy, ["istorija", "priroda"], new RecommendedGroupSize(2, 15));
         fortress.AddTransportTime(TransportMode.Walking, 120);
-        fortress.Publish();
+        fortress.AddKeyPoint("Gornji plato", "Polazna tačka šetnje, sa pogledom na Dunav i Novi Sad.", "/images/exploration/demo-gornji-plato.jpg", new Location(45.2524, 19.8622), null, true);
+        fortress.AddKeyPoint("Sahat kula", "Kula sa satom čije su kazaljke obrnute, da bi se sa reke lakše čitali sati.", "/images/exploration/demo-sahat-kula.jpg", new Location(45.2532, 19.8614), null, false);
+        fortress.Publish(new TourPrice(true, null));
 
         var fruskaGora = new Tour(FirstExplorer, "Biciklom preko Fruške gore",
             "Ruta vodi od Sremske Kamenice preko Popovice do Iriškog venca, pored manastira Beočin i vidikovaca sa kojih se vidi ceo Srem, uz nekoliko dužih uspona.",
-            TourDifficulty.Hard, ["biciklizam", "planina"]);
+            TourDifficulty.Hard, ["biciklizam", "planina"], new RecommendedGroupSize(2, 6));
         fruskaGora.AddTransportTime(TransportMode.Bicycle, 240);
-        fruskaGora.Publish();
+        fruskaGora.AddKeyPoint("Sremska Kamenica", "Polazna tačka rute, u podnožju Fruške gore.", "/images/exploration/demo-sremska-kamenica.jpg", new Location(45.2195, 19.8406), null, true);
+        fruskaGora.AddKeyPoint("Iriški venac", "Najviša tačka rute, sa spomenikom i vidikovcem.", "/images/exploration/demo-iriski-venac.jpg", new Location(45.1513, 19.8517), null, false);
+        fruskaGora.Publish(new TourPrice(true, null));
 
         var cityCenter = new Tour(FirstExplorer, "Obilazak centra grada",
             "Kratak obilazak Trga slobode, Dunavske ulice i Dunavskog parka.",
-            TourDifficulty.Moderate, ["grad"]);
+            TourDifficulty.Moderate, ["grad"], new RecommendedGroupSize(1, 10));
 
         return [fortress, fruskaGora, cityCenter];
     }

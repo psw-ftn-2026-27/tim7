@@ -1,0 +1,26 @@
+// The card stays at the bottom of the screen while the page behind it scrolls. The map's
+// controls use z-index 1000, so the card needs more than that to stay in front of a map.
+.consent {
+  align-items: center;
+  border-color: var(--color-border-strong);
+  bottom: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  inset-inline: var(--space-4);
+  margin-inline: auto;
+  max-width: var(--container-width);
+  position: fixed;
+  z-index: 1100;
+}
+
+// The text takes the free width; on a narrow screen the buttons wrap below it.
+.consent p {
+  flex: 1 1 20rem;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
