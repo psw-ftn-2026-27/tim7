@@ -104,7 +104,8 @@ application-layer patterns below; the details live in the project itself. `Core/
 implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
 whether a user exists, finding a user by e-mail, which serves as the username, the
 users for a list of IDs (unknown IDs are left out, no error), and a search for at most ten
-explorers by part of the username (a blank text finds nobody). The search reads the role
+explorers by part of the username (a blank text finds nobody). It also returns the users a user
+follows (whose follow request they sent and the other accepted). The search reads the role
 tables through `IUserReadRepository` in `Core/Users`; who counts as an explorer is decided
 in one place, `Infrastructure/Users/ExplorerUsers`, shared with the search for users to follow.
 
