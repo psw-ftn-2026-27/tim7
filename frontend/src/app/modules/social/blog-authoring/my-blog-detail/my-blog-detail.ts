@@ -63,9 +63,11 @@ export class MyBlogDetail {
     try {
       await this.blogAuthoring.edit(
         this.id(),
-        this.form.title().value(),
-        this.form.description().value(),
-        this.keptImages(),
+        {
+          title: this.form.title().value(),
+          description: this.form.description().value(),
+          keptImages: this.keptImages(),
+        },
         this.newImages(),
       );
       await this.router.navigate(['/social/mine']);

@@ -262,7 +262,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
         }
         foreach (var image in newImages)
         {
-            form.Add(new ByteArrayContent(image), "newImages", "nova.png");
+            form.Add(new ByteArrayContent(image), "images", "nova.png");
         }
         return form;
     }

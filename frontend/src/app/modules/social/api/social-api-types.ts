@@ -19,6 +19,17 @@ export interface BlogDto {
   comments: CommentDto[];
 }
 
+export interface CreateBlogDto {
+  title: string;
+  description: string;
+}
+
+export interface EditBlogDto {
+  title: string;
+  description: string;
+  keptImages: string[] | null;
+}
+
 export interface CreateCommentDto {
   text: string;
 }

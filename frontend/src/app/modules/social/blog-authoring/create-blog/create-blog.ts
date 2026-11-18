@@ -31,8 +31,10 @@ export class CreateBlog {
     this.error.set(null);
     try {
       await this.blogAuthoring.create(
-        this.form.title().value(),
-        this.form.description().value(),
+        {
+          title: this.form.title().value(),
+          description: this.form.description().value(),
+        },
         this.images(),
       );
       await this.router.navigate(['/social/mine']);

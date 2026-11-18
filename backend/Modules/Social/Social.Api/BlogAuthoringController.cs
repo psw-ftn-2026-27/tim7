@@ -24,16 +24,12 @@ public sealed class BlogAuthoringController : ControllerBase
         _authoringQueries = authoringQueries;
     }
 
-    // Multipart form: the files cannot travel in JSON, so the action binds the form fields and builds the DTO from them.
+    // Multipart form: the DTO's fields and the image files travel side by side.
     [HttpPost]
     [RequestSizeLimit(ImageUploadLimits.MaxRequestBytes)]
-    public async Task<ActionResult<BlogDto>> Create(
-        [FromForm] string title,
-        [FromForm] string description,
-        [FromForm] List<IFormFile> images)
+    public async Task<ActionResult<BlogDto>> Create([FromForm] CreateBlogDto dto, List<IFormFile> images)
     {
-        var dto = new CreateBlogDto(title, description, await ReadImagesAsync(images));
-        return await _authoringService.CreateAsync(User.GetUserId(), dto);
+        return await _authoringService.CreateAsync(User.GetUserId(), dto, await ReadImagesAsync(images));
     }
 
     [HttpPost("{id:guid}/publish")]
@@ -52,15 +48,9 @@ public sealed class BlogAuthoringController : ControllerBase
 
     [HttpPut("{id:guid}")]
     [RequestSizeLimit(ImageUploadLimits.MaxRequestBytes)]
-    public async Task<ActionResult> Edit(
-        Guid id,
-        [FromForm] string title,
-        [FromForm] string description,
-        [FromForm] List<string> keptImages,
-        [FromForm] List<IFormFile> newImages)
+    public async Task<ActionResult> Edit(Guid id, [FromForm] EditBlogDto dto, List<IFormFile> images)
     {
-        var dto = new EditBlogDto(title, description, keptImages, await ReadImagesAsync(newImages));
-        await _authoringService.EditAsync(id, User.GetUserId(), dto);
+        await _authoringService.EditAsync(id, User.GetUserId(), dto, await ReadImagesAsync(images));
         return NoContent();
     }
 

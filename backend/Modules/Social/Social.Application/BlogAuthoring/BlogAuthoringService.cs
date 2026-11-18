@@ -21,10 +21,10 @@ public sealed class BlogAuthoringService
         _mapper = mapper;
     }
 
-    public async Task<BlogDto> CreateAsync(Guid authorId, CreateBlogDto dto)
+    public async Task<BlogDto> CreateAsync(Guid authorId, CreateBlogDto dto, List<ImageUploadDto> images)
     {
-        var images = await SaveImagesAsync(dto.Images);
-        var blog = new Blog(authorId, dto.Title, dto.Description, images);
+        var addresses = await SaveImagesAsync(images);
+        var blog = new Blog(authorId, dto.Title, dto.Description, addresses);
 
         _blogRepository.Add(blog);
         await _unitOfWork.SaveChangesAsync();
@@ -40,12 +40,12 @@ public sealed class BlogAuthoringService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditAsync(Guid blogId, Guid authorId, EditBlogDto dto)
+    public async Task EditAsync(Guid blogId, Guid authorId, EditBlogDto dto, List<ImageUploadDto> newImages)
     {
         var blog = await GetOwnedBlogAsync(blogId, authorId);
-        var addedImages = await SaveImagesAsync(dto.NewImages);
+        var addedImages = await SaveImagesAsync(newImages);
 
-        blog.Edit(dto.Title, dto.Description, dto.KeptImages, addedImages);
+        blog.Edit(dto.Title, dto.Description, dto.KeptImages ?? [], addedImages);
         await _unitOfWork.SaveChangesAsync();
     }
 
