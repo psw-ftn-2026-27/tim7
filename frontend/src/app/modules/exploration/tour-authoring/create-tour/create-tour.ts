@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form, min, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
+import { Analytics } from '../../../../shared/analytics/analytics';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDifficulty } from '../../api/exploration-api-types';
 import { TourAuthoring } from '../tour-authoring';
@@ -14,6 +15,7 @@ import { TourAuthoring } from '../tour-authoring';
 export class CreateTour {
   private readonly tourAuthoring = inject(TourAuthoring);
   private readonly router = inject(Router);
+  private readonly analytics = inject(Analytics);
 
   protected readonly form = form(
     signal({
@@ -41,7 +43,7 @@ export class CreateTour {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.tourAuthoring.create({
+      const tour = await this.tourAuthoring.create({
         name: this.form.name().value(),
         description: this.form.description().value(),
         difficulty: this.form.difficulty().value(),
@@ -56,6 +58,7 @@ export class CreateTour {
           to: this.form.groupSizeTo().value(),
         },
       });
+      this.analytics.record('tour_created', { tour_id: tour.id });
       await this.router.navigate(['/exploration/mine']);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not create the tour.'));
