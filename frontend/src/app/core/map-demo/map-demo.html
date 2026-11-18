@@ -120,6 +120,90 @@
 </section>
 
 <section class="demo stack">
+  <h2>Location challenge area</h2>
+
+  <p>
+    The start point of a location challenge and the circle around it, as Games would show them. The
+    radius comes from Games; the hidden locations are not shown, because the user does not see them
+    either.
+  </p>
+
+  <app-map
+    [pins]="challengePins"
+    [circleCenter]="challengeStart"
+    [circleRadiusKm]="challengeRadiusKm"
+  />
+
+  <p>Radius: {{ challengeRadiusKm }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Location search</h2>
+
+  <p>
+    Click the map to place the centre and enter a radius; the circle is redrawn on every change.
+    Search only prints what the page would send to the server. The pins do not change, because the
+    server decides which of them are inside the circle.
+  </p>
+
+  <app-map
+    [pins]="challenges"
+    [picking]="true"
+    [circleRadiusKm]="searchModel().radiusKm ?? 0"
+    (locationPicked)="searchCenter.set($event)"
+  />
+
+  <p>
+    @if (searchCenter(); as center) {
+      Centre: {{ center.latitude.toFixed(5) }}, {{ center.longitude.toFixed(5) }}
+    } @else {
+      No centre yet. Click the map.
+    }
+  </p>
+
+  <div class="field">
+    <label for="search-radius">Radius in km</label>
+    <input id="search-radius" type="number" [formField]="searchForm.radiusKm" />
+    @for (message of searchForm.radiusKm().errors(); track $index) {
+      <p class="error">{{ message.message }}</p>
+    }
+  </div>
+
+  <p class="actions">
+    <button
+      class="button"
+      type="button"
+      [disabled]="!searchCenter() || !searchForm().valid()"
+      (click)="search()"
+    >
+      Search
+    </button>
+  </p>
+
+  <p>
+    @if (searchSent(); as sent) {
+      Would send: centre {{ sent.center.latitude.toFixed(5) }},
+      {{ sent.center.longitude.toFixed(5) }}, radius {{ sent.radiusKm }} km.
+    } @else {
+      Nothing sent yet.
+    }
+  </p>
+</section>
+
+<section class="demo stack">
+  <h2>Path to the next key point</h2>
+
+  <p>
+    The tourist's position as a pin labelled "You" and the next key point, joined by the path. On a
+    real page the position comes from the position simulator.
+  </p>
+
+  <app-map [pins]="pathToNext" [showPath]="true" (pathLength)="distanceToNext.set($event)" />
+
+  <p>Distance: {{ distanceToNext().toFixed(2) }} km.</p>
+</section>
+
+<section class="demo stack">
   <h2>Position simulator</h2>
 
   <p>

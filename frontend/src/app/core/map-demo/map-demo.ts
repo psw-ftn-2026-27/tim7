@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { FormField, form, required, validate } from '@angular/forms/signals';
 import { Map, MapPin } from '../../shared/map/map';
 import { PositionSimulator } from '../../shared/position-simulator/position-simulator';
 
@@ -14,7 +15,7 @@ const LIBERTY_BRIDGE: MapPin = { latitude: 45.2447, longitude: 19.8517 };
 const STRAND: MapPin = { latitude: 45.2427, longitude: 19.8445, label: 'Strand' };
 
 @Component({
-  imports: [Map, PositionSimulator],
+  imports: [FormField, Map, PositionSimulator],
   selector: 'app-map-demo',
   styleUrl: './map-demo.scss',
   templateUrl: './map-demo.html',
@@ -46,6 +47,48 @@ export class MapDemo {
 
   // The position simulator: the last position it reported, undefined until the first load.
   protected readonly position = signal<MapPin | null | undefined>(undefined);
+
+  // A location challenge, as Games would show it: the start point and the area around it.
+  // Games computes the radius; the hidden locations are not shown.
+  protected readonly challengeStart: MapPin = {
+    latitude: 45.2551,
+    longitude: 19.8452,
+    label: 'Start: City Hall',
+  };
+  protected readonly challengePins = [this.challengeStart];
+  protected readonly challengeRadiusKm = 0.6;
+
+  // Location search: the centre comes from the map, the radius from the page's form.
+  protected readonly searchCenter = signal<MapPin | null>(null);
+  protected readonly searchModel = signal({ radiusKm: null as number | null });
+  protected readonly searchForm = form(this.searchModel, (path) => {
+    required(path.radiusKm, { message: 'Enter a radius.' });
+    validate(path.radiusKm, ({ value }) => {
+      const radiusKm = value();
+      if (radiusKm !== null && radiusKm <= 0) {
+        return { kind: 'notPositive', message: 'The radius must be greater than 0.' };
+      }
+      return null;
+    });
+  });
+  // What the page would send to the server; a real page sends it and shows the results as pins.
+  protected readonly searchSent = signal<{ center: MapPin; radiusKm: number } | null>(null);
+
+  // Path to the next key point: the tourist is a plain pin labelled "You".
+  protected readonly pathToNext: MapPin[] = [
+    { latitude: 45.2486, longitude: 19.8502, label: 'You' },
+    PETROVARADIN,
+  ];
+  protected readonly distanceToNext = signal(0);
+
+  protected search(): void {
+    const center = this.searchCenter();
+    const radiusKm = this.searchModel().radiusKm;
+    if (!center || radiusKm === null || !this.searchForm().valid()) {
+      return;
+    }
+    this.searchSent.set({ center, radiusKm });
+  }
 
   protected addToTour(): void {
     const picked = this.tourPicked();

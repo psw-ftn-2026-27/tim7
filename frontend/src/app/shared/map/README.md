@@ -1,7 +1,7 @@
 # Deljena mapa (`app-map`)
 
 Prikazna komponenta platformskog tima zasnovana na Leaflet 1.9. Prikazuje pinove, putanju
-između njih i omogućava izbor lokacije klikom. Ne ubrizgava joj se nijedan servis, ne razgovara sa
+između njih i krug oko jedne tačke i omogućava izbor lokacije klikom. Ne ubrizgava joj se nijedan servis, ne razgovara sa
 serverom i samo javlja kroz izlaze: čuvanje koordinata i dužine radi stranica modula koji
 je koristi. Svi slučajevi su prikazani na razvojnoj stranici `/map-demo`.
 
@@ -42,6 +42,14 @@ protected readonly keyPoints = computed<MapPin[]>(() =>
 | `picking`         | `boolean`        | `false`       | Režim izbora: klik na mapu postavlja ili pomera izabrani pin. Van ovog režima klik ne radi ništa.                                                               |
 | `initialLocation` | `MapPin \| null` | `null`        | U režimu izbora izabrani pin se odmah prikazuje ovde i mapa se centrira na njega. Bez nje izabranog pina nema do prvog klika, a mapa je centrirana na Novi Sad. |
 | `selectedIcon`    | `'pin' \| 'person'` | `'pin'`    | Izgled izabranog pina: crveni krug ili crvena figura čoveka. Figuru koristi simulator pozicije, da se pozicija korisnika ne meša sa tačkama koje se biraju. |
+| `circleCenter`    | `MapPin \| null` | `null`        | Centar kruga van režima izbora. U režimu izbora se ne koristi: centar kruga je izabrani pin, pa krug prati svaki klik.                                          |
+| `circleRadiusKm`  | `number`         | `0`           | Poluprečnik kruga u km, kao i dužina putanje. Krug se crta samo kada postoji centar i poluprečnik je veći od 0.                                                 |
+
+Na mapi je najviše jedan krug i svaka promena centra ili poluprečnika ga ponovo crta. Kada se
+krug pojavi ili mu se promeni poluprečnik, mapa se uokviri tako da se ceo krug vidi; pomeranje
+centra ne menja prikaz. Klik prolazi kroz krug do mape ili pina ispod njega. Mapa ne filtrira
+pinove i ne šalje pretragu: koji su pinovi u krugu određuje server modula, a stranica ih predaje
+kroz `pins`.
 
 ## Izlazi
 
@@ -102,6 +110,79 @@ mapu, a mapa ne zna za formu.
 protected onLocationPicked(location: MapPin): void {
   this.model.update((value) => ({ ...value, latitude: location.latitude, longitude: location.longitude }));
 }
+```
+
+### Oblast lokacijskog izazova (G22)
+
+Krug oko polazne tačke izazova, bez režima izbora. Poluprečnik računa Games i mapi predaje
+gotov broj u km; skrivene tačke se ne prikazuju.
+
+```ts
+protected readonly startPins = computed<MapPin[]>(() => [this.start()]);
+```
+
+```html
+<app-map [pins]="startPins()" [circleCenter]="start()" [circleRadiusKm]="radiusKm()" />
+```
+
+### Lokacijska pretraga (E23, G23)
+
+Režim izbora sa krugom: klik postavlja centar, a krug se crta oko izabranog pina. Polje za
+poluprečnik i dugme „Search“ pripadaju stranici, pa stranica čuva centar iz `locationPicked`
+i poluprečnik iz svoje forme i tek na klik šalje pretragu. Pinovi rezultata stižu sa servera
+i predaju se kroz `pins`.
+
+```html
+<app-map
+  [pins]="results()"
+  [picking]="true"
+  [circleRadiusKm]="model().radiusKm ?? 0"
+  (locationPicked)="center.set($event)"
+/>
+
+<div class="field">
+  <label for="radius">Radius in km</label>
+  <input id="radius" type="number" [formField]="form.radiusKm" />
+</div>
+
+<button class="button" type="button" [disabled]="!center() || !form().valid()" (click)="search()">
+  Search
+</button>
+```
+
+```ts
+protected readonly center = signal<MapPin | null>(null);
+protected readonly model = signal({ radiusKm: null as number | null });
+protected readonly form = form(this.model, (path) => {
+  required(path.radiusKm, { message: 'Enter a radius.' });
+  validate(path.radiusKm, ({ value }) => {
+    const radiusKm = value();
+    if (radiusKm !== null && radiusKm <= 0) {
+      return { kind: 'notPositive', message: 'The radius must be greater than 0.' };
+    }
+    return null;
+  });
+});
+
+protected search(): void {
+  // Pretragu šalje stranica sa centrom i poluprečnikom; mapa samo crta krug.
+}
+```
+
+### Putanja od korisnika do sledeće tačke (E22)
+
+Pozicija korisnika dolazi iz simulatora pozicije i postaje običan pin sa oznakom „You“, pa
+putanja povezuje ta dva pina. Blizinu tački proverava modul Exploration.
+
+```ts
+protected readonly pathToNext = computed<MapPin[]>(() => [
+  { latitude: this.position().latitude, longitude: this.position().longitude, label: 'You' },
+  { latitude: this.next().latitude, longitude: this.next().longitude, label: this.next().name },
+]);
+```
+
+```html
+<app-map [pins]="pathToNext()" [showPath]="true" (pathLength)="distance.set($event)" />
 ```
 
 ## Platformsko odstupanje: `inject(ElementRef)`

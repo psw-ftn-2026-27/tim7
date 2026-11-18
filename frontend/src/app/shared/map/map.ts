@@ -6,6 +6,7 @@ import {
   inject,
   input,
   output,
+  signal,
   untracked,
 } from '@angular/core';
 import * as L from 'leaflet';
@@ -31,6 +32,8 @@ export class Map implements OnDestroy {
   readonly picking = input(false);
   readonly initialLocation = input<MapPin | null>(null);
   readonly selectedIcon = input<'pin' | 'person'>('pin');
+  readonly circleCenter = input<MapPin | null>(null);
+  readonly circleRadiusKm = input(0);
 
   readonly pathLength = output<number>();
   readonly locationPicked = output<MapPin>();
@@ -41,6 +44,9 @@ export class Map implements OnDestroy {
   private readonly map = L.map(this.host);
   private readonly pinLayer = L.layerGroup().addTo(this.map);
   private selectedMarker: L.Layer | null = null;
+  // Where the selected pin is, so the circle can follow it in picking mode.
+  private readonly selectedLocation = signal<MapPin | null>(null);
+  private circle: L.Circle | null = null;
 
   constructor() {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -84,6 +90,14 @@ export class Map implements OnDestroy {
     effect(() => {
       this.placeSelectedMarker(this.picking() ? this.initialLocation() : null);
     });
+
+    // Circle: redraw it when its centre or radius changes. In picking mode the centre is the
+    // selected pin, so the circle follows every click; otherwise it is the circleCenter input.
+    effect(() => {
+      const center = this.picking() ? this.selectedLocation() : this.circleCenter();
+      const radiusKm = this.circleRadiusKm();
+      untracked(() => this.drawCircle(center, radiusKm));
+    });
   }
 
   ngOnDestroy(): void {
@@ -93,6 +107,7 @@ export class Map implements OnDestroy {
   private placeSelectedMarker(location: MapPin | null): void {
     this.selectedMarker?.remove();
     this.selectedMarker = null;
+    this.selectedLocation.set(location);
     if (!location) {
       return;
     }
@@ -112,6 +127,31 @@ export class Map implements OnDestroy {
         fillOpacity: 1,
         interactive: false,
       }).addTo(this.map);
+    }
+  }
+
+  // At most one circle: the old one is always removed first. Leaflet takes the radius in metres.
+  private drawCircle(center: MapPin | null, radiusKm: number): void {
+    const previousRadius = this.circle?.getRadius() ?? null;
+    this.circle?.remove();
+    this.circle = null;
+    if (!center || radiusKm <= 0) {
+      return;
+    }
+    const radius = radiusKm * 1000;
+    // The circle ignores clicks, so a click inside it still reaches the map or the pin below.
+    this.circle = L.circle(toLatLng(center), {
+      radius,
+      color: this.token('--color-accent'),
+      weight: 2,
+      fillColor: this.token('--color-accent'),
+      fillOpacity: 0.1,
+      interactive: false,
+    }).addTo(this.map);
+    this.circle.bringToBack();
+    // When the circle appears or its radius changes, frame it whole; a new centre keeps the view.
+    if (radius !== previousRadius) {
+      this.map.fitBounds(this.circle.getBounds(), { padding: [24, 24] });
     }
   }
 
