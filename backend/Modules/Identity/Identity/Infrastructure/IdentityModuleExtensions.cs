@@ -1,3 +1,4 @@
+using Identity.Contracts;
 using Identity.Core;
 using Identity.Core.Connections;
 using Identity.Core.Following;
@@ -28,6 +29,8 @@ public static class IdentityModuleExtensions
 
         services.AddScoped<FollowingService>();
         services.AddScoped<FollowingQueries>();
+
+        services.AddScoped<IIdentityApi, IdentityApi>();
 
         return services;
     }
