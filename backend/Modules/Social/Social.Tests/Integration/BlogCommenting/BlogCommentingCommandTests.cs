@@ -75,4 +75,41 @@ public class BlogCommentingCommandTests : BaseIntegrationTest
         var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.CommentedMuseumVisit.Id);
         stored.Comments.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_comment_on_a_blog()
+    {
+        var client = Factory.CreateClient();
+        var request = new CreateCommentDto("Odličan blog!");
+
+        var response = await client.PostAsJsonAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}/comments",
+            request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_edit_a_comment()
+    {
+        var client = Factory.CreateClient();
+        var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
+        var request = new UpdateCommentDto("Izmena bez prijave.");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/social/blogs/{BlogSeed.CommentedMuseumVisit.Id}/comments/{commentId}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_delete_a_comment()
+    {
+        var client = Factory.CreateClient();
+        var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
+
+        var response = await client.DeleteAsync(
+            $"/api/social/blogs/{BlogSeed.CommentedMuseumVisit.Id}/comments/{commentId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }
