@@ -9,6 +9,7 @@ import { Auth } from '../../../core/auth/auth';
     <div class="stack">
       <h1>Payment</h1>
       <p><a routerLink="/payment/wallet">My wallet</a></p>
+      <p><a routerLink="/payment/cart">My cart</a></p>
       @if (isAdministrator()) {
         <p><a routerLink="/payment/users">Users and wallets</a></p>
       }
