@@ -5,6 +5,7 @@ using Exploration.Application.TourBrowsing;
 using Exploration.Application.TourPreferences;
 using Exploration.Application.TourPreferenceSetup;
 using Exploration.Application.Tours;
+using Exploration.Contracts;
 using Exploration.Infrastructure.Images;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Infrastructure.Persistence.TourPreferences;
@@ -39,6 +40,7 @@ public static class ExplorationModuleExtensions
         services.AddScoped<TourBrowsingQueries>();
         services.AddScoped<TourPreferenceSetupService>();
         services.AddScoped<TourPreferenceSetupQueries>();
+        services.AddScoped<IExplorationApi, ExplorationApi>();
 
         return services;
     }

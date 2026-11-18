@@ -14,4 +14,6 @@ public sealed record TourDto(
     DateTime? ArchivedAt,
     RecommendedGroupSizeDto RecommendedGroupSize,
     TourLengthDto? Length,
-    List<TransportTimeDto> TransportTimes);
+    List<TransportTimeDto> TransportTimes,
+    bool? IsFree,
+    int? Amount);

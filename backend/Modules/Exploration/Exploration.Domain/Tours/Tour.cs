@@ -21,6 +21,7 @@ public sealed class Tour : AggregateRoot
     public DateTime? ArchivedAt { get; private set; }
     public RecommendedGroupSize RecommendedGroupSize { get; private set; }
     public TourLength? Length { get; private set; }
+    public TourPrice? Price { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
     public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints.OrderBy(keyPoint => keyPoint.Order).ToList();
 
@@ -112,6 +113,7 @@ public sealed class Tour : AggregateRoot
         }
         EnsurePublishingRulesAreMet();
 
+        Price = price;
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
     }

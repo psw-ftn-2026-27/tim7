@@ -21,6 +21,7 @@
           <th scope="col">Group size</th>
           <th scope="col">Length</th>
           <th scope="col">Transport times</th>
+          <th scope="col">Price</th>
           <th scope="col">Published at</th>
           <th scope="col">Archived at</th>
           <th scope="col">Actions</th>
@@ -45,6 +46,13 @@
                 <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
               } @empty {
                 <span class="meta">none</span>
+              }
+            </td>
+            <td>
+              @if (tour.isFree === true) {
+                Free
+              } @else if (tour.isFree === false) {
+                {{ tour.amount }} EC
               }
             </td>
             <td>{{ tour.publishedAt }}</td>
@@ -86,7 +94,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="9">You have no tours yet.</td>
+            <td colspan="10">You have no tours yet.</td>
           </tr>
         }
       </tbody>
@@ -144,6 +152,10 @@
           <label for="amount">Amount</label>
           <input id="amount" type="number" [formField]="priceForm.amount" />
         </div>
+      }
+
+      @if (publishError()) {
+        <p class="error">{{ publishError() }}</p>
       }
 
       <button class="button button--primary" type="submit" [disabled]="pending()">Publish</button>

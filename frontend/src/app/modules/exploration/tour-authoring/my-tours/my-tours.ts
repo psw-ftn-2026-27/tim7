@@ -23,6 +23,7 @@ export class MyTours {
   protected readonly publishingTourId = signal<string | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly publishError = signal<string | null>(null);
 
   private readonly model = signal({ transport: 'Walking' as TransportMode, minutes: 30 });
 
@@ -44,6 +45,7 @@ export class MyTours {
 
   protected selectForPublish(tourId: string): void {
     this.error.set(null);
+    this.publishError.set(null);
     this.selectedTourId.set(null);
     this.publishingTourId.set(tourId);
     this.priceForm().reset({ price: '', amount: null });
@@ -57,18 +59,19 @@ export class MyTours {
     }
     const price = this.priceForm.price().value();
     this.pending.set(true);
-    this.error.set(null);
+    this.publishError.set(null);
     try {
       await this.tourAuthoring.publish(tourId, {
         isFree: price === '' ? null : price === 'free',
         amount: price === 'paid' ? this.priceForm.amount().value() : null,
       });
       this.analytics.record('tour_published', { tour_id: tourId });
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not publish the tour.'));
-    } finally {
       this.publishingTourId.set(null);
       this.tours.reload();
+    } catch (failure) {
+      // The section stays open with the entered values, so the author can correct them.
+      this.publishError.set(serverMessage(failure, 'Could not publish the tour.'));
+    } finally {
       this.pending.set(false);
     }
   }
