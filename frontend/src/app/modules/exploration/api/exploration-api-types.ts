@@ -138,7 +138,28 @@ export interface TourSearchDto {
   transport: TransportMode | null;
   minPrice: number | null;
   maxPrice: number | null;
+  minLength: number | null;
+  maxLength: number | null;
   sortBy: TourSort | null;
+}
+
+export interface TourOnMapDto {
+  tour: TourDto;
+  firstPublicKeyPointLocation: LocationDto | null;
+}
+
+export interface RecordLocationSearchDto {
+  center: LocationDto;
+  radiusKilometers: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transport: TransportMode | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  minLength: number | null;
+  maxLength: number | null;
+  resultCount: number;
 }
 
 export interface StartTourDto {
