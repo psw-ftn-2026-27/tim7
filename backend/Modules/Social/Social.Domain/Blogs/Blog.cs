@@ -14,6 +14,8 @@ public sealed class Blog : AggregateRoot
     public DateTime? LastModifiedAt { get; private set; }
     private readonly List<Comment> _comments = [];
     public IReadOnlyList<Comment> Comments => _comments;
+    private readonly List<BlogVote> _votes = [];
+    public IReadOnlyList<BlogVote> Votes => _votes;
 
     private Blog()
     {
@@ -104,6 +106,27 @@ public sealed class Blog : AggregateRoot
         EnsurePublished();
 
         _comments.Remove(GetOwnComment(commentId, userId));
+    }
+
+    public void Vote(Guid userId, BlogVoteType type)
+    {
+        if (Status != BlogStatus.Published)
+        {
+            throw new DomainException("Votes are allowed only on a published blog.");
+        }
+
+        var existing = _votes.FirstOrDefault(vote => vote.UserId == userId);
+        if (existing is null)
+        {
+            _votes.Add(new BlogVote(userId, type));
+            return;
+        }
+
+        _votes.Remove(existing);
+        if (existing.Type != type)
+        {
+            _votes.Add(new BlogVote(userId, type));
+        }
     }
 
     private void EnsurePublished()
