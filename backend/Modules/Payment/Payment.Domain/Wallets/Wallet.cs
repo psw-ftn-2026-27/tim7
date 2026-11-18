@@ -19,6 +19,11 @@ public sealed class Wallet : AggregateRoot
 
     public void Deposit(Guid administratorId, int amount)
     {
+        if (administratorId == UserId)
+        {
+            throw new DomainException("An administrator cannot deposit to his own wallet.");
+        }
+
         _transactions.Add(new Transaction(amount, administratorId));
     }
 

@@ -7,7 +7,9 @@ internal static class WalletSeed
 {
     public static readonly Wallet ExplorerWallet = new(WellKnownUsers.Explorer);
 
-    public static readonly Wallet FundedWallet = new(Guid.NewGuid());
+    public static readonly Wallet FundedWallet = new(DemoUsers.Explorer2);
+
+    public static readonly Wallet DemoExplorerEmptyWallet = new(DemoUsers.Explorer1);
 
     public static readonly Wallet WalletWithReversedAndActiveDeposits = new(Guid.NewGuid());
 
@@ -20,5 +22,5 @@ internal static class WalletSeed
         WalletWithReversedAndActiveDeposits.ReverseDeposit(WalletWithReversedAndActiveDeposits.Transactions[0].Id, DateTime.UtcNow);
     }
 
-    public static Wallet[] All => [ExplorerWallet, FundedWallet, WalletWithReversedAndActiveDeposits];
+    public static Wallet[] All => [ExplorerWallet, FundedWallet, DemoExplorerEmptyWallet, WalletWithReversedAndActiveDeposits];
 }

@@ -22,12 +22,12 @@ public class WalletAdministrationCommandTests : BaseIntegrationTest
         using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
         var transactionCountBefore = arrangeContext.Set<Transaction>().Count();
 
-        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{WalletSeed.ExplorerWallet.UserId}/deposits", new DepositDto(25));
+        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{WalletSeed.DemoExplorerEmptyWallet.UserId}/deposits", new DepositDto(25));
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<PaymentDbContext>();
         assertContext.Set<Transaction>().Count().Should().Be(transactionCountBefore + 1);
-        var stored = assertContext.Wallets.Include(wallet => wallet.Transactions).Single(wallet => wallet.Id == WalletSeed.ExplorerWallet.Id);
+        var stored = assertContext.Wallets.Include(wallet => wallet.Transactions).Single(wallet => wallet.Id == WalletSeed.DemoExplorerEmptyWallet.Id);
         stored.Transactions.Should().ContainSingle()
             .Which.Amount.Should().Be(25);
     }
@@ -39,7 +39,7 @@ public class WalletAdministrationCommandTests : BaseIntegrationTest
         using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
         var transactionCountBefore = arrangeContext.Set<Transaction>().Count();
 
-        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{WalletSeed.ExplorerWallet.UserId}/deposits", new DepositDto(0));
+        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{WalletSeed.DemoExplorerEmptyWallet.UserId}/deposits", new DepositDto(0));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<PaymentDbContext>();
@@ -47,17 +47,50 @@ public class WalletAdministrationCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Deposit_to_a_user_without_a_wallet_is_rejected_as_not_found_and_nothing_is_stored()
+    public async Task Deposit_to_a_user_without_a_wallet_creates_the_wallet_with_that_deposit()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{DemoUsers.Explorer3}/deposits", new DepositDto(25));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        var stored = assertContext.Wallets.Include(wallet => wallet.Transactions).Single(wallet => wallet.UserId == DemoUsers.Explorer3);
+        stored.Transactions.Should().ContainSingle()
+            .Which.Amount.Should().Be(25);
+    }
+
+    [Fact]
+    public async Task Deposit_to_a_user_that_does_not_exist_is_rejected_as_not_found_and_nothing_is_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var unknownUserId = Guid.NewGuid();
         using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
         var transactionCountBefore = arrangeContext.Set<Transaction>().Count();
+        var walletCountBefore = arrangeContext.Wallets.Count();
 
-        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{WellKnownUsers.SecondExplorer}/deposits", new DepositDto(25));
+        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{unknownUserId}/deposits", new DepositDto(25));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         using var assertContext = Factory.CreateContext<PaymentDbContext>();
         assertContext.Set<Transaction>().Count().Should().Be(transactionCountBefore);
+        assertContext.Wallets.Count().Should().Be(walletCountBefore);
+    }
+
+    [Fact]
+    public async Task Administrator_deposit_to_himself_is_rejected_and_nothing_is_stored()
+    {
+        var client = Factory.CreateClientFor(DemoUsers.Administrator, "administrator");
+        using var arrangeContext = Factory.CreateContext<PaymentDbContext>();
+        var transactionCountBefore = arrangeContext.Set<Transaction>().Count();
+        var walletCountBefore = arrangeContext.Wallets.Count();
+
+        var response = await client.PostAsJsonAsync($"/api/payment/wallets/{DemoUsers.Administrator}/deposits", new DepositDto(25));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.Set<Transaction>().Count().Should().Be(transactionCountBefore);
+        assertContext.Wallets.Count().Should().Be(walletCountBefore);
     }
 
     [Fact]

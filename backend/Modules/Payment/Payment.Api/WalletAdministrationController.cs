@@ -28,6 +28,12 @@ public sealed class WalletAdministrationController : ControllerBase
         return await _administrationQueries.GetUsersWithBalancesAsync(page, pageSize);
     }
 
+    [HttpGet("search")]
+    public async Task<ActionResult<PageResult<UserBalanceDto>>> SearchUsersWithBalances([FromQuery] string query, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        return await _administrationQueries.SearchUsersWithBalancesAsync(query, page, pageSize);
+    }
+
     [HttpPost("{userId:guid}/deposits")]
     public async Task<ActionResult> Deposit(Guid userId, [FromBody] DepositDto deposit)
     {

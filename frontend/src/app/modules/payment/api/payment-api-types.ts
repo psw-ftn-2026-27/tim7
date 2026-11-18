@@ -12,6 +12,7 @@ export interface WalletDto {
 
 export interface UserBalanceDto {
   userId: string;
+  email: string;
   balance: number;
 }
 
