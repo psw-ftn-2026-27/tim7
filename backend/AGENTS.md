@@ -240,7 +240,7 @@ its files.
 
 A module that offers a chat adopts the shared one; it never writes its own rules. The
 types live in `Shared.Domain/Chats/`: `Chat` (a `ChatContext` of a module-local kind and
-the context ID, `IsLocked`, `Open`, `Lock`, `Write`), `Message` (its own aggregate with
+the context ID, `IsLocked`, `Open`, `Lock`, `Unlock`, `Write`), `Message` (its own aggregate with
 `ChatId`, `AuthorId`, `Text`, `SentAt`, `IsDeleted`, `DeleteBy`; the constructor
 enforces 1 to 1000 characters and is reachable only through `Chat.Write`) and
 `ChatParticipant` (`UserId`, `IsPrivileged`). `Chat` also keeps its `MutedUsers` with
