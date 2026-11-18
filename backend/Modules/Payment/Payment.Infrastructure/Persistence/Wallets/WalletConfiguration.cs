@@ -26,5 +26,6 @@ internal static class WalletConfiguration
     {
         builder.ToTable("Transactions");
         builder.Property(transaction => transaction.Id).ValueGeneratedNever();
+        builder.Property(transaction => transaction.Kind).HasConversion<string>().HasMaxLength(20).HasDefaultValue(TransactionKind.Deposit); // existing rows are deposits
     }
 }

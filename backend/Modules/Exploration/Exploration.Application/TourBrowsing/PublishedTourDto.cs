@@ -12,4 +12,5 @@ public sealed record PublishedTourDto(
     List<string> Tags,
     TourLengthDto? Length,
     List<TransportTimeDto> TransportTimes,
-    List<PublicKeyPointDto> KeyPoints);
+    List<PublicKeyPointDto> KeyPoints,
+    bool IsFree);

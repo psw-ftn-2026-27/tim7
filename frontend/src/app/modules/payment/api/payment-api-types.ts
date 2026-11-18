@@ -1,8 +1,26 @@
 export interface TransactionDto {
   amount: number;
   createdAt: string;
-  administratorId: string;
+  administratorId: string | null;
   isReversed: boolean;
+  kind: 'Deposit' | 'Purchase' | 'Earning';
+  entityId: string | null;
+}
+
+export interface TourOfferDto {
+  name: string;
+  price: number | null;
+}
+
+export interface CartItemDto {
+  entityId: string;
+  name: string;
+  price: number;
+}
+
+export interface CartDto {
+  items: CartItemDto[];
+  totalPrice: number;
 }
 
 export interface WalletDto {

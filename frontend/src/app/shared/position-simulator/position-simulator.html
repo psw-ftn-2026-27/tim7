@@ -1,8 +1,8 @@
 <div class="stack">
   @if (position.isLoading() && !position.hasValue()) {
-    <p>Loading your position...</p>
+    <p class="meta">Loading your position...</p>
   } @else if (position.error()) {
-    <p class="error">Could not load your position. Log in and try again.</p>
+    <p class="alert">Could not load your position. Log in and try again.</p>
   } @else if (!savedLocation()) {
     <p>Mark your position by clicking the map.</p>
   }
@@ -30,6 +30,6 @@
     <p>Position saved.</p>
   }
   @if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="alert">{{ error() }}</p>
   }
 </div>

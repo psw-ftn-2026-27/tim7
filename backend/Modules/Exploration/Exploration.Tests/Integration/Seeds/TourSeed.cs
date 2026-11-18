@@ -15,6 +15,7 @@ internal static class TourSeed
     public static readonly Tour PublishedBikeRideToPetrovaradin;
     public static readonly Tour PublishedOldTownWalk;
     public static readonly Tour ArchivedLakeside;
+    public static readonly Tour PublishedFreeTourWithHiddenFirstKeyPoint;
 
     static TourSeed()
     {
@@ -54,7 +55,13 @@ internal static class TourSeed
         ArchivedLakeside.AddKeyPoint("Ženski štrand", "Kraj ture.", "/images/exploration/seed-zenski-strand.jpg", new Location(46.0990, 19.7700), null, false);
         ArchivedLakeside.Publish(new TourPrice(true, null));
         ArchivedLakeside.Archive();
+
+        PublishedFreeTourWithHiddenFirstKeyPoint = new(WellKnownUsers.SecondExplorer, "Kanal Dunav-Tisa-Dunav", "Šetnja prati nasip kanala Dunav-Tisa-Dunav od ustave na Šajkaškoj strani do starog mosta, uz pogled na barske ptice i ribolovce.", TourDifficulty.Easy, ["priroda"], new RecommendedGroupSize(1, 10));
+        PublishedFreeTourWithHiddenFirstKeyPoint.AddTransportTime(TransportMode.Walking, 60);
+        PublishedFreeTourWithHiddenFirstKeyPoint.AddKeyPoint("Ustava", "Polazna tačka šetnje, skrivena dok se tura ne pokrene.", "/images/exploration/seed-ustava.jpg", new Location(45.2700, 19.8800), "Ispod ustave je stari natpis graditelja.", false);
+        PublishedFreeTourWithHiddenFirstKeyPoint.AddKeyPoint("Stari most", "Kraj šetnje.", "/images/exploration/seed-stari-most.jpg", new Location(45.2750, 19.8900), null, true);
+        PublishedFreeTourWithHiddenFirstKeyPoint.Publish(new TourPrice(true, null));
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, ArchivedLakeside];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, ArchivedLakeside, PublishedFreeTourWithHiddenFirstKeyPoint];
 }

@@ -2,10 +2,6 @@ app-map {
   height: 24rem;
 }
 
-form.card {
-  max-width: 32rem;
-}
-
 form.card > button {
   align-self: flex-start;
 }
@@ -33,9 +29,4 @@ form.card > button {
 
 .key-point h3 {
   margin: 0;
-}
-
-.actions {
-  display: flex;
-  gap: var(--space-2);
 }

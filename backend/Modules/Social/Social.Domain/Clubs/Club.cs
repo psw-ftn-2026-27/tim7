@@ -14,6 +14,8 @@ public sealed class Club : AggregateRoot
     public IReadOnlyList<ClubMember> Members => _members;
     private readonly List<JoinRequest> _joinRequests = [];
     public IReadOnlyList<JoinRequest> JoinRequests => _joinRequests;
+    private readonly List<ClubInvitation> _invitations = [];
+    public IReadOnlyList<ClubInvitation> Invitations => _invitations;
 
     private Club()
     {
@@ -53,6 +55,11 @@ public sealed class Club : AggregateRoot
         return _joinRequests.Any(request => request.UserId == userId);
     }
 
+    public bool HasPendingInvitation(Guid userId)
+    {
+        return _invitations.Any(invitation => invitation.UserId == userId);
+    }
+
     public bool CanResolveRequests(Guid userId)
     {
         return OwnerId == userId || IsModerator(userId);
@@ -68,6 +75,7 @@ public sealed class Club : AggregateRoot
 
         Status = ClubStatus.Closed;
         _joinRequests.Clear();
+        _invitations.Clear();
     }
 
     public void RequestToJoin(Guid userId)
@@ -98,6 +106,7 @@ public sealed class Club : AggregateRoot
         var request = GetPendingRequest(userId);
 
         _joinRequests.Remove(request);
+        _invitations.RemoveAll(invitation => invitation.UserId == userId);
         _members.Add(new ClubMember(userId, ClubRole.Member));
     }
 
@@ -107,6 +116,41 @@ public sealed class Club : AggregateRoot
         EnsureCanResolveRequests(resolverId);
 
         _joinRequests.Remove(GetPendingRequest(userId));
+    }
+
+    public void Invite(Guid ownerId, Guid userId)
+    {
+        EnsureActive();
+        EnsureIsOwner(ownerId, "Only the owner can invite a user to a club.");
+        if (IsMember(userId))
+        {
+            throw new DomainException("A member of a club cannot be invited to it.");
+        }
+        if (HasPendingInvitation(userId))
+        {
+            throw new DomainException("A user can have only one pending invitation to a club.");
+        }
+
+        _invitations.Add(new ClubInvitation(userId));
+    }
+
+    public void AcceptInvitation(Guid userId)
+    {
+        EnsureActive();
+        var invitation = GetPendingInvitation(userId);
+        if (IsMember(userId))
+        {
+            throw new DomainException("A member of a club cannot accept an invitation to it.");
+        }
+
+        _members.Add(new ClubMember(userId, ClubRole.Member));
+        _invitations.Remove(invitation);
+        _joinRequests.RemoveAll(request => request.UserId == userId);
+    }
+
+    public void RejectInvitation(Guid userId)
+    {
+        _invitations.Remove(GetPendingInvitation(userId));
     }
 
     public void PromoteToModerator(Guid promoterId, Guid userId)
@@ -193,6 +237,16 @@ public sealed class Club : AggregateRoot
             throw new NotFoundException($"User {userId} has no pending request to join this club.");
         }
         return request;
+    }
+
+    private ClubInvitation GetPendingInvitation(Guid userId)
+    {
+        var invitation = _invitations.FirstOrDefault(invitation => invitation.UserId == userId);
+        if (invitation is null)
+        {
+            throw new NotFoundException($"User {userId} has no pending invitation to this club.");
+        }
+        return invitation;
     }
 
     private static List<string> Validate(string name, string description, List<string>? images)
