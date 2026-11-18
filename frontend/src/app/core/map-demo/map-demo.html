@@ -1,7 +1,10 @@
 <section class="stack">
   <h1>Map demo</h1>
 
-  <p>Every way of embedding the shared map, with hard-coded pins. Nothing on this page is saved.</p>
+  <p>
+    Every way of embedding the shared map, with hard-coded pins. Nothing on this page is saved,
+    except the position in the position simulator.
+  </p>
 </section>
 
 <section class="demo stack">
@@ -114,4 +117,26 @@
   </p>
 
   <p>Points: {{ tourPins().length }}. Length: {{ tourLength().toFixed(2) }} km.</p>
+</section>
+
+<section class="demo stack">
+  <h2>Position simulator</h2>
+
+  <p>
+    How a field page marks where the tourist is until GPS exists: click the map, then confirm the
+    position, and the server saves it. The red pin is your saved position, the blue pins are the
+    page's own. Log in first.
+  </p>
+
+  <app-position-simulator [pins]="challenges" (positionChanged)="position.set($event)" />
+
+  <p>
+    @if (position() === undefined) {
+      Position reported: nothing yet.
+    } @else if (position(); as reported) {
+      Position reported: {{ reported.latitude.toFixed(5) }}, {{ reported.longitude.toFixed(5) }}
+    } @else {
+      Position reported: null (no saved position).
+    }
+  </p>
 </section>

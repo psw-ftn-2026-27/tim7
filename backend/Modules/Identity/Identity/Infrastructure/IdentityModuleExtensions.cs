@@ -2,8 +2,11 @@ using Identity.Contracts;
 using Identity.Core;
 using Identity.Core.Connections;
 using Identity.Core.Following;
+using Identity.Core.PositionSimulation;
+using Identity.Core.UserPositions;
 using Identity.Core.Users;
 using Identity.Infrastructure.Connections;
+using Identity.Infrastructure.UserPositions;
 using Identity.Infrastructure.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +34,12 @@ public static class IdentityModuleExtensions
 
         services.AddScoped<FollowingService>();
         services.AddScoped<FollowingQueries>();
+
+        services.AddScoped<IUserPositionRepository, UserPositionRepository>();
+        services.AddScoped<IUserPositionReadRepository, UserPositionReadRepository>();
+
+        services.AddScoped<PositionSimulationService>();
+        services.AddScoped<PositionSimulationQueries>();
 
         services.AddScoped<IUserReadRepository, UserReadRepository>();
         services.AddScoped<IIdentityApi, IdentityApi>();
