@@ -97,8 +97,8 @@ modules may reference like any other module's `Contracts`. It holds ASP.NET Core
 (`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
 `Connection` (following between users), with a `Following` use-case group that follows the
 application-layer patterns below; the details live in the project itself. `Core/IdentityApi`
-implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail) and a check
-whether a user exists.
+implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
+whether a user exists, and finding a user by e-mail, which serves as the username.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the
