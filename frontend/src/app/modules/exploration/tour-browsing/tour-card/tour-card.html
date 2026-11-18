@@ -12,6 +12,14 @@
       <p class="meta">Length not available</p>
     }
 
+    @if (tour().isFree === true) {
+      <p class="meta">Free</p>
+    } @else if (tour().amount !== null) {
+      <p class="meta">Price: {{ tour().amount }} EC</p>
+    } @else {
+      <p class="meta">Price not available</p>
+    }
+
     <p class="meta">
       For {{ tour().recommendedGroupSize.from }}–{{ tour().recommendedGroupSize.to }} people
     </p>

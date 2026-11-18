@@ -4,7 +4,11 @@ export type TourStatus = 'Draft' | 'Published' | 'Archived';
 
 export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
-export type SortDirection = 'Ascending' | 'Descending';
+export type TourSort =
+  | 'DifficultyAscending'
+  | 'DifficultyDescending'
+  | 'PriceAscending'
+  | 'PriceDescending';
 
 export interface TransportTimeDto {
   transport: TransportMode;
@@ -131,5 +135,7 @@ export interface TourSearchDto {
   difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transport: TransportMode | null;
-  difficultySort: SortDirection | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  sortBy: TourSort | null;
 }
