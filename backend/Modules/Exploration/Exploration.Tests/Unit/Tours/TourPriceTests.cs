@@ -8,12 +8,30 @@ namespace Exploration.Tests.Unit.Tours;
 public class TourPriceTests
 {
     [Fact]
-    public void Paid_price_with_the_smallest_positive_amount_is_valid()
+    public void Paid_price_with_the_smallest_whole_amount_keeps_that_amount()
     {
-        var price = new TourPrice(false, 0.01m);
+        var price = new TourPrice(false, 1m);
 
         price.IsFree.Should().BeFalse();
-        price.Amount.Should().Be(0.01m);
+        price.Amount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(49.5)]
+    [InlineData(49.9999)]
+    public void Paid_price_with_an_amount_that_is_not_whole_is_rejected_instead_of_rounded(double amount)
+    {
+        var creation = () => new TourPrice(false, (decimal)amount);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Paid_price_with_an_amount_above_the_whole_number_range_is_rejected_as_an_invalid_price()
+    {
+        var creation = () => new TourPrice(false, (decimal)int.MaxValue + 1);
+
+        creation.Should().Throw<DomainException>();
     }
 
     [Fact]

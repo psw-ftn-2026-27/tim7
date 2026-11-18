@@ -198,6 +198,25 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("TourId");
                         });
 
+                    b.OwnsOne("Exploration.Domain.Tours.TourPrice", "Price", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int?>("Amount")
+                                .HasColumnType("integer");
+
+                            b1.Property<bool>("IsFree")
+                                .HasColumnType("boolean");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
                     b.OwnsMany("Exploration.Domain.Tours.TransportTime", "TransportTimes", b1 =>
                         {
                             b1.Property<Guid>("TourId");
@@ -225,6 +244,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.Navigation("KeyPoints");
 
                     b.Navigation("Length");
+
+                    b.Navigation("Price");
 
                     b.Navigation("RecommendedGroupSize")
                         .IsRequired();
