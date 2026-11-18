@@ -137,6 +137,41 @@ namespace Social.Infrastructure.Persistence.Migrations
                     b.ToTable("ClubMembers", "social");
                 });
 
+            modelBuilder.Entity("Social.Domain.Blogs.Blog", b =>
+                {
+                    b.OwnsMany("Social.Domain.Blogs.BlogVote", "Votes", b1 =>
+                        {
+                            b1.Property<Guid>("BlogId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CastAt")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("Type")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)");
+
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("BlogId", "Id");
+
+                            b1.ToTable("BlogVotes", "social");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BlogId");
+                        });
+
+                    b.Navigation("Votes");
+                });
+
             modelBuilder.Entity("Social.Domain.Blogs.Comment", b =>
                 {
                     b.HasOne("Social.Domain.Blogs.Blog", null)

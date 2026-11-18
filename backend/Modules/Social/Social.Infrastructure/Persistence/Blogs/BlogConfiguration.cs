@@ -23,6 +23,13 @@ internal static class BlogConfiguration
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(blog => blog.Comments).AutoInclude();
+
+        builder.OwnsMany(blog => blog.Votes, votes =>
+        {
+            votes.ToTable("BlogVotes");
+            votes.WithOwner().HasForeignKey("BlogId");
+            votes.Property(vote => vote.Type).HasConversion<string>().HasMaxLength(20);
+        });
     }
 
     private static void ConfigureComment(EntityTypeBuilder<Comment> builder)

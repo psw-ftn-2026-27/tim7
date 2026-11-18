@@ -14,14 +14,14 @@ internal sealed class BlogReadRepository : IBlogReadRepository
         _dbContext = dbContext;
     }
 
-    public Task<BlogDto?> GetByIdAsync(Guid id)
+    public Task<BlogDto?> GetByIdAsync(Guid id, Guid readerId)
     {
-        return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.Id == id)).FirstOrDefaultAsync();
+        return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.Id == id), readerId).FirstOrDefaultAsync();
     }
 
     public Task<List<BlogDto>> GetByAuthorAsync(Guid authorId)
     {
-        return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.AuthorId == authorId)).ToListAsync();
+        return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.AuthorId == authorId), null).ToListAsync();
     }
 
     public async Task<PageResult<BlogDto>> GetVisibleAsync(int page, int pageSize)
@@ -31,7 +31,7 @@ internal sealed class BlogReadRepository : IBlogReadRepository
             .OrderByDescending(blog => blog.CreatedAt);
 
         var totalCount = await visible.CountAsync();
-        var items = await ProjectToDtos(visible)
+        var items = await ProjectToDtos(visible, null)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -39,7 +39,8 @@ internal sealed class BlogReadRepository : IBlogReadRepository
         return new PageResult<BlogDto>(items, totalCount);
     }
 
-    private static IQueryable<BlogDto> ProjectToDtos(IQueryable<Blog> blogs)
+    // Without a reader, MyVote stays empty; the score is derived from the votes in every projection.
+    private static IQueryable<BlogDto> ProjectToDtos(IQueryable<Blog> blogs, Guid? readerId)
     {
         return blogs
             .Select(blog => new BlogDto(
@@ -53,6 +54,12 @@ internal sealed class BlogReadRepository : IBlogReadRepository
                 blog.LastModifiedAt,
                 blog.Comments
                     .Select(comment => new CommentDto(comment.Id, comment.UserId, comment.Text, comment.CreatedAt))
-                    .ToList()));
+                    .ToList(),
+                blog.Votes.Count(vote => vote.Type == BlogVoteType.Upvote)
+                    - blog.Votes.Count(vote => vote.Type == BlogVoteType.Downvote),
+                blog.Votes
+                    .Where(vote => vote.UserId == readerId)
+                    .Select(vote => (BlogVoteType?)vote.Type)
+                    .FirstOrDefault()));
     }
 }

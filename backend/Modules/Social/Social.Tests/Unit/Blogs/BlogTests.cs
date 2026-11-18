@@ -239,4 +239,54 @@ public class BlogTests
 
         edit.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void First_vote_of_a_user_is_recorded_with_its_type_user_and_time()
+    {
+        var blog = CreatePublishedBlog();
+
+        blog.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+
+        var vote = blog.Votes.Should().ContainSingle().Subject;
+        vote.UserId.Should().Be(WellKnownUsers.Administrator);
+        vote.Type.Should().Be(BlogVoteType.Upvote);
+        vote.CastAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void Repeated_click_on_the_same_vote_withdraws_it()
+    {
+        var blog = CreatePublishedBlog();
+        blog.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+
+        blog.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+
+        blog.Votes.Should().NotContain(vote => vote.UserId == WellKnownUsers.Administrator);
+    }
+
+    [Fact]
+    public void Click_on_the_opposite_vote_replaces_the_old_vote_with_a_new_one()
+    {
+        var blog = CreatePublishedBlog();
+        blog.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+        var changedAt = DateTime.UtcNow;
+
+        blog.Vote(WellKnownUsers.Administrator, BlogVoteType.Downvote);
+
+        var vote = blog.Votes.Should().ContainSingle(vote => vote.UserId == WellKnownUsers.Administrator).Subject;
+        vote.Type.Should().Be(BlogVoteType.Downvote);
+        vote.CastAt.Should().BeOnOrAfter(changedAt);
+    }
+
+    [Theory]
+    [InlineData(BlogStatus.Draft)]
+    [InlineData(BlogStatus.Archived)]
+    public void Blog_that_is_not_published_cannot_receive_a_vote(BlogStatus status)
+    {
+        var blog = status == BlogStatus.Draft ? CreateBlog() : CreateArchivedBlog();
+
+        var voting = () => blog.Vote(WellKnownUsers.Administrator, BlogVoteType.Upvote);
+
+        voting.Should().Throw<DomainException>();
+    }
 }
