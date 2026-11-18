@@ -34,7 +34,7 @@ Sadrži klase koje opisuju korisnika i token. Klasa `ApplicationUser` predstavlj
 
 Ovde su i DTO klase koje krajnje tačke primaju i vraćaju. Klase `RegisterDto` i `LoginDto` opisuju zahteve, a klasa `AccessTokenDto` odgovor sa tokenom.
 
-Klasa `IdentityApi` implementira `IIdentityApi` preko klase `UserManager`. Vraća jednu stranu korisnika (identifikator i adresa elektronske pošte), proverava da li korisnik sa datim identifikatorom postoji i pronalazi korisnika po adresi elektronske pošte, koja u sistemu ima ulogu korisničkog imena. Lozinke, uloge i praćenje kontrakt namerno ne izlaže.
+Klasa `IdentityApi` implementira `IIdentityApi` preko klase `UserManager`. Vraća jednu stranu korisnika (identifikator i adresa elektronske pošte), proverava da li korisnik sa datim identifikatorom postoji, pronalazi korisnika po adresi elektronske pošte, koja u sistemu ima ulogu korisničkog imena, i za spisak identifikatora vraća te korisnike (identifikatori kojih nema se ne vraćaju, bez greške). Lozinke, uloge i praćenje kontrakt namerno ne izlaže.
 
 Direktorijum `Connections` sadrži agregat `Connection`, odnos dva korisnika sa unutrašnjim entitetom `FollowRequest`, i interfejse `IConnectionRepository` i `IConnectionReadRepository`. Agregat čuva pravila praćenja, a spiskovi pratilaca i praćenih se izvode iz prihvaćenih zahteva. Direktorijum `Following` je grupa slučajeva korišćenja, sa klasom `FollowingService` za komande, klasom `FollowingQueries` za upite i njihovim DTO klasama, po istom obrascu kao u funkcionalnim modulima. Interfejs `IUnitOfWork` je ovde jer ga implementira kontekst iz `Infrastructure`.
 

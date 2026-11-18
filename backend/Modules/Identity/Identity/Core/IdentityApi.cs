@@ -39,4 +39,12 @@ public sealed class IdentityApi : IIdentityApi
         var user = await _userManager.FindByEmailAsync(email);
         return user is null ? null : new UserSummary(user.Id, user.Email!);
     }
+
+    public async Task<List<UserSummary>> GetUsersByIdsAsync(List<Guid> userIds)
+    {
+        return await _userManager.Users
+            .Where(user => userIds.Contains(user.Id))
+            .Select(user => new UserSummary(user.Id, user.Email!))
+            .ToListAsync();
+    }
 }
