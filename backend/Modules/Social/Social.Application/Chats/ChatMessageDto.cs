@@ -1,4 +1,4 @@
-namespace Social.Application.ClubChat;
+namespace Social.Application.Chats;
 
 public sealed record ChatMessageDto(
     Guid Id,

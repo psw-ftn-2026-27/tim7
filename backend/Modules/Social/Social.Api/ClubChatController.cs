@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Api;
+using Social.Application.Chats;
 using Social.Application.ClubChat;
 
 namespace Social.Api;

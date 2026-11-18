@@ -1,5 +1,4 @@
 using Shared.Domain;
-using Social.Application.ClubChat;
 
 namespace Social.Application.Chats;
 
