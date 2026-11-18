@@ -47,6 +47,8 @@ export class BlogDetail {
       this.detail.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not update the comment.'));
+      // A rejected change may mean the edit window closed; reloading hides the buttons.
+      this.detail.reload();
     }
   }
 
@@ -57,6 +59,8 @@ export class BlogDetail {
       this.detail.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not delete the comment.'));
+      // A rejected change may mean the edit window closed; reloading hides the buttons.
+      this.detail.reload();
     }
   }
 

@@ -14,6 +14,8 @@ public sealed class SocialMapperProfile : Profile
                 blog.Votes.Count(vote => vote.Type == BlogVoteType.Upvote)
                 - blog.Votes.Count(vote => vote.Type == BlogVoteType.Downvote)))
             .ForCtorParam(nameof(BlogDto.MyVote), options => options.MapFrom(blog => (BlogVoteType?)null));
-        CreateMap<Comment, CommentDto>();
+        // The commenter's e-mail is known only to Identity, so a mapped comment carries none.
+        CreateMap<Comment, CommentDto>()
+            .ForCtorParam(nameof(CommentDto.UserEmail), options => options.MapFrom(comment => (string?)null));
     }
 }
