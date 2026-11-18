@@ -1,14 +1,16 @@
 <div class="stack">
   <h1>Moja praćenja</h1>
 
-  <p><a routerLink="/identity/users">Pronađi korisnike</a></p>
+  <nav class="subnav" aria-label="Identity pages">
+    <a routerLink="/identity/users">Pronađi korisnike</a>
+  </nav>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }
 
   @if (requests.isLoading()) {
-    <p>Učitavanje zahteva...</p>
+    <p class="meta">Učitavanje zahteva...</p>
   } @else if (requests.error()) {
     <p class="error">Zahtevi nisu učitani. Prijavi se i pokušaj ponovo.</p>
   } @else if (requests.value(); as result) {
@@ -24,23 +26,25 @@
         @for (request of result.received; track request.userId) {
           <tr>
             <td>{{ request.email }}</td>
-            <td class="actions">
-              <button
-                class="button button--primary"
-                type="button"
-                [disabled]="pending()"
-                (click)="accept(request.userId)"
-              >
-                Prihvati
-              </button>
-              <button
-                class="button"
-                type="button"
-                [disabled]="pending()"
-                (click)="reject(request.userId)"
-              >
-                Odbij
-              </button>
+            <td>
+              <div class="actions">
+                <button
+                  class="button button--primary"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="accept(request.userId)"
+                >
+                  Prihvati
+                </button>
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="reject(request.userId)"
+                >
+                  Odbij
+                </button>
+              </div>
             </td>
           </tr>
         } @empty {
@@ -89,7 +93,7 @@
 
   <h2>Pratioci</h2>
   @if (followers.isLoading()) {
-    <p>Učitavanje pratilaca...</p>
+    <p class="meta">Učitavanje pratilaca...</p>
   } @else if (followers.error()) {
     <p class="error">Pratioci nisu učitani. Prijavi se i pokušaj ponovo.</p>
   } @else {
@@ -114,7 +118,7 @@
 
   <h2>Praćeni</h2>
   @if (followed.isLoading()) {
-    <p>Učitavanje praćenih...</p>
+    <p class="meta">Učitavanje praćenih...</p>
   } @else if (followed.error()) {
     <p class="error">Praćeni nisu učitani. Prijavi se i pokušaj ponovo.</p>
   } @else {
@@ -122,12 +126,7 @@
       @for (user of followed.value()?.items ?? []; track user.id) {
         <li>
           {{ user.email }}
-          <button
-            class="button"
-            type="button"
-            [disabled]="pending()"
-            (click)="unfollow(user.id)"
-          >
+          <button class="button" type="button" [disabled]="pending()" (click)="unfollow(user.id)">
             Prestani da pratiš
           </button>
         </li>

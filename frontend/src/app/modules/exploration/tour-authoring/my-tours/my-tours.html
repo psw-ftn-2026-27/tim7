@@ -1,96 +1,106 @@
 <div class="stack">
-  <h1>My tours</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--exploration">Exploration</span>
+      <h1>My tours</h1>
+      <p>Tours you have created, with what you can do with each.</p>
+    </div>
 
-  <p><a routerLink="/exploration/create">Create tour</a></p>
+    <a class="button button--primary" routerLink="/exploration/create">Create tour</a>
+  </div>
 
   @if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="alert">{{ error() }}</p>
   }
 
   @if (tours.isLoading()) {
-    <p>Loading your tours...</p>
+    <p class="meta">Loading your tours...</p>
   } @else if (tours.error()) {
-    <p class="error">Could not load your tours. Log in and try again.</p>
+    <p class="alert">Could not load your tours. Log in and try again.</p>
   } @else {
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Difficulty</th>
-          <th scope="col">Status</th>
-          <th scope="col">Group size</th>
-          <th scope="col">Length</th>
-          <th scope="col">Transport times</th>
-          <th scope="col">Published at</th>
-          <th scope="col">Archived at</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (tour of tours.value() ?? []; track tour.id) {
-          <tr>
-            <td>{{ tour.name }}</td>
-            <td>{{ tour.difficulty }}</td>
-            <td>{{ tour.status }}</td>
-            <td>{{ tour.recommendedGroupSize.from }}–{{ tour.recommendedGroupSize.to }}</td>
-            <td>
-              @if (tour.length) {
-                {{ tour.length.kilometers }} km
-              } @else {
-                <span class="meta">Length not available</span>
-              }
-            </td>
-            <td>
-              @for (time of tour.transportTimes; track time.transport) {
-                <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
-              } @empty {
-                <span class="meta">none</span>
-              }
-            </td>
-            <td>{{ tour.publishedAt }}</td>
-            <td>{{ tour.archivedAt }}</td>
-            <td class="actions">
-              <a [routerLink]="['/exploration/mine', tour.id]">Key points</a>
-              <button class="button" type="button" (click)="select(tour.id)">Add time</button>
-              @if (tour.status === 'Draft') {
-                <button
-                  class="button button--primary"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="selectForPublish(tour.id)"
-                >
-                  Publish
-                </button>
-              }
-              @if (tour.status === 'Published') {
-                <button
-                  class="button"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="archive(tour.id)"
-                >
-                  Archive
-                </button>
-              }
-              @if (tour.status === 'Archived') {
-                <button
-                  class="button button--primary"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="reactivate(tour.id)"
-                >
-                  Reactivate
-                </button>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="9">You have no tours yet.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="grid">
+      @for (tour of tours.value() ?? []; track tour.id) {
+        <article class="card">
+          <div class="title">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            <h2>{{ tour.name }}</h2>
+          </div>
+
+          <span class="status" [class.status--active]="tour.status === 'Published'">
+            {{ tour.status }}
+          </span>
+
+          <p class="meta details">
+            Difficulty: <strong>{{ tour.difficulty }}</strong> · For
+            {{ tour.recommendedGroupSize.from }}–{{ tour.recommendedGroupSize.to }} people ·
+            @if (tour.length) {
+              {{ tour.length.kilometers }} km
+            } @else {
+              Length not available
+            }
+          </p>
+
+          <p class="meta dates">
+            @if (tour.publishedAt) {
+              Published {{ tour.publishedAt.slice(0, 10) }}
+            }
+            @if (tour.archivedAt) {
+              · Archived {{ tour.archivedAt.slice(0, 10) }}
+            }
+          </p>
+
+          <ul class="times">
+            @for (time of tour.transportTimes; track time.transport) {
+              <li>{{ time.transport }}: {{ time.minutes }} min</li>
+            } @empty {
+              <li>No transport times yet.</li>
+            }
+          </ul>
+
+          <div class="actions">
+            <a class="button" [routerLink]="['/exploration/mine', tour.id]">Key points</a>
+            <button class="button" type="button" (click)="select(tour.id)">Add time</button>
+            @if (tour.status === 'Draft') {
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="selectForPublish(tour.id)"
+              >
+                Publish
+              </button>
+            }
+            @if (tour.status === 'Published') {
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="archive(tour.id)"
+              >
+                Archive
+              </button>
+            }
+            @if (tour.status === 'Archived') {
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="reactivate(tour.id)"
+              >
+                Reactivate
+              </button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <p class="empty">
+          You have no tours yet. <a routerLink="/exploration/create">Create your first tour</a>
+        </p>
+      }
+    </div>
   }
 
   @if (selectedTourId()) {

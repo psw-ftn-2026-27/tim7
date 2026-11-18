@@ -1,5 +1,63 @@
-.tags,
+// The pin in the module colour marks the card as a tour; it is a marker, not an action.
+.title {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.title svg {
+  fill: none;
+  flex: none;
+  height: var(--space-5);
+  margin-top: var(--space-1);
+  stroke: var(--color-module-exploration);
+  stroke-width: 2;
+  width: var(--space-5);
+}
+
+// Each part of the card keeps the same height on every card, so titles, descriptions and
+// tags line up across a row. Text that does not fit is cut with an ellipsis.
+article {
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-3);
+}
+
+article > * {
+  margin: 0;
+}
+
+.title h2 {
+  margin: 0;
+}
+
+.excerpt {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  overflow: hidden;
+}
+
+.meta strong {
+  color: var(--color-text);
+}
+
+// Transport times sit at the bottom of the card, under a line.
 .times {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) 0 0;
+}
+
+.tags {
+  align-content: flex-start;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -9,8 +67,14 @@
 }
 
 .tags li {
-  background: var(--color-bg);
-  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-muted);
   font-size: var(--font-size-sm);
-  padding: var(--space-1) var(--space-2);
+  padding: 0 var(--space-3);
+}
+
+// The tags start a new part of the card, so they keep more distance from the text above.
+article > .tags {
+  margin-top: var(--space-2);
 }

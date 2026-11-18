@@ -1,25 +1,34 @@
 <div class="stack">
-  <h1>Blogs</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--social">Social</span>
+      <h1>Blogs</h1>
+      <p>Impressions from people who explore the way you do.</p>
+    </div>
+
+    @if (auth.isLoggedIn()) {
+      <a class="button button--primary" routerLink="/social/create">Write a blog</a>
+    }
+  </div>
 
   @if (auth.isLoggedIn()) {
-    <p class="links">
+    <nav class="subnav" aria-label="Social pages">
       <a routerLink="/social/mine">My blogs</a>
       <a routerLink="/social/clubs">Clubs</a>
       <a routerLink="/social/clubs/mine">My clubs</a>
-      <a routerLink="/social/create">Create blog</a>
-    </p>
+    </nav>
   }
 
   @if (blogs.isLoading()) {
-    <p>Loading blogs...</p>
+    <p class="meta">Loading blogs...</p>
   } @else if (blogs.error()) {
-    <p class="error">Could not load blogs. Log in and try again.</p>
+    <p class="alert">Could not load blogs. Log in and try again.</p>
   } @else {
-    <div class="grid">
+    <div class="blogs">
       @for (blog of blogs.value()?.items ?? []; track blog.id) {
         <app-blog-card [blog]="blog" />
       } @empty {
-        <p>No blogs published yet.</p>
+        <p class="empty">No blogs published yet.</p>
       }
     </div>
   }

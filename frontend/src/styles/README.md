@@ -8,9 +8,12 @@ ih ti ne odlučuješ ponovo u svom `.scss`. Klase su definisane u `_layout.scss`
 
 | Treba mi… | Klasa | Kada je ne koristiti |
 | --- | --- | --- |
+| vrh stranice: oznaka modula, naslov, kratak opis i glavna radnja desno | `.page-header` (unutra jedan `<div>` sa oznakom, `<h1>` i `<p>`, pa dugme) | Za naslove odeljaka unutar stranice; tamo je samo `<h2>`. |
+| linkove ka drugim stranicama istog modula, ispod zaglavlja stranice | `<nav class="subnav">` sa `<a>` linkovima | Za radnje (kreiraj, sačuvaj); one su `.button`. |
+| povratak na spisak sa stranice detalja | `.back` na `<a>` | Za navigaciju između modula; ona je u zaglavlju aplikacije. |
 | sadržaj stranice centriran, ograničene širine | `.container` | Unutar stranice modula: okvir aplikacije je već stavio `.container` na `<main>`. |
 | razmak između elemenata jedan ispod drugog | `.stack` | Kada deca treba da stoje jedno pored drugog; tada `.actions` ili `.grid`. |
-| usku formu ili karticu u sredini stranice | `.narrow` | Za listu ili tabelu, koje koriste punu širinu stranice. |
+| usku karticu u sredini prazne stranice (prijava, registracija) | `.narrow` | Za formu na stranici modula; ona je široka kao stranica, ispod `.page-header`. |
 | kartice poređane u kolone koje se same prelamaju | `.grid` | Za red dugmadi ili za tabelarne podatke; tada `.actions` ili `.table`. |
 | red dugmadi ili linkova jedan pored drugog | `.actions` | Za glavnu navigaciju i za elemente koji nisu akcije (oznake, sličice). Nikad direktno na `<td>`: u ćeliji tabele stavi `<div class="actions">` unutar `<td>`. |
 | dugme ili link koji izgleda kao dugme | `.button` | Za običan link u tekstu; on ostaje `<a>` bez klase. |
@@ -18,9 +21,12 @@ ih ti ne odlučuješ ponovo u svom `.scss`. Klase su definisane u `_layout.scss`
 | uokviren blok sadržaja (forma, stavka liste) | `.card` | Za ceo sadržaj stranice; on je već u `.container`. |
 | polje forme sa labelom | `.field` | Za polje bez labele; svako polje ima labelu. |
 | podatke u redovima i kolonama | `.table` | Za raspored stranice; tabela je samo za podatke. |
-| poruku o grešci (validacija, odgovor servera) | `.error` | Za obaveštenje koje nije greška; tada `.meta`. |
-| sporedan tekst: datum, status, „još nema stavki“ | `.meta` | Za glavni sadržaj i za poruku o grešci. |
-| oznaku modula u kom se korisnik nalazi | `.badge` uz `.badge--exploration`, `.badge--games`, `.badge--social` ili `.badge--payment` | Na dugmetu ili linku, i sa varijantom tuđeg modula. |
+| poruku o grešci jednog polja forme | `.error` | Za grešku cele stranice; tada `.alert`. |
+| poruku o grešci cele stranice (podaci nisu učitani, komanda nije uspela) | `.alert` | Za grešku jednog polja; tada `.error`. |
+| prazan spisak, uz link na sledeći korak | `.empty` | Za poruku o učitavanju; tada `.meta`. |
+| stanje stavke (Draft, Published, reversed) | `.status`, a `.status--active` za stanje kome stavka teži | Za radnju; stanje nije dugme. |
+| sporedan tekst: datum, „Loading…“ | `.meta` | Za glavni sadržaj i za poruku o grešci. |
+| oznaku modula u kom se korisnik nalazi | `.badge` uz `.badge--exploration`, `.badge--games`, `.badge--social` ili `.badge--payment` | Na dugmetu ili linku, i sa varijantom tuđeg modula.  Oznaka na stranici sama boji liniju ispod zaglavlja u boju modula. |
 
 ## Kada tvoja stranica ima nešto samo svoje
 

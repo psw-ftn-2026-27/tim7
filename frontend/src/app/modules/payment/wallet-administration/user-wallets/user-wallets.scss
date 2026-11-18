@@ -1,3 +1,4 @@
-.card {
-  max-width: 32rem;
+// A wide table scrolls inside its card instead of widening the page.
+.card:has(.table) {
+  overflow-x: auto;
 }

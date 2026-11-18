@@ -1,35 +1,43 @@
 <div class="stack">
-  <h1>Users and wallets</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--payment">Payment</span>
+      <h1>Users and wallets</h1>
+      <p>Pick a user to see their deposits or add EC to their wallet.</p>
+    </div>
+  </div>
 
   @if (users.error()) {
-    <p class="error">Could not load the users.</p>
+    <p class="alert">Could not load the users.</p>
   } @else if (users.isLoading()) {
-    <p>Loading users...</p>
+    <p class="meta">Loading users...</p>
   } @else {
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">User</th>
-          <th scope="col">Balance</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (user of users.value()?.items ?? []; track user.userId) {
+    <div class="card">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ user.userId }}</td>
-            <td>{{ user.balance }} EC</td>
-            <td>
-              <button class="button" type="button" (click)="select(user.userId)">Select</button>
-            </td>
+            <th scope="col">User</th>
+            <th scope="col">Balance</th>
+            <th scope="col">Actions</th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="3">No users have a wallet yet.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (user of users.value()?.items ?? []; track user.userId) {
+            <tr>
+              <td>{{ user.userId }}</td>
+              <td>{{ user.balance }} EC</td>
+              <td>
+                <button class="button" type="button" (click)="select(user.userId)">Select</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">No users have a wallet yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   }
 
   @if (success()) {
@@ -45,53 +53,55 @@
     }
 
     @if (deposits.error()) {
-      <p class="error">Could not load the deposits.</p>
+      <p class="alert">Could not load the deposits.</p>
     } @else if (deposits.isLoading() && !deposits.hasValue()) {
-      <p>Loading deposits...</p>
+      <p class="meta">Loading deposits...</p>
     } @else {
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Time</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Administrator</th>
-            <th scope="col">Status</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (deposit of deposits.value() ?? []; track deposit.id) {
+      <div class="card">
+        <table class="table">
+          <thead>
             <tr>
-              <td>{{ formatTime(deposit.createdAt) }}</td>
-              <td>{{ deposit.amount }} EC</td>
-              <td>{{ deposit.administratorId }}</td>
-              <td>
-                @if (deposit.isReversed) {
-                  <span class="meta">reversed</span>
-                } @else {
-                  <span class="meta">active</span>
-                }
-              </td>
-              <td>
-                @if (!deposit.isReversed) {
-                  <button
-                    class="button"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="reverse(deposit.id)"
-                  >
-                    Reverse
-                  </button>
-                }
-              </td>
+              <th scope="col">Time</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Administrator</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="5">This user has no deposits yet.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (deposit of deposits.value() ?? []; track deposit.id) {
+              <tr>
+                <td>{{ formatTime(deposit.createdAt) }}</td>
+                <td>{{ deposit.amount }} EC</td>
+                <td>{{ deposit.administratorId }}</td>
+                <td>
+                  @if (deposit.isReversed) {
+                    <span class="status">reversed</span>
+                  } @else {
+                    <span class="status status--active">active</span>
+                  }
+                </td>
+                <td>
+                  @if (!deposit.isReversed) {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="reverse(deposit.id)"
+                    >
+                      Reverse
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">This user has no deposits yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
 
     <form class="card stack" (submit)="deposit($event)">

@@ -1,4 +1,9 @@
 .balance {
-  font-size: 1.5rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
+}
+
+// A wide table scrolls inside its card instead of widening the page.
+.card:has(.table) {
+  overflow-x: auto;
 }

@@ -1,15 +1,16 @@
 <div class="card stack">
-  <p><a routerLink="/social/clubs/mine">Back to my clubs</a></p>
+  <p><a class="back" routerLink="/social/clubs/mine">Back to my clubs</a></p>
 
   @if (detail.isLoading()) {
-    <p>Loading club...</p>
+    <p class="meta">Loading club...</p>
   } @else if (detail.statusCode() === 404) {
     <p class="error">This club does not exist.</p>
   } @else if (detail.error()) {
-    <p class="error">Could not load the club. Log in and try again.</p>
+    <p class="alert">Could not load the club. Log in and try again.</p>
   } @else {
     @if (detail.value(); as club) {
       @if (editing()) {
+        <span class="badge badge--social">Social</span>
         <h1>Edit club</h1>
 
         <form class="stack" (submit)="submit($event)">
@@ -61,9 +62,7 @@
           }
         </ul>
 
-        <button class="button button--primary" type="button" (click)="startEdit(club)">
-          Edit
-        </button>
+        <button class="button button--primary" type="button" (click)="startEdit(club)">Edit</button>
       }
     }
   }

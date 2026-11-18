@@ -25,3 +25,28 @@
   margin-inline: auto;
   max-width: var(--form-width);
 }
+
+// The top of a page: the module badge, the title and a short line under it on the left,
+// and the page's main action, if it has one, on the right.
+.page-header {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
+.page-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.page-header h1,
+.page-header p {
+  margin: 0;
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+}

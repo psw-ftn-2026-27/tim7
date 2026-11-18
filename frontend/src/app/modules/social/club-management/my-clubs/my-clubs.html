@@ -1,16 +1,20 @@
 <div class="stack">
+  <span class="badge badge--social">Social</span>
   <h1>My clubs</h1>
 
-  <p><a routerLink="/social">All blogs</a> · <a routerLink="/social/clubs">All clubs</a> · <a routerLink="/social/clubs/create">Create club</a></p>
+  <p>
+    <a routerLink="/social">All blogs</a> · <a routerLink="/social/clubs">All clubs</a> ·
+    <a routerLink="/social/clubs/create">Create club</a>
+  </p>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }
 
   @if (clubs.isLoading()) {
-    <p>Loading your clubs...</p>
+    <p class="meta">Loading your clubs...</p>
   } @else if (clubs.error()) {
-    <p class="error">Could not load your clubs. Log in and try again.</p>
+    <p class="alert">Could not load your clubs. Log in and try again.</p>
   } @else {
     <table class="table">
       <thead>
@@ -44,7 +48,12 @@
                   >
                     Confirm delete
                   </button>
-                  <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="cancelDelete()"
+                  >
                     Cancel
                   </button>
                 } @else {

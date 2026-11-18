@@ -1,16 +1,20 @@
 <div class="stack">
+  <span class="badge badge--social">Social</span>
   <h1>My blogs</h1>
 
-  <p><a routerLink="/social">All blogs</a> · <a routerLink="/social/create">Create blog</a></p>
+  <nav class="subnav" aria-label="Social pages">
+    <a routerLink="/social">All blogs</a>
+    <a routerLink="/social/create">Create blog</a>
+  </nav>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }
 
   @if (blogs.isLoading()) {
-    <p>Loading your blogs...</p>
+    <p class="meta">Loading your blogs...</p>
   } @else if (blogs.error()) {
-    <p class="error">Could not load your blogs. Log in and try again.</p>
+    <p class="alert">Could not load your blogs. Log in and try again.</p>
   } @else {
     <table class="table">
       <thead>

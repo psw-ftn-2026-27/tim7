@@ -1,15 +1,20 @@
 <article class="card stack">
-  <h3>{{ blog().title }}</h3>
-
-  @if (blog().lastModifiedAt) {
-    <p class="meta">Edited {{ blog().lastModifiedAt }}</p>
-  }
+  <div class="heading">
+    <h2>{{ blog().title }}</h2>
+    <span class="meta">{{ createdOn() }}</span>
+  </div>
 
   <div class="description" [innerHTML]="descriptionHtml()"></div>
 
-  <p class="meta">Status: {{ blog().status }}</p>
-
-  <p class="meta">Comments: {{ blog().comments.length }}</p>
-
-  <a [routerLink]="['/social', blog().id]">Read more</a>
+  <div class="footer">
+    <span class="comments">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /></svg>
+      Comments: {{ blog().comments.length }}
+    </span>
+    <span>Status: {{ blog().status }}</span>
+    @if (blog().lastModifiedAt) {
+      <span>Edited {{ blog().lastModifiedAt?.slice(0, 10) }}</span>
+    }
+    <a class="more" [routerLink]="['/social', blog().id]">Read more</a>
+  </div>
 </article>

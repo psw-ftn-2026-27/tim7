@@ -1,7 +1,9 @@
 <div class="stack">
   <h1>Pronađi korisnike</h1>
 
-  <p><a routerLink="/identity/following">Moja praćenja</a></p>
+  <nav class="subnav" aria-label="Identity pages">
+    <a routerLink="/identity/following">Moja praćenja</a>
+  </nav>
 
   <form class="search" (submit)="search($event)">
     <div class="field">
@@ -16,7 +18,7 @@
   }
 
   @if (users.isLoading()) {
-    <p>Učitavanje korisnika...</p>
+    <p class="meta">Učitavanje korisnika...</p>
   } @else if (users.error()) {
     <p class="error">Korisnici nisu učitani. Prijavi se i pokušaj ponovo.</p>
   } @else if (users.value(); as result) {

@@ -1,5 +1,14 @@
-.card > a {
-  align-self: flex-start;
+// Title on the left, date on the right; on a narrow screen the date goes under the title.
+.heading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  justify-content: space-between;
+}
+
+.heading h2 {
+  margin: 0;
 }
 
 // Headings inside the description use the global heading sizes; on the card they shrink to
@@ -7,4 +16,33 @@
 .description {
   --font-size-xl: var(--font-size-md);
   --font-size-lg: var(--font-size-md);
+}
+
+.footer {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  gap: var(--space-2) var(--space-4);
+}
+
+.comments {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+// The comment icon is a marker in the module colour, not an action.
+.comments svg {
+  fill: none;
+  height: var(--space-4);
+  stroke: var(--color-module-social);
+  stroke-width: 2;
+  width: var(--space-4);
+}
+
+.more {
+  font-weight: 600;
+  margin-left: auto;
 }
