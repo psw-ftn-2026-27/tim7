@@ -1,5 +1,13 @@
-.links,
 .pages {
   display: flex;
   gap: var(--space-4);
+}
+
+// Every card in a row is as tall as the tallest one.
+.grid > app-club-card {
+  display: flex;
+}
+
+.grid > app-club-card > * {
+  flex: 1;
 }

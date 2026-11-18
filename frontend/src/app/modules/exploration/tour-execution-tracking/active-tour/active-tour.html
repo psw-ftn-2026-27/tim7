@@ -1,19 +1,35 @@
 <div class="stack">
-  <p><a routerLink="/exploration">Back to tours</a></p>
+  <p><a class="back" routerLink="/exploration">Back to tours</a></p>
 
   @if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="alert">{{ error() }}</p>
   }
 
   @if (active.isLoading()) {
-    <p>Loading your active tour...</p>
+    <p class="meta">Loading your active tour...</p>
   } @else if (active.error()) {
-    <p class="error">Could not load your active tour. Log in and try again.</p>
+    <p class="alert">Could not load your active tour. Log in and try again.</p>
   } @else {
     @if (active.value()?.execution; as execution) {
-      <h1>{{ execution.tourName }}</h1>
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>{{ execution.tourName }}</h1>
+          <p>Your active tour. Follow the path to the next key point.</p>
+        </div>
+        <button
+          class="button"
+          type="button"
+          [disabled]="pending() || confirming()"
+          (click)="askToAbandon()"
+        >
+          Abandon tour
+        </button>
+      </div>
 
-      <app-map [pins]="pins()" [showPath]="true" />
+      <div class="card map">
+        <app-map [pins]="pins()" [showPath]="true" />
+      </div>
 
       @if (execution.firstKeyPoint; as point) {
         <div class="card key-point">
@@ -25,21 +41,10 @@
         </div>
       }
 
-      <p>
-        <button
-          class="button"
-          type="button"
-          [disabled]="pending() || confirming()"
-          (click)="askToAbandon()"
-        >
-          Abandon tour
-        </button>
-      </p>
-
       @if (confirming()) {
         <div class="card stack">
           <p>Do you really want to abandon this tour?</p>
-          <p class="actions">
+          <div class="actions">
             <button
               class="button button--primary"
               type="button"
@@ -51,12 +56,19 @@
             <button class="button" type="button" [disabled]="pending()" (click)="cancel()">
               Cancel
             </button>
-          </p>
+          </div>
         </div>
       }
     } @else {
-      <p>You have no active tour.</p>
-      <p><a routerLink="/exploration">Browse tours</a></p>
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>Active tour</h1>
+          <p>The tour you are taking right now.</p>
+        </div>
+      </div>
+
+      <p class="empty">You have no active tour. <a routerLink="/exploration">Browse tours</a></p>
     }
   }
 </div>

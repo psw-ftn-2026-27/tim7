@@ -13,3 +13,40 @@
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 }
+
+// A row of buttons or links that sit side by side, such as a form's submit and cancel.
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+// A form or card on its own, narrower than the page and centred in it.
+.narrow {
+  margin-inline: auto;
+  max-width: var(--form-width);
+}
+
+// The top of a page: the module badge, the title and a short line under it on the left,
+// and the page's main action, if it has one, on the right.
+.page-header {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
+.page-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.page-header h1,
+.page-header p {
+  margin: 0;
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+}
