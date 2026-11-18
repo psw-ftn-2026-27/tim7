@@ -57,3 +57,23 @@ export interface UpdateClubDto {
   description: string;
   images: string[] | null;
 }
+
+export type ClubRole = 'Owner' | 'Moderator' | 'Member';
+
+export type MembershipState = 'Member' | 'Pending' | 'None';
+
+export interface ClubMemberDto {
+  userId: string;
+  role: ClubRole;
+}
+
+export interface ClubMembershipDto {
+  id: string;
+  ownerId: string;
+  name: string;
+  description: string;
+  images: string[];
+  members: ClubMemberDto[];
+  myState: MembershipState;
+  pendingRequests: string[] | null;
+}
