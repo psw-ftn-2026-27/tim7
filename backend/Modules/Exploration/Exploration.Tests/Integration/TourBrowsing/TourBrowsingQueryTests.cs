@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using Exploration.Application.TourBrowsing;
@@ -217,6 +218,59 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
 
         tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedOldTownWalk.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+    }
+
+    [Fact]
+    public async Task Tour_is_listed_when_its_length_is_within_the_range_including_both_bounds()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var minLength = TourSeed.PublishedVineyards.Length!.Kilometers.ToString(CultureInfo.InvariantCulture);
+        var maxLength = TourSeed.PublishedMonasteries.Length!.Kilometers.ToString(CultureInfo.InvariantCulture);
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>($"/api/exploration/tours/published?minLength={minLength}&maxLength={maxLength}", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedBikeRideToPetrovaradin.Id);
+    }
+
+    [Fact]
+    public async Task Tour_whose_only_key_point_in_the_circle_is_not_public_is_left_out_while_a_tour_with_a_public_one_is_found()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var hiddenKeyPoint = TourSeed.PublishedMonasteries.KeyPoints.Single(keyPoint => !keyPoint.IsPublic).Location;
+        var center = $"latitude={hiddenKeyPoint.Latitude.ToString(CultureInfo.InvariantCulture)}&longitude={hiddenKeyPoint.Longitude.ToString(CultureInfo.InvariantCulture)}";
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourOnMapDto>>($"/api/exploration/tours/published/map?{center}&radiusKilometers=1", JsonOptions);
+
+        tours!.Items.Should().Contain(item => item.Tour.Id == TourSeed.PublishedForestTrailStartingAtAHiddenSpring.Id);
+        tours.Items.Should().NotContain(item => item.Tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Fact]
+    public async Task Tour_whose_first_key_point_is_not_public_is_shown_on_the_map_at_its_first_public_key_point()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var seeded = TourSeed.PublishedForestTrailStartingAtAHiddenSpring;
+        var firstPublic = seeded.KeyPoints.First(keyPoint => keyPoint.IsPublic).Location;
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourOnMapDto>>("/api/exploration/tours/published/map?pageSize=100", JsonOptions);
+
+        tours!.Items.Should().ContainSingle(item => item.Tour.Id == seeded.Id)
+            .Which.FirstPublicKeyPointLocation.Should().Be(new LocationDto(firstPublic.Latitude, firstPublic.Longitude));
+    }
+
+    [Fact]
+    public async Task Map_search_also_applies_the_other_criteria()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var vineyardsStart = TourSeed.PublishedVineyards.KeyPoints.First().Location;
+        var center = $"latitude={vineyardsStart.Latitude.ToString(CultureInfo.InvariantCulture)}&longitude={vineyardsStart.Longitude.ToString(CultureInfo.InvariantCulture)}";
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourOnMapDto>>($"/api/exploration/tours/published/map?{center}&radiusKilometers=20&name=SREMSKIH", JsonOptions);
+
+        tours!.Items.Should().Contain(item => item.Tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(item => item.Tour.Id == TourSeed.PublishedMonasteries.Id);
     }
 
     [Fact]

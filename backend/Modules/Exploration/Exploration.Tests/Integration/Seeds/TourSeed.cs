@@ -14,6 +14,7 @@ internal static class TourSeed
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedBikeRideToPetrovaradin;
     public static readonly Tour PublishedOldTownWalk;
+    public static readonly Tour PublishedForestTrailStartingAtAHiddenSpring;
     public static readonly Tour ArchivedLakeside;
 
     static TourSeed()
@@ -48,6 +49,12 @@ internal static class TourSeed
         PublishedOldTownWalk.AddKeyPoint("Dunavski park", "Kraj šetnje.", "/images/exploration/seed-dunavski-park.jpg", new Location(45.2547, 19.8508), null, false);
         PublishedOldTownWalk.Publish(new TourPrice(true, null));
 
+        PublishedForestTrailStartingAtAHiddenSpring = new(WellKnownUsers.SecondExplorer, "Šumska staza do Grgetega", "Staza počinje kod skrivenog izvora u šumi iznad Grgetega, spušta se kroz bukovu šumu do vidikovca i završava se pogledom na manastirsku crkvu.", TourDifficulty.Moderate, ["priroda"], new RecommendedGroupSize(2, 8));
+        PublishedForestTrailStartingAtAHiddenSpring.AddTransportTime(TransportMode.Walking, 80);
+        PublishedForestTrailStartingAtAHiddenSpring.AddKeyPoint("Skriveni izvor", "Polazna tačka staze, koju turista otkriva na licu mesta.", "/images/exploration/seed-skriveni-izvor.jpg", new Location(45.1600, 19.8800), "Izvor je iza stene obrasle mahovinom.", false);
+        PublishedForestTrailStartingAtAHiddenSpring.AddKeyPoint("Vidikovac nad Grgetegom", "Kraj staze, sa pogledom na manastir.", "/images/exploration/seed-vidikovac-grgeteg.jpg", new Location(45.1450, 19.8990), null, true);
+        PublishedForestTrailStartingAtAHiddenSpring.Publish(new TourPrice(false, 80m));
+
         ArchivedLakeside = new(WellKnownUsers.Explorer, "Obala Palićkog jezera", "Tura prati obalu Palićkog jezera od Velike terase do Ženskog štranda, uz obilazak Vodotornja i zoološkog vrta na severnoj strani jezera.", TourDifficulty.Easy, ["priroda", "jezero"], new RecommendedGroupSize(2, 8));
         ArchivedLakeside.AddTransportTime(TransportMode.Walking, 75);
         ArchivedLakeside.AddKeyPoint("Velika terasa", "Polazna tačka ture.", "/images/exploration/seed-velika-terasa.jpg", new Location(46.1003, 19.7620), null, true);
@@ -56,5 +63,5 @@ internal static class TourSeed
         ArchivedLakeside.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, ArchivedLakeside];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, PublishedForestTrailStartingAtAHiddenSpring, ArchivedLakeside];
 }

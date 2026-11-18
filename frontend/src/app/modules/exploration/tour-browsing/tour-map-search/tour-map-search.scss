@@ -1,0 +1,44 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.difficulties {
+  border: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.difficulties legend {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.difficulties label {
+  align-items: center;
+  display: flex;
+  gap: var(--space-1);
+}
+
+// The map takes the larger part of the row and the list of cards stays beside it.
+.map-search {
+  align-items: start;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 2fr 1fr;
+}
+
+app-map {
+  height: 36rem;
+}
+
+.pages {
+  display: flex;
+  gap: var(--space-4);
+}
