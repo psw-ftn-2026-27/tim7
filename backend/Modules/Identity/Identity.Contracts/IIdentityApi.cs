@@ -6,4 +6,5 @@ public interface IIdentityApi
     Task<bool> UserExistsAsync(Guid userId);
     Task<UserSummary?> FindUserByEmailAsync(string email);
     Task<List<UserSummary>> GetUsersByIdsAsync(List<Guid> userIds);
+    Task<List<UserSummary>> SearchExplorersAsync(string username);
 }
