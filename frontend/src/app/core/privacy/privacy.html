@@ -1,0 +1,29 @@
+<section class="stack">
+  <h1>Privacy</h1>
+
+  <p>
+    With your permission, we use Google Analytics to record which pages of Explorer you open, so
+    that we can see what is used and improve it. Nothing is sent to Google unless you allow it, and
+    you can change your choice here at any time.
+  </p>
+
+  <div class="card stack">
+    @switch (analytics.consent()) {
+      @case ('granted') {
+        <p>Analytics is <strong>on</strong>: you allowed your page views to be recorded.</p>
+
+        <button class="button" type="button" (click)="analytics.deny()">Turn analytics off</button>
+      }
+      @case ('denied') {
+        <p>Analytics is <strong>off</strong>: you declined, so nothing is recorded.</p>
+
+        <button class="button" type="button" (click)="analytics.grant()">Turn analytics on</button>
+      }
+      @default {
+        <p>You have <strong>not decided yet</strong>, so nothing is recorded.</p>
+
+        <button class="button" type="button" (click)="analytics.grant()">Turn analytics on</button>
+      }
+    }
+  </div>
+</section>
