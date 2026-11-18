@@ -1,18 +1,29 @@
-.table td:last-child {
-  width: 16rem;
-}
-
-.images ul {
-  max-width: 16rem;
-}
-
-.images li {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.actions {
+// Each card is as tall as the tallest one in its row, with the buttons at the bottom.
+.grid > .card {
   display: flex;
+  flex-direction: column;
+}
+
+.grid > .card > .actions {
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
+.thumbnails {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.thumbnails img {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  height: var(--space-6);
+  object-fit: cover;
+  width: var(--space-6);
+}
+
+.empty {
+  grid-column: 1 / -1;
 }

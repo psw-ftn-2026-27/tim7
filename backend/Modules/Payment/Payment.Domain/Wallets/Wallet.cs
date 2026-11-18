@@ -43,6 +43,21 @@ public sealed class Wallet : AggregateRoot
         transaction.Reverse(now);
     }
 
+    public void Spend(Guid entityId, int amount, DateTime now)
+    {
+        if (amount > Balance())
+        {
+            throw new DomainException("There is not enough EC in the wallet.");
+        }
+
+        _transactions.Add(new Transaction(TransactionKind.Purchase, entityId, amount, now));
+    }
+
+    public void Earn(Guid entityId, int amount, DateTime now)
+    {
+        _transactions.Add(new Transaction(TransactionKind.Earning, entityId, amount, now));
+    }
+
     public int Balance()
     {
         return _transactions.Where(transaction => !transaction.IsReversed).Sum(transaction => transaction.Amount);

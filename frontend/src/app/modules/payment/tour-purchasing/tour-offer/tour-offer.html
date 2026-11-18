@@ -1,0 +1,41 @@
+<div class="stack">
+  <div class="page-header">
+    <div>
+      <span class="badge badge--payment">Payment</span>
+      <h1>Buy a tour</h1>
+      <p>Add the tour to your cart and pay for it there.</p>
+    </div>
+  </div>
+
+  @if (offer.error()) {
+    <p class="alert">Could not load the tour.</p>
+  } @else if (offer.isLoading() && !offer.hasValue()) {
+    <p class="meta">Loading the tour...</p>
+  } @else {
+    <h2>{{ offer.value()?.name }}</h2>
+    @if (offer.value()?.price === null) {
+      <p>This tour is not for sale.</p>
+    } @else {
+      <p>Price: {{ offer.value()?.price }} EC</p>
+    }
+
+    @if (error()) {
+      <p class="alert">{{ error() }}</p>
+    }
+
+    @if (added()) {
+      <p>The tour was added to your cart. <a routerLink="/payment/cart">Go to my cart</a></p>
+    }
+
+    <div>
+      <button
+        class="button button--primary"
+        type="button"
+        [disabled]="pending()"
+        (click)="addToCart()"
+      >
+        Add to cart
+      </button>
+    </div>
+  }
+</div>

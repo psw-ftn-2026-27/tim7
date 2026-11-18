@@ -1,18 +1,24 @@
-<div class="card stack">
-  <p><a routerLink="/social/clubs/mine">Back to my clubs</a></p>
+<div class="stack">
+  <p><a class="back" routerLink="/social/clubs/mine">Back to my clubs</a></p>
 
   @if (detail.isLoading()) {
-    <p>Loading club...</p>
+    <p class="meta">Loading club...</p>
   } @else if (detail.statusCode() === 404) {
-    <p class="error">This club does not exist.</p>
+    <p class="alert">This club does not exist.</p>
   } @else if (detail.error()) {
-    <p class="error">Could not load the club. Log in and try again.</p>
+    <p class="alert">Could not load the club. Log in and try again.</p>
   } @else {
     @if (detail.value(); as club) {
       @if (editing()) {
-        <h1>Edit club</h1>
+        <div class="page-header">
+          <div>
+            <span class="badge badge--social">Social</span>
+            <h1>Edit club</h1>
+            <p>Change what you need and save.</p>
+          </div>
+        </div>
 
-        <form class="stack" (submit)="submit($event)">
+        <form class="card stack" (submit)="submit($event)">
           <div class="field">
             <label for="name">Name</label>
             <input id="name" type="text" [formField]="form.name" />
@@ -51,19 +57,28 @@
           </button>
         </form>
       } @else {
-        <h1>{{ club.name }}</h1>
+        <div class="page-header">
+          <div>
+            <span class="badge badge--social">Social</span>
+            <h1>{{ club.name }}</h1>
+            <p>Your club, as members see it.</p>
+          </div>
+          <button class="button button--primary" type="button" (click)="startEdit(club)">
+            Edit
+          </button>
+        </div>
 
-        <p>{{ club.description }}</p>
+        <div class="card stack">
+          <p>{{ club.description }}</p>
 
-        <ul>
-          @for (image of club.images; track $index) {
-            <li>{{ image }}</li>
+          @if (club.images.length > 0) {
+            <div class="thumbnails">
+              @for (image of club.images; track $index) {
+                <img [src]="image" [alt]="club.name" />
+              }
+            </div>
           }
-        </ul>
-
-        <button class="button button--primary" type="button" (click)="startEdit(club)">
-          Edit
-        </button>
+        </div>
       }
     }
   }

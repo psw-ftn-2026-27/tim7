@@ -91,4 +91,20 @@ export interface ClubMembershipDto {
   myState: MembershipState;
   myRole: ClubRole | null;
   pendingRequests: string[] | null;
+  sentInvitations: ClubInvitationDto[] | null;
+}
+
+export interface ClubInvitationDto {
+  userId: string;
+  userEmail: string | null;
+}
+
+export interface ExplorerDto {
+  id: string;
+  email: string;
+}
+
+export interface MyInvitationDto {
+  clubId: string;
+  clubName: string;
 }

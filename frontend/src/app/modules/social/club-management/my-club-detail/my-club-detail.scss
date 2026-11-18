@@ -1,8 +1,17 @@
-.card {
-  margin-inline: auto;
-  max-width: 32rem;
-}
-
 .card > button {
   align-self: flex-start;
+}
+
+.thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.thumbnails img {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  height: var(--space-6);
+  object-fit: cover;
+  width: var(--space-6);
 }

@@ -1,0 +1,74 @@
+<div class="stack">
+  <p><a class="back" routerLink="/exploration">Back to tours</a></p>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  @if (active.isLoading()) {
+    <p class="meta">Loading your active tour...</p>
+  } @else if (active.error()) {
+    <p class="alert">Could not load your active tour. Log in and try again.</p>
+  } @else {
+    @if (active.value()?.execution; as execution) {
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>{{ execution.tourName }}</h1>
+          <p>Your active tour. Follow the path to the next key point.</p>
+        </div>
+        <button
+          class="button"
+          type="button"
+          [disabled]="pending() || confirming()"
+          (click)="askToAbandon()"
+        >
+          Abandon tour
+        </button>
+      </div>
+
+      <div class="card map">
+        <app-map [pins]="pins()" [showPath]="true" />
+      </div>
+
+      @if (execution.firstKeyPoint; as point) {
+        <div class="card key-point">
+          <img [src]="point.image" [alt]="point.name" />
+          <div class="stack">
+            <h2>Next: {{ point.name }}</h2>
+            <p>{{ point.description }}</p>
+          </div>
+        </div>
+      }
+
+      @if (confirming()) {
+        <div class="card stack">
+          <p>Do you really want to abandon this tour?</p>
+          <div class="actions">
+            <button
+              class="button button--primary"
+              type="button"
+              [disabled]="pending()"
+              (click)="abandon(execution.tourId)"
+            >
+              Yes, abandon
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancel()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>Active tour</h1>
+          <p>The tour you are taking right now.</p>
+        </div>
+      </div>
+
+      <p class="empty">You have no active tour. <a routerLink="/exploration">Browse tours</a></p>
+    }
+  }
+</div>

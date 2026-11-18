@@ -1,84 +1,102 @@
 <div class="stack">
-  <h1>My blogs</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--social">Social</span>
+      <h1>My blogs</h1>
+      <p>Blogs you have written, with what you can do with each.</p>
+    </div>
 
-  <p><a routerLink="/social">All blogs</a> · <a routerLink="/social/create">Create blog</a></p>
+    <a class="button button--primary" routerLink="/social/create">Write a blog</a>
+  </div>
+
+  <nav class="subnav" aria-label="Social pages">
+    <a routerLink="/social">All blogs</a>
+  </nav>
 
   @if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="alert">{{ error() }}</p>
   }
 
   @if (blogs.isLoading()) {
-    <p>Loading your blogs...</p>
+    <p class="meta">Loading your blogs...</p>
   } @else if (blogs.error()) {
-    <p class="error">Could not load your blogs. Log in and try again.</p>
+    <p class="alert">Could not load your blogs. Log in and try again.</p>
   } @else {
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Status</th>
-          <th scope="col">Comments</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (blog of blogs.value() ?? []; track blog.id) {
+    <div class="card">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ blog.title }}</td>
-            <td>{{ blog.status }}</td>
-            <td>{{ blog.comments.length }}</td>
-            <td>
-              <div class="actions">
-                <a class="button" [routerLink]="['/social/mine', blog.id]">Details</a>
-                @if (blog.status === 'Draft') {
-                  <button
-                    class="button button--primary"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="publish(blog.id)"
-                  >
-                    Publish
-                  </button>
-                }
-                @if (blog.status === 'Published') {
-                  @if (confirmingArchiveId() === blog.id) {
-                    <span>Archiving is permanent. Confirm?</span>
+            <th scope="col">Title</th>
+            <th scope="col">Status</th>
+            <th scope="col">Comments</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (blog of blogs.value() ?? []; track blog.id) {
+            <tr>
+              <td>{{ blog.title }}</td>
+              <td>
+                <span class="status" [class.status--active]="blog.status === 'Published'">{{
+                  blog.status
+                }}</span>
+              </td>
+              <td>{{ blog.comments.length }}</td>
+              <td>
+                <div class="actions">
+                  <a class="button" [routerLink]="['/social/mine', blog.id]">Details</a>
+                  @if (blog.status === 'Draft') {
                     <button
                       class="button button--primary"
                       type="button"
                       [disabled]="pending()"
-                      (click)="archive(blog.id)"
+                      (click)="publish(blog.id)"
                     >
-                      Confirm
-                    </button>
-                    <button
-                      class="button"
-                      type="button"
-                      [disabled]="pending()"
-                      (click)="confirmingArchiveId.set(null)"
-                    >
-                      Cancel
-                    </button>
-                  } @else {
-                    <button
-                      class="button"
-                      type="button"
-                      [disabled]="pending()"
-                      (click)="confirmingArchiveId.set(blog.id)"
-                    >
-                      Archive
+                      Publish
                     </button>
                   }
-                }
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="4">You have no blogs yet.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+                  @if (blog.status === 'Published') {
+                    @if (confirmingArchiveId() === blog.id) {
+                      <span class="meta">Archiving is permanent. Confirm?</span>
+                      <button
+                        class="button button--primary"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="archive(blog.id)"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="confirmingArchiveId.set(null)"
+                      >
+                        Cancel
+                      </button>
+                    } @else {
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="confirmingArchiveId.set(blog.id)"
+                      >
+                        Archive
+                      </button>
+                    }
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="meta">
+                You have no blogs yet. <a routerLink="/social/create">Write your first blog</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   }
 </div>
