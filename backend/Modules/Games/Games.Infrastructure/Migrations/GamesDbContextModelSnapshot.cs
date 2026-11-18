@@ -26,13 +26,12 @@ namespace Games.Infrastructure.Migrations
             modelBuilder.Entity("Games.Domain.Quizzes.AnswerOption", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("QuestionId")
+                    b.Property<Guid>("QuestionId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Text")
@@ -49,10 +48,9 @@ namespace Games.Infrastructure.Migrations
             modelBuilder.Entity("Games.Domain.Quizzes.Question", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("QuizId")
+                    b.Property<Guid>("QuizId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Text")
@@ -101,7 +99,8 @@ namespace Games.Infrastructure.Migrations
                     b.HasOne("Games.Domain.Quizzes.Question", null)
                         .WithMany("AnswerOptions")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Games.Domain.Quizzes.Question", b =>
@@ -109,7 +108,8 @@ namespace Games.Infrastructure.Migrations
                     b.HasOne("Games.Domain.Quizzes.Quiz", null)
                         .WithMany("Questions")
                         .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Games.Domain.Quizzes.Question", b =>

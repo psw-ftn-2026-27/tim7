@@ -1,0 +1,50 @@
+<div class="stack">
+  <h1>Challenges</h1>
+
+  <p><a routerLink="/games/create">New quiz</a></p>
+
+  @if (challenges.isLoading()) {
+    <p>Loading challenges...</p>
+  } @else if (challenges.error()) {
+    <p class="error">Could not load the challenges. Log in as an administrator and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Kind</th>
+          <th scope="col">Status</th>
+          <th scope="col">XP</th>
+          <th scope="col">Questions</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (challenge of challenges.value()?.items ?? []; track challenge.id) {
+          <tr>
+            <td>{{ challenge.name }}</td>
+            <td>{{ challenge.kind }}</td>
+            <td>{{ challenge.status }}</td>
+            <td>
+              @if (challenge.xp !== null) {
+                {{ challenge.xp }}
+              } @else {
+                <span class="meta">not set</span>
+              }
+            </td>
+            <td>{{ challenge.questionCount }}</td>
+            <td>
+              @if (challenge.status === 'Draft') {
+                <a [routerLink]="['/games', challenge.id, 'edit']">Edit</a>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">There are no challenges yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -1,0 +1,59 @@
+<div class="card stack">
+  <div class="heading">
+    <h3>
+      @if (question().text) {
+        {{ question().text }}
+      } @else {
+        <span class="meta">(no text)</span>
+      }
+    </h3>
+    <button class="button" type="button" [disabled]="pending()" (click)="remove.emit()">
+      Remove question
+    </button>
+  </div>
+
+  <ul class="answer-options">
+    @for (option of question().answerOptions; track option.id) {
+      <li [class.correct]="option.isCorrect">
+        <span class="text">
+          @if (option.text) {
+            {{ option.text }}
+          } @else {
+            <span class="meta">(no text)</span>
+          }
+          @if (option.isCorrect) {
+            <strong>(correct)</strong>
+          }
+        </span>
+        @if (!option.isCorrect) {
+          <button
+            class="button"
+            type="button"
+            [disabled]="pending()"
+            (click)="markCorrect.emit(option)"
+          >
+            Mark as correct
+          </button>
+        }
+        <button
+          class="button"
+          type="button"
+          [disabled]="pending()"
+          (click)="removeAnswerOption.emit(option)"
+        >
+          Remove
+        </button>
+      </li>
+    } @empty {
+      <li class="meta">This question has no answer options yet.</li>
+    }
+  </ul>
+
+  <form class="add-form" (submit)="submit($event)">
+    <div class="field">
+      <label [for]="'answer-option-' + question().id">New answer option</label>
+      <input [id]="'answer-option-' + question().id" type="text" [formField]="form.text" />
+    </div>
+    <button class="button" type="submit" [disabled]="pending()">Add answer option</button>
+  </form>
+</div>

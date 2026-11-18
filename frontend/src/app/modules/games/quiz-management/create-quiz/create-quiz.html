@@ -1,0 +1,28 @@
+<div class="card stack">
+  <p><a routerLink="/games">Back to challenges</a></p>
+
+  <h1>New quiz</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" [formField]="form.name" />
+    </div>
+
+    <div class="field">
+      <label for="instructions">Instructions (optional)</label>
+      <textarea id="instructions" rows="4" [formField]="form.instructions"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="xp">XP (optional)</label>
+      <input id="xp" type="number" [formField]="form.xp" />
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>
+  </form>
+</div>
