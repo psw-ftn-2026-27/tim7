@@ -50,6 +50,54 @@
         }
       }
 
+      @if (club.status === 'Active' && club.myRole === 'Owner') {
+        <h2>Invite explorers</h2>
+
+        <form class="search" (submit)="search($event)">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" type="search" [formField]="searchForm.username" />
+          </div>
+          <button class="button button--primary" type="submit">Search</button>
+        </form>
+
+        @if (explorers.isLoading()) {
+          <p>Searching explorers...</p>
+        } @else if (explorers.error()) {
+          <p class="error">Could not search explorers.</p>
+        } @else if (explorers.value(); as found) {
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Email</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (explorer of found; track explorer.id) {
+                <tr>
+                  <td>{{ explorer.email }}</td>
+                  <td>
+                    <button
+                      class="button button--primary"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="invite(explorer.id)"
+                    >
+                      Invite
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="2">No explorers match the search.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+
       @if (error()) {
         <p class="error">{{ error() }}</p>
       }
@@ -170,6 +218,29 @@
               } @empty {
                 <tr>
                   <td colspan="2">No pending join requests.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        @if (club.sentInvitations; as invitations) {
+          <h2>Sent invitations</h2>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">User</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invitation of invitations; track invitation.userId) {
+                <tr>
+                  <td>{{ invitation.userEmail ?? invitation.userId }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td>No sent invitations.</td>
                 </tr>
               }
             </tbody>

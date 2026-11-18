@@ -50,6 +50,18 @@ public class ClubMembershipQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Owner_sees_the_sent_invitations_with_the_e_mails_of_the_invited_users()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var club = await client.GetFromJsonAsync<ClubMembershipDto>(
+            $"/api/social/clubs/{ClubSeed.PaintersWithInvitationsAndPendingRequest.Id}", JsonOptions);
+
+        club!.SentInvitations.Should().Contain(new ClubInvitationDto(DemoUsers.Explorer2, "explorer2@explorer.dev"));
+        club.SentInvitations.Should().Contain(invitation => invitation.UserId == WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
     public async Task Page_of_a_closed_club_shows_that_it_is_closed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
