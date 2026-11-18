@@ -40,6 +40,10 @@ export class ClubMembership {
     );
   }
 
+  async invite(id: string, userId: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/invitations/${userId}`, null));
+  }
+
   async removeMember(id: string, userId: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}/members/${userId}`));
   }
