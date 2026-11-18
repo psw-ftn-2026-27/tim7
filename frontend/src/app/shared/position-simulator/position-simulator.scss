@@ -1,5 +1,5 @@
+// Only this component's difference from the global .actions: the row wraps, with wider gaps.
 .actions {
-  display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
