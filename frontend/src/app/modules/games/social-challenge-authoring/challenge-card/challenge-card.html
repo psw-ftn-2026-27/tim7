@@ -1,0 +1,26 @@
+<article class="card stack">
+  <h3>{{ challenge().name }}</h3>
+
+  <p class="meta">Stanje: {{ challenge().status }}</p>
+  <p class="meta">Aktivan: {{ challenge().start }} - {{ challenge().end }}</p>
+  <p class="meta">Broj ljudi: {{ challenge().people }}</p>
+  <p class="meta">Opseg: {{ challenge().rangeMeters }} m</p>
+  <p class="meta">XP: {{ challenge().xp }}</p>
+  <p>{{ challenge().exitMessage }}</p>
+
+  <div class="actions">
+    <button class="button" type="button" [disabled]="!canEdit()" (click)="edit.emit()">
+      Ispravi
+    </button>
+
+    @if (confirming()) {
+      <span>Obrisati izazov?</span>
+      <button class="button button--primary" type="button" (click)="confirm()">Da</button>
+      <button class="button" type="button" (click)="confirming.set(false)">Ne</button>
+    } @else {
+      <button class="button" type="button" [disabled]="!canDelete()" (click)="confirming.set(true)">
+        Obriši
+      </button>
+    }
+  </div>
+</article>
