@@ -16,6 +16,10 @@ import { RouterLink } from '@angular/router';
         </div>
       </div>
 
+      <nav class="subnav" aria-label="Games pages">
+        <a routerLink="/games/challenges">Social challenges</a>
+      </nav>
+
       <div class="empty stack">
         <h2>No games yet</h2>
         <p>Games will appear here once authors publish them. Meanwhile, explore a tour.</p>
