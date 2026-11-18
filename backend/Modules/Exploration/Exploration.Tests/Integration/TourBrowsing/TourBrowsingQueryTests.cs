@@ -244,6 +244,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
         tour.Tags.Should().Equal(seeded.Tags);
         tour.Length!.Kilometers.Should().Be(seeded.Length!.Kilometers);
         tour.TransportTimes.Should().Equal(seeded.TransportTimes.Select(time => new TransportTimeDto(time.Transport, time.Minutes)));
+        tour.IsFree.Should().Be(seeded.Price!.IsFree);
         tour.KeyPoints.Should().Equal(seeded.KeyPoints
             .Where(keyPoint => keyPoint.IsPublic)
             .Select(keyPoint => new PublicKeyPointDto(
