@@ -21,13 +21,17 @@ backend/
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
                                    DomainException, NotFoundException,
-                                   Images/ (ImageFile, ImageSelection)       [platform]
+                                   Images/ (ImageFile, ImageSelection),
+                                   Chats/ (Chat, Message, ChatContext,
+                                   ChatParticipant)                          [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId(),
                                    Images/ (ImageUploadReader, UploadedImage,
                                    ImageUploadLimits)                        [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
                                    module, per-schema migrations history),
-                                   Images/ (ImageStore, AddImageStorage)     [platform]
+                                   Images/ (ImageStore, AddImageStorage),
+                                   Chats/ (ChatConfiguration,
+                                   MessageConfiguration)                     [platform]
     Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
                                    reseed, test JWTs), WellKnownUsers        [platform]
     Shared.UnitTests/              unit tests of the shared code             [platform]
@@ -231,6 +235,32 @@ image cleanup job (`AddImageCleanup` in `Host.Api`) periodically deletes images 
 module uses and that are older than `ImageCleanup:MinAge`, and it only touches the
 subfolders of modules that registered an `IImageUsage`; a module without one keeps all of
 its files.
+
+## Chat
+
+A module that offers a chat adopts the shared one; it never writes its own rules. The
+types live in `Shared.Domain/Chats/`: `Chat` (a `ChatContext` of a module-local kind and
+the context ID, `IsLocked`, `Open`, `Lock`, `Write`), `Message` (its own aggregate with
+`ChatId`, `AuthorId`, `Text`, `SentAt`; the constructor enforces 1 to 1000 characters)
+and `ChatParticipant` (`UserId`, `IsPrivileged`). The chat knows no participants; the
+embedding aggregate decides who takes part, who is privileged and when to lock.
+
+The module's `Application` declares `IChatRepository`, `IMessageRepository` and
+`IMessageReadRepository`, implemented in its `Infrastructure`. Its `DbContext` calls
+`builder.ConfigureChats()` and `builder.ConfigureMessages()` from
+`Shared.Infrastructure` after `HasDefaultSchema`, so the tables land in the module's own
+schema with the unique index on the context, and the module adds its own migration. The
+embedding aggregate (e.g. `Club`) provides a method that turns a user into a
+`ChatParticipant` or rejects a non-participant. The send command loads that aggregate
+and takes the participant from it, opens the chat for the context if it does not exist,
+calls `Chat.Write` with the current time, saves the message (and the new chat) once and
+returns the message ID. The list query rejects a non-participant through the same
+aggregate, reads a `PageResult` of the newest messages through `IMessageReadRepository`,
+fills the author e-mails with one `IIdentityApi.GetUsersByIdsAsync` call, and returns an
+empty page when the chat does not exist. The module's controller exposes both. The
+frontend half is the presentational component `shared/chat`; the page owns the form,
+built with `chatMessageForm()`, and reloads the list with the periodic refresh pattern
+from `frontend/AGENTS.md`.
 
 ## Events
 

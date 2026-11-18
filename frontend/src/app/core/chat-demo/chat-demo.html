@@ -1,0 +1,40 @@
+<section class="stack">
+  <h1>Chat demo</h1>
+
+  <p>
+    Every state of the shared chat, with hard-coded messages. Nothing on this page is sent to the
+    server.
+  </p>
+</section>
+
+<section class="demo stack">
+  <h2>Open chat</h2>
+
+  <p>
+    Send a message and it appears on top of the list, and the field is emptied. An empty message or
+    one longer than 1000 characters shows the reason under the field.
+  </p>
+
+  <app-chat [messages]="openMessages()" [form]="openForm" (send)="sendOpen($event)" />
+</section>
+
+<section class="demo stack">
+  <h2>Locked chat</h2>
+
+  <p>The messages can be read, and a notice stands in place of the form.</p>
+
+  <app-chat [messages]="messages" [locked]="true" [form]="lockedForm" />
+</section>
+
+<section class="demo stack">
+  <h2>Server error</h2>
+
+  <p>Every send is rejected: the server's message stands under the form and the text stays.</p>
+
+  <app-chat
+    [messages]="messages"
+    [form]="failingForm"
+    [error]="failingError()"
+    (send)="sendFailing()"
+  />
+</section>

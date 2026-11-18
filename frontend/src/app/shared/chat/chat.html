@@ -1,0 +1,49 @@
+<section class="chat stack">
+  <h2>Chat</h2>
+
+  @if (locked()) {
+    <p class="meta">This chat is locked. You can read the messages, but you cannot send new ones.</p>
+  } @else {
+    <form class="stack" (submit)="submit($event)">
+      <div class="field">
+        <label [for]="fieldId">Message</label>
+        <textarea
+          rows="3"
+          [id]="fieldId"
+          placeholder="Write a message"
+          [formField]="form().text"
+        ></textarea>
+        @if (form().text().touched()) {
+          @for (message of form().text().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!form()().valid() || pending()"
+      >
+        Send
+      </button>
+    </form>
+  }
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  @if (newestFirst().length === 0) {
+    <p class="empty">No messages yet.</p>
+  } @else {
+    <ul class="stack messages">
+      @for (message of newestFirst(); track message.id) {
+        <li class="card">
+          <p class="meta">{{ message.authorEmail }} &middot; {{ formatTime(message.sentAt) }}</p>
+          <p class="text">{{ message.text }}</p>
+        </li>
+      }
+    </ul>
+  }
+</section>
