@@ -55,6 +55,17 @@ public class WalletTests
         reverseAgain.Should().Throw<DomainException>();
     }
 
+    [Fact]
+    public void Deposit_by_the_owner_of_the_wallet_is_rejected()
+    {
+        var userId = Guid.NewGuid();
+        var wallet = new Wallet(userId);
+
+        var deposit = () => wallet.Deposit(userId, 50);
+
+        deposit.Should().Throw<DomainException>();
+    }
+
     private static Wallet WalletWithDeposits(params int[] amounts)
     {
         var wallet = new Wallet(Guid.NewGuid());

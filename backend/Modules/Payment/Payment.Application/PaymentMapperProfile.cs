@@ -12,7 +12,5 @@ public sealed class PaymentMapperProfile : Profile
         CreateMap<Wallet, WalletDto>()
             .ForMember(dto => dto.Balance, options => options.MapFrom(wallet => wallet.Balance()));
         CreateMap<Transaction, TransactionDto>();
-        CreateMap<Wallet, UserBalanceDto>()
-            .ForMember(dto => dto.Balance, options => options.MapFrom(wallet => wallet.Balance()));
     }
 }

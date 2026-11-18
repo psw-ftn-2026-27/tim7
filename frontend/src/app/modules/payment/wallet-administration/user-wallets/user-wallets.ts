@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, min, required, validate } from '@angular/forms/signals';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
@@ -15,16 +15,33 @@ import { WalletAdministration } from '../wallet-administration';
 export class UserWallets {
   private readonly walletAdministration = inject(WalletAdministration);
 
-  protected readonly users = httpResource<PageResult<UserBalanceDto>>(
-    () => '/api/payment/wallets?page=1&pageSize=20',
+  private readonly pageSize = 20;
+
+  protected readonly page = signal(1);
+  // The text that was searched for in the e-mails; null while the full list is shown.
+  protected readonly searchedEmail = signal<string | null>(null);
+
+  protected readonly searchForm = form(signal({ email: '' }));
+
+  // One resource reads both the full list and the search results: both return one page of users.
+  protected readonly users = httpResource<PageResult<UserBalanceDto>>(() => {
+    const email = this.searchedEmail();
+    const paging = `page=${this.page()}&pageSize=${this.pageSize}`;
+    return email === null
+      ? `/api/payment/wallets?${paging}`
+      : `/api/payment/wallets/search?query=${encodeURIComponent(email)}&${paging}`;
+  });
+
+  protected readonly lastPage = computed(() =>
+    Math.max(1, Math.ceil((this.users.value()?.totalCount ?? 0) / this.pageSize)),
   );
 
-  protected readonly selectedUserId = signal<string | null>(null);
+  protected readonly selectedUser = signal<UserBalanceDto | null>(null);
 
   // The URL stays undefined until a user is selected, so the read does not fire before that.
   protected readonly deposits = httpResource<UserDepositDto[]>(() => {
-    const userId = this.selectedUserId();
-    return userId === null ? undefined : `/api/payment/wallets/${userId}/deposits`;
+    const user = this.selectedUser();
+    return user === null ? undefined : `/api/payment/wallets/${user.userId}/deposits`;
   });
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -41,26 +58,50 @@ export class UserWallets {
     );
   });
 
-  protected select(userId: string): void {
+  protected search(event: Event): void {
+    event.preventDefault();
+    const email = this.searchForm.email().value().trim();
+    if (email === '') {
+      return;
+    }
+    this.page.set(1);
+    this.searchedEmail.set(email);
+  }
+
+  protected clearSearch(): void {
+    this.page.set(1);
+    this.searchedEmail.set(null);
+    this.searchForm().reset({ email: '' });
+  }
+
+  protected previousPage(): void {
+    this.page.update((current) => current - 1);
+  }
+
+  protected nextPage(): void {
+    this.page.update((current) => current + 1);
+  }
+
+  protected select(user: UserBalanceDto): void {
     this.error.set(null);
     this.reverseError.set(null);
     this.success.set(null);
-    this.selectedUserId.set(userId);
+    this.selectedUser.set(user);
     this.form().reset({ amount: null });
   }
 
   protected async deposit(event: Event): Promise<void> {
     event.preventDefault();
-    const userId = this.selectedUserId();
+    const user = this.selectedUser();
     const amount = this.form.amount().value();
-    if (userId === null || amount === null) {
+    if (user === null || amount === null) {
       return;
     }
     this.pending.set(true);
     this.error.set(null);
     this.success.set(null);
     try {
-      await this.walletAdministration.deposit(userId, { amount });
+      await this.walletAdministration.deposit(user.userId, { amount });
       this.users.reload();
       this.deposits.reload();
       this.form().reset({ amount: null });
@@ -73,15 +114,15 @@ export class UserWallets {
   }
 
   protected async reverse(transactionId: string): Promise<void> {
-    const userId = this.selectedUserId();
-    if (userId === null) {
+    const user = this.selectedUser();
+    if (user === null) {
       return;
     }
     this.pending.set(true);
     this.reverseError.set(null);
     this.success.set(null);
     try {
-      await this.walletAdministration.reverse(userId, transactionId);
+      await this.walletAdministration.reverse(user.userId, transactionId);
       this.users.reload();
       this.deposits.reload();
       this.success.set('Deposit reversed.');

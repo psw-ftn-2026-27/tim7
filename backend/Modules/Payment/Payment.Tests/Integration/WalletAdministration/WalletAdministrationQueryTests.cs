@@ -14,14 +14,69 @@ public class WalletAdministrationQueryTests : BaseIntegrationTest
     public WalletAdministrationQueryTests(PaymentApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Administrator_sees_users_with_an_empty_wallet_and_with_a_deposit()
+    public async Task Administrator_sees_a_user_without_a_wallet_with_zero_and_a_user_with_a_wallet_with_his_balance()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
         var page = await client.GetFromJsonAsync<PageResult<UserBalanceDto>>("/api/payment/wallets?page=1&pageSize=100", JsonOptions);
 
-        page!.Items.Should().Contain(user => user.UserId == WalletSeed.ExplorerWallet.UserId && user.Balance == 0);
+        page!.Items.Should().Contain(user => user.UserId == DemoUsers.Explorer3 && user.Balance == 0);
         page.Items.Should().Contain(user => user.UserId == WalletSeed.FundedWallet.UserId && user.Balance == 50);
+    }
+
+    [Fact]
+    public async Task Search_by_a_part_of_the_e_mail_finds_the_user_with_his_balance_regardless_of_letter_case()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var page = await client.GetFromJsonAsync<PageResult<UserBalanceDto>>("/api/payment/wallets/search?query=EXPLORER2", JsonOptions);
+
+        var user = page!.Items.Should().ContainSingle().Subject;
+        user.UserId.Should().Be(WalletSeed.FundedWallet.UserId);
+        user.Email.Should().Be("explorer2@explorer.dev");
+        user.Balance.Should().Be(50);
+    }
+
+    [Fact]
+    public async Task Search_by_a_part_of_the_e_mail_finds_every_user_whose_e_mail_contains_it()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var page = await client.GetFromJsonAsync<PageResult<UserBalanceDto>>("/api/payment/wallets/search?query=explorer", JsonOptions);
+
+        page!.Items.Select(user => user.UserId).Should().Contain([DemoUsers.Explorer1, DemoUsers.Explorer2, DemoUsers.Explorer3]);
+        page.Items.Should().OnlyContain(user => user.Email.Contains("explorer"));
+    }
+
+    [Fact]
+    public async Task Search_by_a_text_that_no_e_mail_contains_finds_no_users()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var page = await client.GetFromJsonAsync<PageResult<UserBalanceDto>>("/api/payment/wallets/search?query=nobody", JsonOptions);
+
+        page!.Items.Should().BeEmpty();
+        page.TotalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_search_users_by_e_mail()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.GetAsync("/api/payment/wallets/search?query=explorer");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_search_users_by_e_mail()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.GetAsync("/api/payment/wallets/search?query=explorer");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

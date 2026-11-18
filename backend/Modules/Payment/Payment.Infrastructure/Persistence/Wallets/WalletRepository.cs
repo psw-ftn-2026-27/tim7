@@ -20,19 +20,12 @@ internal sealed class WalletRepository : IWalletRepository
             .FirstOrDefaultAsync(wallet => wallet.UserId == userId);
     }
 
-    public Task<List<Wallet>> GetPageAsync(int page, int pageSize)
+    public Task<List<Wallet>> GetByUserIdsAsync(IReadOnlyCollection<Guid> userIds)
     {
         return _dbContext.Wallets
             .Include(wallet => wallet.Transactions)
-            .OrderBy(wallet => wallet.UserId)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Where(wallet => userIds.Contains(wallet.UserId))
             .ToListAsync();
-    }
-
-    public Task<int> CountAsync()
-    {
-        return _dbContext.Wallets.CountAsync();
     }
 
     public void Add(Wallet wallet)
