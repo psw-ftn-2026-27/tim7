@@ -9,21 +9,28 @@
     <p class="alert">Could not load the tour. Log in and try again.</p>
   } @else {
     @if (tour.value(); as current) {
-      <span class="badge badge--exploration">Exploration</span>
-      <h1>{{ current.name }}</h1>
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>{{ current.name }}</h1>
+          <p>
+            Difficulty: {{ current.difficulty }} ·
+            @if (current.length) {
+              {{ current.length.kilometers }} km
+            } @else {
+              Length not available
+            }
+            · {{ current.keyPoints.length }} key points
+          </p>
+        </div>
+        <span class="status" [class.status--active]="current.status === 'Published'">
+          {{ current.status }}
+        </span>
+      </div>
 
-      <p class="meta">{{ current.status }} · {{ current.difficulty }}</p>
-
-      <p>{{ current.description }}</p>
-
-      <p>
-        Length:
-        @if (current.length) {
-          {{ current.length.kilometers }} km
-        } @else {
-          <span class="meta">not available</span>
-        }
-      </p>
+      <div class="card">
+        <p>{{ current.description }}</p>
+      </div>
 
       <app-map
         [pins]="pins()"
@@ -61,7 +68,8 @@
             <p>
               Location:
               @if (form.latitude().value() !== null && form.longitude().value() !== null) {
-                {{ form.latitude().value()?.toFixed(5) }}, {{ form.longitude().value()?.toFixed(5) }}
+                {{ form.latitude().value()?.toFixed(5) }},
+                {{ form.longitude().value()?.toFixed(5) }}
               } @else {
                 <span class="meta">not picked yet</span>
               }

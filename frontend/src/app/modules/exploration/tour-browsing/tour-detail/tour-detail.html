@@ -9,44 +9,50 @@
     <p class="alert">Could not load the tour. Log in and try again.</p>
   } @else {
     @if (tour.value(); as current) {
-      <span class="badge badge--exploration">Exploration</span>
-      <h1>{{ current.name }}</h1>
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>{{ current.name }}</h1>
+          <p>
+            Difficulty: <strong>{{ current.difficulty }}</strong> ·
+            @if (current.length) {
+              {{ current.length.kilometers }} km
+            } @else {
+              Length not available
+            }
+            · {{ current.keyPoints.length }} key points
+          </p>
+        </div>
+      </div>
 
-      <p class="meta">Difficulty: {{ current.difficulty }}</p>
+      <div class="card stack">
+        <p>{{ current.description }}</p>
 
-      <p>{{ current.description }}</p>
-
-      <p>
-        Length:
-        @if (current.length) {
-          {{ current.length.kilometers }} km
-        } @else {
-          <span class="meta">not available</span>
+        @if (current.tags.length > 0) {
+          <ul class="tags">
+            @for (tag of current.tags; track tag) {
+              <li>{{ tag }}</li>
+            }
+          </ul>
         }
-      </p>
 
-      @if (current.tags.length > 0) {
-        <ul class="tags">
-          @for (tag of current.tags; track tag) {
-            <li>{{ tag }}</li>
-          }
-        </ul>
-      }
-
-      @if (current.transportTimes.length > 0) {
-        <ul class="times">
-          @for (time of current.transportTimes; track time.transport) {
-            <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
-          }
-        </ul>
-      } @else {
-        <p class="meta">No transport times yet.</p>
-      }
+        @if (current.transportTimes.length > 0) {
+          <ul class="times">
+            @for (time of current.transportTimes; track time.transport) {
+              <li>{{ time.transport }}: {{ time.minutes }} min</li>
+            }
+          </ul>
+        } @else {
+          <p class="times">No transport times yet.</p>
+        }
+      </div>
 
       @if (current.keyPoints.length > 0) {
         <h2>Key points</h2>
 
-        <app-map [pins]="pins()" />
+        <div class="card map">
+          <app-map [pins]="pins()" />
+        </div>
 
         <ul class="key-points">
           @for (point of current.keyPoints; track point.id) {

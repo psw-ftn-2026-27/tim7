@@ -84,6 +84,11 @@
   width: 100%;
 }
 
+// A table sits in a card; when the table is wider than the page, it scrolls inside the card.
+.card:has(> .table) {
+  overflow-x: auto;
+}
+
 .table th,
 .table td {
   border-bottom: 1px solid var(--color-border);

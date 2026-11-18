@@ -1,8 +1,3 @@
-// A wide table scrolls inside its card instead of widening the page.
-.card:has(.table) {
-  overflow-x: auto;
-}
-
 .actions {
   display: flex;
   align-items: center;

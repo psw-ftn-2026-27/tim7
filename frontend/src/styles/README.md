@@ -20,7 +20,7 @@ ih ti ne odlučuješ ponovo u svom `.scss`. Klase su definisane u `_layout.scss`
 | glavnu akciju forme ili stranice | `.button--primary` (uz `.button`) | Za više dugmadi u istom redu; glavno je samo jedno. |
 | uokviren blok sadržaja (forma, stavka liste) | `.card` | Za ceo sadržaj stranice; on je već u `.container`. |
 | polje forme sa labelom | `.field` | Za polje bez labele; svako polje ima labelu. |
-| podatke u redovima i kolonama | `.table` | Za raspored stranice; tabela je samo za podatke. |
+| podatke u redovima i kolonama | `.table`, uvek unutar `<div class="card">` (široka tabela se tada skroluje u kartici) | Za raspored stranice; tabela je samo za podatke. |
 | poruku o grešci jednog polja forme | `.error` | Za grešku cele stranice; tada `.alert`. |
 | poruku o grešci cele stranice (podaci nisu učitani, komanda nije uspela) | `.alert` | Za grešku jednog polja; tada `.error`. |
 | prazan spisak, uz link na sledeći korak | `.empty` | Za poruku o učitavanju; tada `.meta`. |

@@ -1,11 +1,17 @@
 <div class="stack">
-  <span class="badge badge--social">Social</span>
-  <h1>Clubs</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--social">Social</span>
+      <h1>Clubs</h1>
+      <p>Groups of people who explore together.</p>
+    </div>
+
+    <a class="button button--primary" routerLink="/social/clubs/create">Create club</a>
+  </div>
 
   <nav class="subnav" aria-label="Social pages">
     <a routerLink="/social">All blogs</a>
     <a routerLink="/social/clubs/mine">My clubs</a>
-    <a routerLink="/social/clubs/create">Create club</a>
   </nav>
 
   @if (clubs.isLoading()) {

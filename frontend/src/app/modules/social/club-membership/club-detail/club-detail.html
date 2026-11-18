@@ -9,22 +9,28 @@
     <p class="alert">Could not load the club. Log in and try again.</p>
   } @else {
     @if (detail.value(); as club) {
-      <span class="badge badge--social">Social</span>
-      <h1>{{ club.name }}</h1>
-
-      @if (club.status === 'Closed') {
-        <span class="status">Closed</span>
-      }
-
-      <p>{{ club.description }}</p>
-
-      @if (club.images.length > 0) {
-        <div class="thumbnails">
-          @for (image of club.images; track $index) {
-            <img [src]="image" [alt]="club.name" />
-          }
+      <div class="page-header">
+        <div>
+          <span class="badge badge--social">Social</span>
+          <h1>{{ club.name }}</h1>
+          <p>{{ club.members.length }} members</p>
         </div>
-      }
+        <span class="status" [class.status--active]="club.status === 'Active'">
+          {{ club.status }}
+        </span>
+      </div>
+
+      <div class="card stack">
+        <p>{{ club.description }}</p>
+
+        @if (club.images.length > 0) {
+          <div class="thumbnails">
+            @for (image of club.images; track $index) {
+              <img [src]="image" [alt]="club.name" />
+            }
+          </div>
+        }
+      </div>
 
       @if (club.status === 'Active') {
         @switch (club.myState) {
@@ -57,138 +63,143 @@
       }
 
       @if (error()) {
-        <p class="error">{{ error() }}</p>
+        <p class="alert">{{ error() }}</p>
       }
 
       <h2>Members</h2>
 
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">User</th>
-            <th scope="col">Role</th>
-            @if (
-              club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')
-            ) {
-              <th scope="col">Actions</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (member of club.members; track member.userId) {
+      <div class="card">
+        <table class="table">
+          <thead>
             <tr>
-              <td>{{ member.userId }}</td>
-              <td>{{ member.role }}</td>
+              <th scope="col">User</th>
+              <th scope="col">Role</th>
               @if (
                 club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')
               ) {
-                <td>
-                  <div class="actions">
-                    @if (confirmingId() === member.userId) {
-                      <button
-                        class="button button--primary"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="confirm(member.userId)"
-                      >
-                        Confirm
-                      </button>
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="cancelConfirm()"
-                      >
-                        Cancel
-                      </button>
-                    } @else if (club.myRole === 'Owner' && member.role !== 'Owner') {
-                      @if (member.role === 'Member') {
+                <th scope="col">Actions</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (member of club.members; track member.userId) {
+              <tr>
+                <td>{{ member.userId }}</td>
+                <td>{{ member.role }}</td>
+                @if (
+                  club.status === 'Active' &&
+                  (club.myRole === 'Owner' || club.myRole === 'Moderator')
+                ) {
+                  <td>
+                    <div class="actions">
+                      @if (confirmingId() === member.userId) {
+                        <button
+                          class="button button--primary"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="confirm(member.userId)"
+                        >
+                          Confirm
+                        </button>
                         <button
                           class="button"
                           type="button"
                           [disabled]="pending()"
-                          (click)="askConfirm(member.userId, 'promote')"
+                          (click)="cancelConfirm()"
                         >
-                          Make moderator
+                          Cancel
+                        </button>
+                      } @else if (club.myRole === 'Owner' && member.role !== 'Owner') {
+                        @if (member.role === 'Member') {
+                          <button
+                            class="button"
+                            type="button"
+                            [disabled]="pending()"
+                            (click)="askConfirm(member.userId, 'promote')"
+                          >
+                            Make moderator
+                          </button>
+                        }
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'transfer')"
+                        >
+                          Transfer ownership
+                        </button>
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'remove')"
+                        >
+                          Remove
+                        </button>
+                      } @else if (club.myRole === 'Moderator' && member.role === 'Member') {
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'remove')"
+                        >
+                          Remove
                         </button>
                       }
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="askConfirm(member.userId, 'transfer')"
-                      >
-                        Transfer ownership
-                      </button>
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="askConfirm(member.userId, 'remove')"
-                      >
-                        Remove
-                      </button>
-                    } @else if (club.myRole === 'Moderator' && member.role === 'Member') {
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="askConfirm(member.userId, 'remove')"
-                      >
-                        Remove
-                      </button>
-                    }
-                  </div>
-                </td>
-              }
-            </tr>
-          }
-        </tbody>
-      </table>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
       @if (club.status === 'Active') {
         @if (club.pendingRequests; as requests) {
           <h2>Pending join requests</h2>
 
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">User</th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (userId of requests; track userId) {
+          <div class="card">
+            <table class="table">
+              <thead>
                 <tr>
-                  <td>{{ userId }}</td>
-                  <td>
-                    <div class="actions">
-                      <button
-                        class="button button--primary"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="acceptRequest(userId)"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="rejectRequest(userId)"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </td>
+                  <th scope="col">User</th>
+                  <th scope="col">Actions</th>
                 </tr>
-              } @empty {
-                <tr>
-                  <td colspan="2">No pending join requests.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @for (userId of requests; track userId) {
+                  <tr>
+                    <td>{{ userId }}</td>
+                    <td>
+                      <div class="actions">
+                        <button
+                          class="button button--primary"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="acceptRequest(userId)"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="rejectRequest(userId)"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2" class="meta">No pending join requests.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       }
     }
