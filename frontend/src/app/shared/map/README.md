@@ -41,6 +41,7 @@ protected readonly keyPoints = computed<MapPin[]>(() =>
 | `showPath`        | `boolean`        | `false`       | Povezuje pinove linijom po redosledu niza (bez zatvaranja kruga) i uključuje izlaz `pathLength`.                                                                |
 | `picking`         | `boolean`        | `false`       | Režim izbora: klik na mapu postavlja ili pomera izabrani pin. Van ovog režima klik ne radi ništa.                                                               |
 | `initialLocation` | `MapPin \| null` | `null`        | U režimu izbora izabrani pin se odmah prikazuje ovde i mapa se centrira na njega. Bez nje izabranog pina nema do prvog klika, a mapa je centrirana na Novi Sad. |
+| `selectedIcon`    | `'pin' \| 'person'` | `'pin'`    | Izgled izabranog pina: crveni krug ili crvena figura čoveka. Figuru koristi simulator pozicije, da se pozicija korisnika ne meša sa tačkama koje se biraju. |
 
 ## Izlazi
 

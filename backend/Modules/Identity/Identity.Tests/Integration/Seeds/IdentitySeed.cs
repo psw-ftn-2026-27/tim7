@@ -2,5 +2,5 @@ namespace Identity.Tests.Integration.Seeds;
 
 internal static class IdentitySeed
 {
-    public static object[] All => [.. RoleSeed.All, .. UserSeed.All, .. ConnectionSeed.All];
+    public static object[] All => [.. RoleSeed.All, .. UserSeed.All, .. ConnectionSeed.All, .. UserPositionSeed.All];
 }

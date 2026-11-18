@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { Map, MapPin } from '../../shared/map/map';
+import { PositionSimulator } from '../../shared/position-simulator/position-simulator';
 
 // A development page that shows every way of embedding the shared map. Nothing is saved.
 const PETROVARADIN: MapPin = {
@@ -13,7 +14,7 @@ const LIBERTY_BRIDGE: MapPin = { latitude: 45.2447, longitude: 19.8517 };
 const STRAND: MapPin = { latitude: 45.2427, longitude: 19.8445, label: 'Strand' };
 
 @Component({
-  imports: [Map],
+  imports: [Map, PositionSimulator],
   selector: 'app-map-demo',
   styleUrl: './map-demo.scss',
   templateUrl: './map-demo.html',
@@ -42,6 +43,9 @@ export class MapDemo {
   protected readonly tourPins = signal<MapPin[]>([]);
   protected readonly tourPicked = signal<MapPin | null>(null);
   protected readonly tourLength = signal(0);
+
+  // The position simulator: the last position it reported, undefined until the first load.
+  protected readonly position = signal<MapPin | null | undefined>(undefined);
 
   protected addToTour(): void {
     const picked = this.tourPicked();
