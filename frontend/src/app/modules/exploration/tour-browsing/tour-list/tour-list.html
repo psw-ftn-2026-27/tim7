@@ -1,33 +1,28 @@
 <div class="stack">
-  <h1>Tours</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--exploration">Exploration</span>
+      <h1>Tours</h1>
+      <p>Published tours you can take.</p>
+    </div>
+
+    @if (auth.isLoggedIn()) {
+      <a class="button button--primary" routerLink="/exploration/create">Create tour</a>
+    }
+  </div>
 
   @if (auth.isLoggedIn()) {
-    <p class="links">
+    <nav class="subnav" aria-label="Exploration pages">
       <a routerLink="/exploration/mine">My tours</a>
-      <a routerLink="/exploration/create">Create tour</a>
       <a routerLink="/exploration/preferences">My preferences</a>
-      @if (isExplorer()) {
-        <button
-          class="button"
-          type="button"
-          [disabled]="!myPreferences.hasValue()"
-          (click)="applyMyPreferences()"
-        >
-          Apply my preferences
-        </button>
-      }
-    </p>
+      <a routerLink="/exploration/map">Map search</a>
+    </nav>
   }
 
-  <div class="filters">
-    <div class="field">
+  <div class="card filters">
+    <div class="field search">
       <label for="name-filter">Search by name</label>
-      <input
-        id="name-filter"
-        type="search"
-        [formField]="form.name"
-        (input)="backToFirstPage()"
-      />
+      <input id="name-filter" type="search" [formField]="form.name" (input)="backToFirstPage()" />
     </div>
 
     <fieldset class="difficulties">
@@ -63,12 +58,7 @@
 
     <div class="field">
       <label for="tags-filter">Tags, separated by commas</label>
-      <input
-        id="tags-filter"
-        type="text"
-        [formField]="form.tags"
-        (input)="backToFirstPage()"
-      />
+      <input id="tags-filter" type="text" [formField]="form.tags" (input)="backToFirstPage()" />
     </div>
 
     <div class="field">
@@ -108,6 +98,32 @@
     </div>
 
     <div class="field">
+      <label for="min-length-filter">Min length</label>
+      <input
+        id="min-length-filter"
+        type="number"
+        [formField]="form.minLength"
+        (input)="backToFirstPage()"
+      />
+      @for (message of form.minLength().errors(); track $index) {
+        <p class="error">{{ message.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="max-length-filter">Max length</label>
+      <input
+        id="max-length-filter"
+        type="number"
+        [formField]="form.maxLength"
+        (input)="backToFirstPage()"
+      />
+      @for (message of form.maxLength().errors(); track $index) {
+        <p class="error">{{ message.message }}</p>
+      }
+    </div>
+
+    <div class="field">
       <label for="sort-filter">Sort</label>
       <select id="sort-filter" [formField]="form.sortBy" (change)="backToFirstPage()">
         <option value="">No sorting</option>
@@ -117,6 +133,16 @@
         <option value="PriceDescending">Price descending</option>
       </select>
     </div>
+    @if (isExplorer()) {
+      <button
+        class="button"
+        type="button"
+        [disabled]="!myPreferences.hasValue()"
+        (click)="applyMyPreferences()"
+      >
+        Apply my preferences
+      </button>
+    }
   </div>
 
   @if (preferencesNotSetUp()) {
@@ -127,13 +153,13 @@
   }
 
   @if (myPreferences.error()) {
-    <p class="error">Could not load your preferences.</p>
+    <p class="alert">Could not load your preferences.</p>
   }
 
   @if (tours.isLoading()) {
-    <p>Loading tours...</p>
+    <p class="meta">Loading tours...</p>
   } @else if (tours.error()) {
-    <p class="error">Could not load tours. Log in and try again.</p>
+    <p class="alert">Could not load tours. Log in and try again.</p>
   } @else if (tours.hasValue() && tours.value().items.length > 0) {
     <div class="grid">
       @for (tour of tours.value().items; track tour.id) {
@@ -141,7 +167,7 @@
       }
     </div>
   } @else {
-    <p>No tours match the criteria.</p>
+    <p class="empty">No tours match the criteria.</p>
   }
 
   <p class="pages">

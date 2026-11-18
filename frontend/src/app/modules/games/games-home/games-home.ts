@@ -3,14 +3,29 @@ import { RouterLink } from '@angular/router';
 import { Auth } from '../../../core/auth/auth';
 
 @Component({
-  imports: [RouterLink],
   selector: 'app-games-home',
+  imports: [RouterLink],
   template: `
     <div class="stack">
-      <h1>Games</h1>
+      <div class="page-header">
+        <div>
+          <span class="badge badge--games">Games</span>
+          <h1>Games</h1>
+          <p>
+            Map-based challenges: answer a quiz at a landmark or find a hidden location from clues.
+          </p>
+        </div>
+      </div>
+
       @if (isAdministrator()) {
         <p><a routerLink="/games/location-challenges">Lokacijski izazovi</a></p>
       }
+
+      <div class="empty stack">
+        <h2>No games yet</h2>
+        <p>Games will appear here once authors publish them. Meanwhile, explore a tour.</p>
+        <p><a class="button" routerLink="/exploration">Browse tours</a></p>
+      </div>
     </div>
   `,
 })

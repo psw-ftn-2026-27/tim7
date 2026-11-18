@@ -1,23 +1,30 @@
 <div class="stack">
-  <h1>Clubs</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--social">Social</span>
+      <h1>Clubs</h1>
+      <p>Groups of people who explore together.</p>
+    </div>
 
-  <p class="links">
+    <a class="button button--primary" routerLink="/social/clubs/create">Create club</a>
+  </div>
+
+  <nav class="subnav" aria-label="Social pages">
     <a routerLink="/social">All blogs</a>
     <a routerLink="/social/clubs/mine">My clubs</a>
-    <a routerLink="/social/clubs/create">Create club</a>
     <a routerLink="/social/clubs/invitations">My invitations</a>
-  </p>
+  </nav>
 
   @if (clubs.isLoading()) {
-    <p>Loading clubs...</p>
+    <p class="meta">Loading clubs...</p>
   } @else if (clubs.error()) {
-    <p class="error">Could not load clubs. Log in and try again.</p>
+    <p class="alert">Could not load clubs. Log in and try again.</p>
   } @else {
     <div class="grid">
       @for (club of clubs.value()?.items ?? []; track club.id) {
         <app-club-card [club]="club" />
       } @empty {
-        <p>No clubs yet.</p>
+        <p class="empty">No clubs yet.</p>
       }
     </div>
   }

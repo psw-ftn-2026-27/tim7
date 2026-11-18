@@ -1,29 +1,36 @@
 <div class="stack">
-  <p><a routerLink="/social/clubs">Back to clubs</a></p>
+  <p><a class="back" routerLink="/social/clubs">Back to clubs</a></p>
 
   @if (detail.isLoading()) {
-    <p>Loading club...</p>
+    <p class="meta">Loading club...</p>
   } @else if (detail.statusCode() === 404) {
-    <p class="error">This club does not exist.</p>
+    <p class="alert">This club does not exist.</p>
   } @else if (detail.error()) {
-    <p class="error">Could not load the club. Log in and try again.</p>
+    <p class="alert">Could not load the club. Log in and try again.</p>
   } @else {
     @if (detail.value(); as club) {
-      <h1>{{ club.name }}</h1>
-
-      @if (club.status === 'Closed') {
-        <p class="meta">Closed</p>
-      }
-
-      <p>{{ club.description }}</p>
-
-      @if (club.images.length > 0) {
-        <div class="thumbnails">
-          @for (image of club.images; track $index) {
-            <img [src]="image" [alt]="club.name" />
-          }
+      <div class="page-header">
+        <div>
+          <span class="badge badge--social">Social</span>
+          <h1>{{ club.name }}</h1>
+          <p>{{ club.members.length }} members</p>
         </div>
-      }
+        <span class="status" [class.status--active]="club.status === 'Active'">
+          {{ club.status }}
+        </span>
+      </div>
+
+      <div class="card stack">
+        <p>{{ club.description }}</p>
+
+        @if (club.images.length > 0) {
+          <div class="thumbnails">
+            @for (image of club.images; track $index) {
+              <img [src]="image" [alt]="club.name" />
+            }
+          </div>
+        }
+      </div>
 
       @if (club.status === 'Active') {
         @switch (club.myState) {
@@ -42,7 +49,12 @@
           @case ('Pending') {
             <p class="request">
               Your join request is waiting for an answer.
-              <button class="button" type="button" [disabled]="pending()" (click)="withdrawRequest()">
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="withdrawRequest()"
+              >
                 Withdraw request
               </button>
             </p>
@@ -53,7 +65,7 @@
       @if (club.status === 'Active' && club.myRole === 'Owner') {
         <h2>Invite explorers</h2>
 
-        <form class="search" (submit)="search($event)">
+        <form class="card search" (submit)="search($event)">
           <div class="field">
             <label for="username">Username</label>
             <input id="username" type="search" [formField]="searchForm.username" />
@@ -62,189 +74,207 @@
         </form>
 
         @if (explorers.isLoading()) {
-          <p>Searching explorers...</p>
+          <p class="meta">Searching explorers...</p>
         } @else if (explorers.error()) {
-          <p class="error">Could not search explorers.</p>
+          <p class="alert">Could not search explorers.</p>
         } @else if (explorers.value(); as found) {
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Email</th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (explorer of found; track explorer.id) {
+          <div class="card">
+            <table class="table">
+              <thead>
                 <tr>
-                  <td>{{ explorer.email }}</td>
-                  <td>
-                    <button
-                      class="button button--primary"
-                      type="button"
-                      [disabled]="pending()"
-                      (click)="invite(explorer.id)"
-                    >
-                      Invite
-                    </button>
-                  </td>
+                  <th scope="col">Email</th>
+                  <th scope="col">Actions</th>
                 </tr>
-              } @empty {
-                <tr>
-                  <td colspan="2">No explorers match the search.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
-      }
-
-      @if (error()) {
-        <p class="error">{{ error() }}</p>
-      }
-
-      <h2>Members</h2>
-
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">User</th>
-            <th scope="col">Role</th>
-            @if (club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')) {
-              <th scope="col">Actions</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (member of club.members; track member.userId) {
-            <tr>
-              <td>{{ member.userId }}</td>
-              <td>{{ member.role }}</td>
-              @if (club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')) {
-                <td>
-                  <div class="actions">
-                    @if (confirmingId() === member.userId) {
+              </thead>
+              <tbody>
+                @for (explorer of found; track explorer.id) {
+                  <tr>
+                    <td>{{ explorer.email }}</td>
+                    <td>
                       <button
                         class="button button--primary"
                         type="button"
                         [disabled]="pending()"
-                        (click)="confirm(member.userId)"
+                        (click)="invite(explorer.id)"
                       >
-                        Confirm
+                        Invite
                       </button>
-                      <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
-                        Cancel
-                      </button>
-                    } @else if (club.myRole === 'Owner' && member.role !== 'Owner') {
-                      @if (member.role === 'Member') {
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2">No explorers match the search.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (error()) {
+        <p class="alert">{{ error() }}</p>
+      }
+
+      <h2>Members</h2>
+
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">Role</th>
+              @if (
+                club.status === 'Active' && (club.myRole === 'Owner' || club.myRole === 'Moderator')
+              ) {
+                <th scope="col">Actions</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (member of club.members; track member.userId) {
+              <tr>
+                <td>{{ member.userId }}</td>
+                <td>{{ member.role }}</td>
+                @if (
+                  club.status === 'Active' &&
+                  (club.myRole === 'Owner' || club.myRole === 'Moderator')
+                ) {
+                  <td>
+                    <div class="actions">
+                      @if (confirmingId() === member.userId) {
+                        <button
+                          class="button button--primary"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="confirm(member.userId)"
+                        >
+                          Confirm
+                        </button>
                         <button
                           class="button"
                           type="button"
                           [disabled]="pending()"
-                          (click)="askConfirm(member.userId, 'promote')"
+                          (click)="cancelConfirm()"
                         >
-                          Make moderator
+                          Cancel
+                        </button>
+                      } @else if (club.myRole === 'Owner' && member.role !== 'Owner') {
+                        @if (member.role === 'Member') {
+                          <button
+                            class="button"
+                            type="button"
+                            [disabled]="pending()"
+                            (click)="askConfirm(member.userId, 'promote')"
+                          >
+                            Make moderator
+                          </button>
+                        }
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'transfer')"
+                        >
+                          Transfer ownership
+                        </button>
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'remove')"
+                        >
+                          Remove
+                        </button>
+                      } @else if (club.myRole === 'Moderator' && member.role === 'Member') {
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'remove')"
+                        >
+                          Remove
                         </button>
                       }
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="askConfirm(member.userId, 'transfer')"
-                      >
-                        Transfer ownership
-                      </button>
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="askConfirm(member.userId, 'remove')"
-                      >
-                        Remove
-                      </button>
-                    } @else if (club.myRole === 'Moderator' && member.role === 'Member') {
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="askConfirm(member.userId, 'remove')"
-                      >
-                        Remove
-                      </button>
-                    }
-                  </div>
-                </td>
-              }
-            </tr>
-          }
-        </tbody>
-      </table>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
       @if (club.status === 'Active') {
         @if (club.pendingRequests; as requests) {
           <h2>Pending join requests</h2>
 
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">User</th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (userId of requests; track userId) {
+          <div class="card">
+            <table class="table">
+              <thead>
                 <tr>
-                  <td>{{ userId }}</td>
-                  <td>
-                    <div class="actions">
-                      <button
-                        class="button button--primary"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="acceptRequest(userId)"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        class="button"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="rejectRequest(userId)"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </td>
+                  <th scope="col">User</th>
+                  <th scope="col">Actions</th>
                 </tr>
-              } @empty {
-                <tr>
-                  <td colspan="2">No pending join requests.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @for (userId of requests; track userId) {
+                  <tr>
+                    <td>{{ userId }}</td>
+                    <td>
+                      <div class="actions">
+                        <button
+                          class="button button--primary"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="acceptRequest(userId)"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="rejectRequest(userId)"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2" class="meta">No pending join requests.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
 
         @if (club.sentInvitations; as invitations) {
           <h2>Sent invitations</h2>
 
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">User</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (invitation of invitations; track invitation.userId) {
+          <div class="card">
+            <table class="table">
+              <thead>
                 <tr>
-                  <td>{{ invitation.userEmail ?? invitation.userId }}</td>
+                  <th scope="col">User</th>
                 </tr>
-              } @empty {
-                <tr>
-                  <td>No sent invitations.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @for (invitation of invitations; track invitation.userId) {
+                  <tr>
+                    <td>{{ invitation.userEmail ?? invitation.userId }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td class="meta">No sent invitations.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       }
     }
