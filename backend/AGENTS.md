@@ -94,9 +94,11 @@ Identity is a deliberate exception to the module structure: one platform-owned p
 that students use but never modify or reference, plus `Identity.Contracts`, which other
 modules may reference like any other module's `Contracts`. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
-(`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
-`Connection` (following between users), with a `Following` use-case group that follows the
-application-layer patterns below; the details live in the project itself. `Core/IdentityApi`
+(`administrator`, `explorer`). Its `Core` folder also holds the module's two aggregates,
+each with a use-case group that follows the application-layer patterns below: `Connection`
+(following between users) with `Following`, and `UserPosition` (a user's one current
+position, marked by hand on a map until GPS exists) with `PositionSimulation`, open to any
+signed-in user; the details live in the project itself. `Core/IdentityApi`
 implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
 whether a user exists, finding a user by e-mail, which serves as the username, the
 users for a list of IDs (unknown IDs are left out, no error), and a search for at most ten
