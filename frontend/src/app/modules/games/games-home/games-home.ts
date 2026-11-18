@@ -18,7 +18,9 @@ import { Auth } from '../../../core/auth/auth';
       </div>
 
       @if (isAdministrator()) {
-        <p><a routerLink="/games/location-challenges">Lokacijski izazovi</a></p>
+        <nav class="subnav" aria-label="Games pages">
+          <a routerLink="/games/location-challenges">Lokacijski izazovi</a>
+        </nav>
       }
 
       <div class="empty stack">

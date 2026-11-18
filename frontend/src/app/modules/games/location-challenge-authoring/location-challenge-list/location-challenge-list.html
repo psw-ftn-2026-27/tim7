@@ -1,13 +1,18 @@
 <div class="stack">
-  <h1>Lokacijski izazovi</h1>
-
-  <p><a routerLink="/games/location-challenges/create">Novi izazov</a></p>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--games">Games</span>
+      <h1>Lokacijski izazovi</h1>
+      <p>Izazovi u kojima korisnik na osnovu fotografija pronalazi skrivene lokacije.</p>
+    </div>
+    <a class="button button--primary" routerLink="/games/location-challenges/create">Novi izazov</a>
+  </div>
 
   @if (challenges.isLoading()) {
-    <p>Učitavanje izazova...</p>
+    <p class="meta">Učitavanje izazova...</p>
   } @else if (challenges.error()) {
-    <p class="error">Izazove nije moguće učitati.</p>
-  } @else {
+    <p class="alert">Izazove nije moguće učitati.</p>
+  } @else if (challenges.value()?.length) {
     <div class="grid">
       @for (challenge of challenges.value(); track challenge.id) {
         <article class="card stack">
@@ -19,9 +24,13 @@
           <p class="meta">XP: {{ challenge.xp }}</p>
           <p class="meta">Skrivene tačke: {{ challenge.hiddenPointCount }}</p>
         </article>
-      } @empty {
-        <p>Nema lokacijskih izazova.</p>
       }
+    </div>
+  } @else {
+    <div class="empty stack">
+      <h2>Nema lokacijskih izazova</h2>
+      <p>Napravi prvi izazov i dodaj mu skrivene tačke sa fotografijama.</p>
+      <p><a class="button" routerLink="/games/location-challenges/create">Novi izazov</a></p>
     </div>
   }
 </div>
