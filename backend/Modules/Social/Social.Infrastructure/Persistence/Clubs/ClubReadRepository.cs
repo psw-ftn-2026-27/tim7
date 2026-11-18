@@ -57,6 +57,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
                     .Select(member => new ClubMemberDto(member.UserId, member.Role))
                     .ToList(),
                 MembershipState.None,
+                null,
                 club.JoinRequests.Select(request => request.UserId).ToList()))
             .FirstOrDefaultAsync();
         if (club is null)

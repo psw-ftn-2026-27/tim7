@@ -75,5 +75,6 @@ export interface ClubMembershipDto {
   images: string[];
   members: ClubMemberDto[];
   myState: MembershipState;
+  myRole: ClubRole | null;
   pendingRequests: string[] | null;
 }

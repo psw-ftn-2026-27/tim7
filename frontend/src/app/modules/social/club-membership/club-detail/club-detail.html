@@ -55,6 +55,9 @@
           <tr>
             <th scope="col">User</th>
             <th scope="col">Role</th>
+            @if (club.myRole === 'Owner' || club.myRole === 'Moderator') {
+              <th scope="col">Actions</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -62,6 +65,61 @@
             <tr>
               <td>{{ member.userId }}</td>
               <td>{{ member.role }}</td>
+              @if (club.myRole === 'Owner' || club.myRole === 'Moderator') {
+                <td>
+                  <div class="actions">
+                    @if (confirmingId() === member.userId) {
+                      <button
+                        class="button button--primary"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="confirm(member.userId)"
+                      >
+                        Confirm
+                      </button>
+                      <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+                        Cancel
+                      </button>
+                    } @else if (club.myRole === 'Owner' && member.role !== 'Owner') {
+                      @if (member.role === 'Member') {
+                        <button
+                          class="button"
+                          type="button"
+                          [disabled]="pending()"
+                          (click)="askConfirm(member.userId, 'promote')"
+                        >
+                          Make moderator
+                        </button>
+                      }
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="askConfirm(member.userId, 'transfer')"
+                      >
+                        Transfer ownership
+                      </button>
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="askConfirm(member.userId, 'remove')"
+                      >
+                        Remove
+                      </button>
+                    } @else if (club.myRole === 'Moderator' && member.role === 'Member') {
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="askConfirm(member.userId, 'remove')"
+                      >
+                        Remove
+                      </button>
+                    }
+                  </div>
+                </td>
+              }
             </tr>
           }
         </tbody>

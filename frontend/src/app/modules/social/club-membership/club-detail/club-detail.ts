@@ -20,6 +20,9 @@ export class ClubDetail {
     () => `/api/social/clubs/${this.id()}`,
   );
 
+  // The member row that asks to confirm an action, and which action; one row at a time.
+  protected readonly confirmingId = signal<string | null>(null);
+  protected readonly confirmingAction = signal<'promote' | 'transfer' | 'remove' | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -48,6 +51,38 @@ export class ClubDetail {
     return this.run(
       () => this.clubMembership.rejectRequest(this.id(), userId),
       'Could not reject the join request.',
+    );
+  }
+
+  protected askConfirm(userId: string, action: 'promote' | 'transfer' | 'remove'): void {
+    this.error.set(null);
+    this.confirmingId.set(userId);
+    this.confirmingAction.set(action);
+  }
+
+  protected cancelConfirm(): void {
+    this.confirmingId.set(null);
+    this.confirmingAction.set(null);
+  }
+
+  protected confirm(userId: string): Promise<void> {
+    const action = this.confirmingAction();
+    this.cancelConfirm();
+    if (action === 'promote') {
+      return this.run(
+        () => this.clubMembership.promoteToModerator(this.id(), userId),
+        'Could not make the member a moderator.',
+      );
+    }
+    if (action === 'transfer') {
+      return this.run(
+        () => this.clubMembership.transferOwnership(this.id(), userId),
+        'Could not transfer ownership.',
+      );
+    }
+    return this.run(
+      () => this.clubMembership.removeMember(this.id(), userId),
+      'Could not remove the member.',
     );
   }
 

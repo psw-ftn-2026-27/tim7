@@ -19,6 +19,15 @@ public class ClubTests
         return club;
     }
 
+    private static Club CreateClubWithModeratorAndMember()
+    {
+        var club = CreateClubWithMember(WellKnownUsers.SecondExplorer);
+        club.PromoteToModerator(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+        club.RequestToJoin(WellKnownUsers.Administrator);
+        club.AcceptRequest(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+        return club;
+    }
+
     [Theory]
     [InlineData("", "Vikend ture po stazama Fruške gore.")]
     [InlineData("   ", "Vikend ture po stazama Fruške gore.")]
@@ -160,5 +169,133 @@ public class ClubTests
         var rejecting = () => club.RejectRequest(WellKnownUsers.Administrator, WellKnownUsers.SecondExplorer);
 
         rejecting.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Moderator_accepts_a_request_to_join()
+    {
+        var club = CreateClubWithModeratorAndMember();
+        var userId = Guid.NewGuid();
+        club.RequestToJoin(userId);
+
+        club.AcceptRequest(WellKnownUsers.SecondExplorer, userId);
+
+        club.Members.Should().ContainSingle(member => member.UserId == userId && member.Role == ClubRole.Member);
+    }
+
+    [Fact]
+    public void Owner_promotes_a_regular_member_to_moderator()
+    {
+        var club = CreateClubWithMember(WellKnownUsers.SecondExplorer);
+
+        club.PromoteToModerator(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.Members.Should().ContainSingle(member =>
+            member.UserId == WellKnownUsers.SecondExplorer && member.Role == ClubRole.Moderator);
+    }
+
+    [Fact]
+    public void Moderator_cannot_promote_a_member()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var promoting = () => club.PromoteToModerator(WellKnownUsers.SecondExplorer, WellKnownUsers.Administrator);
+
+        promoting.Should().Throw<DomainException>();
+        club.Members.Should().ContainSingle(member =>
+            member.UserId == WellKnownUsers.Administrator && member.Role == ClubRole.Member);
+    }
+
+    [Fact]
+    public void Transfer_makes_the_new_owner_the_owner_and_the_old_owner_a_regular_member()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        club.TransferOwnership(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.OwnerId.Should().Be(WellKnownUsers.SecondExplorer);
+        club.Members.Should().NotContain(member => member.UserId == WellKnownUsers.SecondExplorer);
+        club.Members.Should().ContainSingle(member =>
+            member.UserId == WellKnownUsers.Explorer && member.Role == ClubRole.Member);
+    }
+
+    [Fact]
+    public void User_who_is_not_the_owner_cannot_transfer_the_club()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var transferring = () => club.TransferOwnership(WellKnownUsers.SecondExplorer, WellKnownUsers.Administrator);
+
+        transferring.Should().Throw<DomainException>();
+        club.OwnerId.Should().Be(WellKnownUsers.Explorer);
+    }
+
+    [Fact]
+    public void Owner_cannot_transfer_the_club_to_themselves()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var transferring = () => club.TransferOwnership(WellKnownUsers.Explorer, WellKnownUsers.Explorer);
+
+        transferring.Should().Throw<NotFoundException>();
+        club.OwnerId.Should().Be(WellKnownUsers.Explorer);
+        club.Members.Should().NotContain(member => member.UserId == WellKnownUsers.Explorer);
+    }
+
+    [Fact]
+    public void Owner_removes_a_moderator_who_is_then_no_longer_a_member()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        club.RemoveMember(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.IsMember(WellKnownUsers.SecondExplorer).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Moderator_removes_a_regular_member()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        club.RemoveMember(WellKnownUsers.SecondExplorer, WellKnownUsers.Administrator);
+
+        club.IsMember(WellKnownUsers.Administrator).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Moderator_cannot_remove_another_moderator()
+    {
+        var club = CreateClubWithModeratorAndMember();
+        club.PromoteToModerator(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+
+        var removing = () => club.RemoveMember(WellKnownUsers.SecondExplorer, WellKnownUsers.Administrator);
+
+        removing.Should().Throw<DomainException>();
+        club.IsMember(WellKnownUsers.Administrator).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Regular_member_cannot_remove_anyone()
+    {
+        var club = CreateClubWithModeratorAndMember();
+        var otherMemberId = Guid.NewGuid();
+        club.RequestToJoin(otherMemberId);
+        club.AcceptRequest(WellKnownUsers.Explorer, otherMemberId);
+
+        var removing = () => club.RemoveMember(WellKnownUsers.Administrator, otherMemberId);
+
+        removing.Should().Throw<DomainException>();
+        club.IsMember(otherMemberId).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Nobody_can_remove_the_owner()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var removing = () => club.RemoveMember(WellKnownUsers.SecondExplorer, WellKnownUsers.Explorer);
+
+        removing.Should().Throw<NotFoundException>();
+        club.OwnerId.Should().Be(WellKnownUsers.Explorer);
     }
 }
