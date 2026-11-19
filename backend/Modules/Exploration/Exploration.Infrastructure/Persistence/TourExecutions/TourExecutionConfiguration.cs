@@ -22,5 +22,15 @@ internal static class TourExecutionConfiguration
 
         builder.OwnsOne(execution => execution.StartLocation);
         builder.Navigation(execution => execution.StartLocation).IsRequired();
+
+        builder.OwnsOne(execution => execution.LastKnownLocation);
+        builder.Navigation(execution => execution.LastKnownLocation).IsRequired();
+
+        // A table and not JSON: the discovered secrets query matches completions against the tour's key points.
+        builder.OwnsMany(execution => execution.KeyPointCompletions, completions =>
+        {
+            completions.ToTable("KeyPointCompletions");
+            completions.WithOwner().HasForeignKey("TourExecutionId");
+        });
     }
 }

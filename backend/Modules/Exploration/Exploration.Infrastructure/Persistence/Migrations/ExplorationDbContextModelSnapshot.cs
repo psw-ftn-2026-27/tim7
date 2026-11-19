@@ -222,6 +222,50 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Exploration.Domain.TourExecutions.TourExecution", b =>
                 {
+                    b.OwnsMany("Exploration.Domain.TourExecutions.KeyPointCompletion", "KeyPointCompletions", b1 =>
+                        {
+                            b1.Property<Guid>("TourExecutionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CompletedAt")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<Guid>("KeyPointId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("TourExecutionId", "Id");
+
+                            b1.ToTable("KeyPointCompletions", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourExecutionId");
+                        });
+
+                    b.OwnsOne("Exploration.Domain.Tours.Location", "LastKnownLocation", b1 =>
+                        {
+                            b1.Property<Guid>("TourExecutionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("TourExecutionId");
+
+                            b1.ToTable("TourExecutions", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourExecutionId");
+                        });
+
                     b.OwnsOne("Exploration.Domain.Tours.Location", "StartLocation", b1 =>
                         {
                             b1.Property<Guid>("TourExecutionId")
@@ -240,6 +284,11 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourExecutionId");
                         });
+
+                    b.Navigation("KeyPointCompletions");
+
+                    b.Navigation("LastKnownLocation")
+                        .IsRequired();
 
                     b.Navigation("StartLocation")
                         .IsRequired();
