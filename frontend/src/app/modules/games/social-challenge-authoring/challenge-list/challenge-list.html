@@ -61,6 +61,10 @@
           [challenge]="challenge"
           (edit)="startEdit(challenge)"
           (remove)="remove(challenge.id)"
+          (publish)="publish(challenge.id)"
+          (retire)="retire(challenge.id)"
+          (restore)="restore(challenge.id)"
+          (archive)="archive(challenge.id)"
         />
       } @empty {
         <p>Nema izazova.</p>

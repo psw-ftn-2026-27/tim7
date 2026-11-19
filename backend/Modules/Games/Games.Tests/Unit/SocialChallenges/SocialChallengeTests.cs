@@ -134,6 +134,75 @@ public class SocialChallengeTests
         update.Should().Throw<DomainException>();
     }
 
+    [Theory]
+    [InlineData(SocialChallengeStatus.Draft, "publish", SocialChallengeStatus.Published)]
+    [InlineData(SocialChallengeStatus.Published, "retire", SocialChallengeStatus.Retired)]
+    [InlineData(SocialChallengeStatus.Retired, "restore", SocialChallengeStatus.Published)]
+    [InlineData(SocialChallengeStatus.Published, "archive", SocialChallengeStatus.Archived)]
+    [InlineData(SocialChallengeStatus.Retired, "archive", SocialChallengeStatus.Archived)]
+    public void Challenge_moves_to_the_requested_status_when_the_transition_is_allowed(
+        SocialChallengeStatus from, string action, SocialChallengeStatus expected)
+    {
+        var challenge = CreateChallengeIn(from);
+
+        Apply(challenge, action);
+
+        challenge.Status.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Published, "publish")]
+    [InlineData(SocialChallengeStatus.Retired, "publish")]
+    [InlineData(SocialChallengeStatus.Archived, "publish")]
+    [InlineData(SocialChallengeStatus.Draft, "retire")]
+    [InlineData(SocialChallengeStatus.Retired, "retire")]
+    [InlineData(SocialChallengeStatus.Archived, "retire")]
+    [InlineData(SocialChallengeStatus.Draft, "restore")]
+    [InlineData(SocialChallengeStatus.Published, "restore")]
+    [InlineData(SocialChallengeStatus.Archived, "restore")]
+    [InlineData(SocialChallengeStatus.Draft, "archive")]
+    [InlineData(SocialChallengeStatus.Archived, "archive")]
+    public void Challenge_rejects_a_disallowed_transition_and_keeps_its_status(
+        SocialChallengeStatus from, string action)
+    {
+        var challenge = CreateChallengeIn(from);
+
+        var transition = () => Apply(challenge, action);
+
+        transition.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(from);
+    }
+
+    private static SocialChallenge CreateChallengeIn(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallenge();
+        if (status != SocialChallengeStatus.Draft)
+        {
+            challenge.Publish();
+        }
+        if (status == SocialChallengeStatus.Retired)
+        {
+            challenge.Retire();
+        }
+        if (status == SocialChallengeStatus.Archived)
+        {
+            challenge.Archive();
+        }
+        return challenge;
+    }
+
+    private static void Apply(SocialChallenge challenge, string action)
+    {
+        switch (action)
+        {
+            case "publish": challenge.Publish(); break;
+            case "retire": challenge.Retire(); break;
+            case "restore": challenge.Restore(); break;
+            case "archive": challenge.Archive(); break;
+            default: throw new ArgumentException(action);
+        }
+    }
+
     [Fact]
     public void Draft_challenge_may_be_deleted()
     {

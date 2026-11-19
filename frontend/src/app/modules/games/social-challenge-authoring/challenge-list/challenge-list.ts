@@ -119,4 +119,30 @@ export class ChallengeList {
       this.listError.set(serverMessage(failure, 'Izazov nije moguće obrisati.'));
     }
   }
+
+  protected async publish(id: string): Promise<void> {
+    await this.changeStatus(() => this.authoring.publish(id));
+  }
+
+  protected async retire(id: string): Promise<void> {
+    await this.changeStatus(() => this.authoring.retire(id));
+  }
+
+  protected async restore(id: string): Promise<void> {
+    await this.changeStatus(() => this.authoring.restore(id));
+  }
+
+  protected async archive(id: string): Promise<void> {
+    await this.changeStatus(() => this.authoring.archive(id));
+  }
+
+  private async changeStatus(command: () => Promise<void>): Promise<void> {
+    this.listError.set(null);
+    try {
+      await command();
+    } catch (failure) {
+      this.listError.set(serverMessage(failure, 'Stanje izazova nije moguće promeniti.'));
+    }
+    this.challenges.reload();
+  }
 }
