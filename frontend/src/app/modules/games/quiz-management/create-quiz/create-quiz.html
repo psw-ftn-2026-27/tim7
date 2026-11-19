@@ -1,9 +1,15 @@
-<div class="card stack">
-  <p><a routerLink="/games">Back to challenges</a></p>
+<div class="stack">
+  <p><a class="back" routerLink="/games">Back to quizzes</a></p>
 
-  <h1>New quiz</h1>
+  <div class="page-header">
+    <div>
+      <span class="badge badge--games">Games</span>
+      <h1>New quiz</h1>
+      <p>A new quiz starts as a draft; you add its questions on the next page.</p>
+    </div>
+  </div>
 
-  <form class="stack" (submit)="submit($event)">
+  <form class="card stack" (submit)="submit($event)">
     <div class="field">
       <label for="name">Name</label>
       <input id="name" type="text" [formField]="form.name" />
@@ -20,7 +26,7 @@
     </div>
 
     @if (error()) {
-      <p class="error">{{ error() }}</p>
+      <p class="alert">{{ error() }}</p>
     }
 
     <button class="button button--primary" type="submit" [disabled]="pending()">Save</button>

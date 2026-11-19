@@ -22,27 +22,29 @@
             <span class="meta">(no text)</span>
           }
           @if (option.isCorrect) {
-            <strong>(correct)</strong>
+            <span class="status status--active">Correct</span>
           }
         </span>
-        @if (!option.isCorrect) {
+        <div class="actions">
+          @if (!option.isCorrect) {
+            <button
+              class="button"
+              type="button"
+              [disabled]="pending()"
+              (click)="markCorrect.emit(option)"
+            >
+              Mark as correct
+            </button>
+          }
           <button
             class="button"
             type="button"
             [disabled]="pending()"
-            (click)="markCorrect.emit(option)"
+            (click)="removeAnswerOption.emit(option)"
           >
-            Mark as correct
+            Remove
           </button>
-        }
-        <button
-          class="button"
-          type="button"
-          [disabled]="pending()"
-          (click)="removeAnswerOption.emit(option)"
-        >
-          Remove
-        </button>
+        </div>
       </li>
     } @empty {
       <li class="meta">This question has no answer options yet.</li>

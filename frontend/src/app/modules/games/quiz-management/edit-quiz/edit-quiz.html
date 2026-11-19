@@ -1,18 +1,24 @@
 <div class="stack">
-  <p><a routerLink="/games">Back to challenges</a></p>
+  <p><a class="back" routerLink="/games">Back to quizzes</a></p>
 
   @if (quiz.isLoading()) {
-    <p>Loading quiz...</p>
+    <p class="meta">Loading quiz...</p>
   } @else if (quiz.statusCode() === 404) {
-    <p class="error">This quiz does not exist.</p>
+    <p class="alert">This quiz does not exist.</p>
   } @else if (quiz.error()) {
-    <p class="error">Could not load the quiz. Log in as an administrator and try again.</p>
+    <p class="alert">Could not load the quiz. Log in as an administrator and try again.</p>
   } @else {
     @if (quiz.value(); as current) {
       @if (current.status !== 'Draft') {
-        <p class="error">This quiz is {{ current.status }} and can no longer be edited.</p>
+        <p class="alert">This quiz is {{ current.status }} and can no longer be edited.</p>
       } @else {
-        <h1>Edit quiz</h1>
+        <div class="page-header">
+          <div>
+            <span class="badge badge--games">Games</span>
+            <h1>{{ current.name }}</h1>
+            <p>Build the quiz step by step; every change is saved at once.</p>
+          </div>
+        </div>
 
         @if (editingDetails()) {
           <form class="card stack" (submit)="saveDetails($event)">
@@ -38,7 +44,7 @@
             </div>
 
             @if (detailsError()) {
-              <p class="error">{{ detailsError() }}</p>
+              <p class="alert">{{ detailsError() }}</p>
             }
 
             <button class="button button--primary" type="submit" [disabled]="pending()">
@@ -47,8 +53,11 @@
           </form>
         } @else {
           <div class="card stack">
-            <h2>{{ current.name }}</h2>
-            <p class="meta">Status: {{ current.status }}</p>
+            <h2>Quiz details</h2>
+            <p>Name: {{ current.name }}</p>
+            <p>
+              <span class="status">{{ current.status }}</span>
+            </p>
             <p>
               Instructions:
               @if (current.instructions) {
@@ -65,7 +74,7 @@
                 <span class="meta">not set</span>
               }
             </p>
-            <div>
+            <div class="actions">
               <button
                 class="button button--primary"
                 type="button"
@@ -81,7 +90,7 @@
         <h2>Questions</h2>
 
         @if (error()) {
-          <p class="error">{{ error() }}</p>
+          <p class="alert">{{ error() }}</p>
         }
 
         <ol class="questions">

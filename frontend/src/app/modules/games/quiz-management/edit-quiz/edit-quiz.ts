@@ -105,7 +105,10 @@ export class EditQuiz {
     }
   }
 
-  protected async removeAnswerOption(question: QuestionDto, option: AnswerOptionDto): Promise<void> {
+  protected async removeAnswerOption(
+    question: QuestionDto,
+    option: AnswerOptionDto,
+  ): Promise<void> {
     this.pending.set(true);
     this.error.set(null);
     try {

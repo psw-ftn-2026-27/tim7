@@ -15,9 +15,7 @@ export class CreateQuiz {
   private readonly router = inject(Router);
 
   // No client-side validators: the server checks the name and XP and its message is shown.
-  protected readonly form = form(
-    signal({ name: '', instructions: '', xp: null as number | null }),
-  );
+  protected readonly form = form(signal({ name: '', instructions: '', xp: null as number | null }));
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
