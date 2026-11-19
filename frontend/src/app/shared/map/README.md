@@ -44,6 +44,7 @@ protected readonly keyPoints = computed<MapPin[]>(() =>
 | `selectedIcon`    | `'pin' \| 'person'` | `'pin'`    | Izgled izabranog pina: crveni krug ili crvena figura čoveka. Figuru koristi simulator pozicije, da se pozicija korisnika ne meša sa tačkama koje se biraju. |
 | `circleCenter`    | `MapPin \| null` | `null`        | Centar kruga van režima izbora. U režimu izbora se ne koristi: centar kruga je izabrani pin, pa krug prati svaki klik.                                          |
 | `circleRadiusKm`  | `number`         | `0`           | Poluprečnik kruga u km, kao i dužina putanje. Krug se crta samo kada postoji centar i poluprečnik je veći od 0.                                                 |
+| `userPosition`    | `MapPin \| null` | `null`        | Pozicija korisnika, crtana kao figura čoveka. Kada je `showPath` uključen, putanja počinje od nje, ali je `pathLength` i dalje dužina samo između pinova. |
 
 Na mapi je najviše jedan krug i svaka promena centra ili poluprečnika ga ponovo crta. Kada se
 krug pojavi ili mu se promeni poluprečnik, mapa se uokviri tako da se ceo krug vidi; pomeranje
@@ -171,18 +172,18 @@ protected search(): void {
 
 ### Putanja od korisnika do sledeće tačke (E22)
 
-Pozicija korisnika dolazi iz simulatora pozicije i postaje običan pin sa oznakom „You“, pa
-putanja povezuje ta dva pina. Blizinu tački proverava modul Exploration.
+Pozicija korisnika dolazi iz simulatora pozicije i predaje se kroz `userPosition`. Mapa je
+crta kao istu figuru čoveka kao u simulatoru, a putanja počinje od nje i ide do sledeće
+tačke. Blizinu tački proverava modul Exploration.
 
 ```ts
-protected readonly pathToNext = computed<MapPin[]>(() => [
-  { latitude: this.position().latitude, longitude: this.position().longitude, label: 'You' },
+protected readonly nextKeyPoint = computed<MapPin[]>(() => [
   { latitude: this.next().latitude, longitude: this.next().longitude, label: this.next().name },
 ]);
 ```
 
 ```html
-<app-map [pins]="pathToNext()" [showPath]="true" (pathLength)="distance.set($event)" />
+<app-map [pins]="nextKeyPoint()" [userPosition]="position()" [showPath]="true" />
 ```
 
 ## Platformsko odstupanje: `inject(ElementRef)`

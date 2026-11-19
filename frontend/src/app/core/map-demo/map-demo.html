@@ -194,13 +194,11 @@
   <h2>Path to the next key point</h2>
 
   <p>
-    The tourist's position as a pin labelled "You" and the next key point, joined by the path. On a
-    real page the position comes from the position simulator.
+    The tourist, drawn as the same figure as in the position simulator, and the next key point. The
+    path starts at the tourist. On a real page the position comes from the position simulator.
   </p>
 
-  <app-map [pins]="pathToNext" [showPath]="true" (pathLength)="distanceToNext.set($event)" />
-
-  <p>Distance: {{ distanceToNext().toFixed(2) }} km.</p>
+  <app-map [pins]="nextKeyPoint" [userPosition]="tourist" [showPath]="true" />
 </section>
 
 <section class="demo stack">
