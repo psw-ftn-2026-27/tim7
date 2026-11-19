@@ -13,6 +13,7 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
 
     public DbSet<SocialChallenge> SocialChallenges => Set<SocialChallenge>();
     public DbSet<LocationChallenge> LocationChallenges => Set<LocationChallenge>();
+    public DbSet<LocationChallengeProgress> LocationChallengeProgresses => Set<LocationChallengeProgress>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

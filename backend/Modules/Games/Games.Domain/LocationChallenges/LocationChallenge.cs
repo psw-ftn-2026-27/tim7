@@ -8,6 +8,7 @@ public sealed class LocationChallenge : AggregateRoot
     private const double MaxDistanceFromStartMeters = 400;
     private const double MinDistanceBetweenLocationsMeters = 10;
     private const double MaxDistanceToNeighborMeters = 200;
+    private const double PointToleranceMeters = 5;
 
     public string Name { get; private set; }
     public int Xp { get; private set; }
@@ -60,6 +61,40 @@ public sealed class LocationChallenge : AggregateRoot
         StartLocation = startLocation;
         RadiusBonusMeters = radiusBonusMeters;
         _hiddenPoints.AddRange(hiddenPoints);
+    }
+
+    // The circle reaches the farthest hidden point, plus the bonus drawn once when the challenge was created.
+    public double RadiusMeters()
+    {
+        return HiddenPoints.Max(point => StartLocation.DistanceTo(point.Location)) + RadiusBonusMeters;
+    }
+
+    public bool IsInCircle(Location position)
+    {
+        return StartLocation.DistanceTo(position) <= RadiusMeters();
+    }
+
+    public void EnsureInCircle(Location position)
+    {
+        if (!IsInCircle(position))
+        {
+            throw new DomainException("The position is outside the circle of the challenge.");
+        }
+    }
+
+    public HiddenPoint GetUndiscoveredPointNear(Location position, IReadOnlyCollection<Guid> discoveredPointIds)
+    {
+        EnsureInCircle(position);
+
+        var point = HiddenPoints.FirstOrDefault(candidate =>
+            !discoveredPointIds.Contains(candidate.Id)
+            && candidate.Location.DistanceTo(position) <= PointToleranceMeters);
+        if (point is null)
+        {
+            throw new DomainException("You are not at the location of an undiscovered point.");
+        }
+
+        return point;
     }
 
     // locations holds the start location first, then the location of every hidden point.

@@ -97,4 +97,57 @@ public class LocationChallengeTests
 
         create.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void Radius_is_the_distance_to_the_farthest_hidden_point_plus_the_bonus()
+    {
+        var challenge = new LocationChallenge("Potraga", 100, Start, ValidPoints(), 50);
+
+        var radius = challenge.RadiusMeters();
+
+        radius.Should().BeApproximately(272.4, 1);
+        challenge.RadiusMeters().Should().Be(radius);
+    }
+
+    [Theory]
+    [InlineData(0.0024, true)]
+    [InlineData(0.0030, false)]
+    public void Position_is_in_the_circle_only_within_the_radius(double degreesNorthOfStart, bool expected)
+    {
+        var challenge = new LocationChallenge("Potraga", 100, Start, ValidPoints(), 50);
+
+        var isInCircle = challenge.IsInCircle(NorthOfStart(degreesNorthOfStart));
+
+        isInCircle.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Undiscovered_point_is_found_within_5_meters()
+    {
+        var challenge = new LocationChallenge("Potraga", 100, Start, ValidPoints(), 50);
+
+        var point = challenge.GetUndiscoveredPointNear(NorthOfStart(0.001 + 0.00003), []);
+
+        point.Should().Be(challenge.HiddenPoints[0]);
+    }
+
+    [Fact]
+    public void Undiscovered_point_is_not_found_farther_than_5_meters()
+    {
+        var challenge = new LocationChallenge("Potraga", 100, Start, ValidPoints(), 50);
+
+        var find = () => challenge.GetUndiscoveredPointNear(NorthOfStart(0.001 + 0.00006), []);
+
+        find.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Discovered_point_is_not_found_again()
+    {
+        var challenge = new LocationChallenge("Potraga", 100, Start, ValidPoints(), 50);
+
+        var find = () => challenge.GetUndiscoveredPointNear(NorthOfStart(0.001), [challenge.HiddenPoints[0].Id]);
+
+        find.Should().Throw<DomainException>();
+    }
 }

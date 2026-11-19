@@ -23,4 +23,16 @@ internal sealed class LocationChallengeReadRepository : ILocationChallengeReadRe
                 challenge.HiddenPoints.Count))
             .ToListAsync();
     }
+
+    public async Task<List<HiddenPointPhotoDto>?> GetHiddenPointPhotosAsync(Guid locationChallengeId)
+    {
+        var points = await _dbContext.LocationChallenges
+            .Where(challenge => challenge.Id == locationChallengeId)
+            .Select(challenge => challenge.HiddenPoints
+                .Select(point => new HiddenPointPhotoDto(point.Id, point.Image))
+                .ToList())
+            .ToListAsync();
+
+        return points.SingleOrDefault();
+    }
 }

@@ -19,6 +19,9 @@ import { Auth } from '../../../core/auth/auth';
 
 <nav class="subnav" aria-label="Games pages">
         <a routerLink="/games/challenges">Social challenges</a>
+        @if (isExplorer()) {
+          <a routerLink="/games/location-challenges/map">Lokacijski izazovi (igranje)</a>
+        }
         @if (isAdministrator()) {
           <a routerLink="/games/location-challenges">Lokacijski izazovi</a>
         }
@@ -37,5 +40,9 @@ export class GamesHome {
 
   protected readonly isAdministrator = computed(
     () => this.auth.user()?.roles.includes('administrator') ?? false,
+  );
+
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
 }
