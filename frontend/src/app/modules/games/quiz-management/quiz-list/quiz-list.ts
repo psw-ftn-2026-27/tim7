@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ChallengeListItemDto } from '../../api/games-api-types';
@@ -14,6 +15,14 @@ import { QuizManagement } from '../quiz-management';
 })
 export class QuizList {
   private readonly quizManagement = inject(QuizManagement);
+  private readonly auth = inject(Auth);
+
+  protected readonly isAdministrator = computed(
+    () => this.auth.user()?.roles.includes('administrator') ?? false,
+  );
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
+  );
 
   // Only the first page of the newest 20 challenges; paging controls come when there are more.
   protected readonly challenges = httpResource<PageResult<ChallengeListItemDto>>(
