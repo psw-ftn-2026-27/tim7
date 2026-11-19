@@ -17,11 +17,12 @@ import { Auth } from '../../../core/auth/auth';
         </div>
       </div>
 
-      @if (isAdministrator()) {
-        <nav class="subnav" aria-label="Games pages">
+<nav class="subnav" aria-label="Games pages">
+        <a routerLink="/games/challenges">Social challenges</a>
+        @if (isAdministrator()) {
           <a routerLink="/games/location-challenges">Lokacijski izazovi</a>
-        </nav>
-      }
+        }
+      </nav>
 
       <div class="empty stack">
         <h2>No games yet</h2>

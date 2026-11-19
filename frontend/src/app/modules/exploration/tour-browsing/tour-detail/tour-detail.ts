@@ -3,7 +3,11 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Map, MapPin } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { MyActiveTourExecutionDto, PublishedTourDto } from '../../api/exploration-api-types';
+import {
+  DiscoveredSecretDto,
+  MyActiveTourExecutionDto,
+  PublishedTourDto,
+} from '../../api/exploration-api-types';
 import { TourBrowsing } from '../tour-browsing';
 
 @Component({
@@ -26,6 +30,11 @@ export class TourDetail {
   // The tourist's active session decides between "Start tour", "Continue tour" and a message.
   protected readonly active = httpResource<MyActiveTourExecutionDto>(
     () => '/api/exploration/tour-executions/active',
+  );
+
+  // Key points the tourist completed in any of their sessions of this tour, with their secrets.
+  protected readonly secrets = httpResource<DiscoveredSecretDto[]>(
+    () => `/api/exploration/tour-executions/discovered-secrets/${this.id()}`,
   );
 
   // Only some of the key points are shown, so the map gets pins without a path.
