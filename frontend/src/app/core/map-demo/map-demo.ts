@@ -74,12 +74,10 @@ export class MapDemo {
   // What the page would send to the server; a real page sends it and shows the results as pins.
   protected readonly searchSent = signal<{ center: MapPin; radiusKm: number } | null>(null);
 
-  // Path to the next key point: the tourist is a plain pin labelled "You".
-  protected readonly pathToNext: MapPin[] = [
-    { latitude: 45.2486, longitude: 19.8502, label: 'You' },
-    PETROVARADIN,
-  ];
-  protected readonly distanceToNext = signal(0);
+  // Path to the next key point: the tourist is the same figure as in the position simulator,
+  // and the path starts at it.
+  protected readonly tourist: MapPin = { latitude: 45.2486, longitude: 19.8502 };
+  protected readonly nextKeyPoint: MapPin[] = [PETROVARADIN];
 
   protected search(): void {
     const center = this.searchCenter();

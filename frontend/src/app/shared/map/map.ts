@@ -34,6 +34,7 @@ export class Map implements OnDestroy {
   readonly selectedIcon = input<'pin' | 'person'>('pin');
   readonly circleCenter = input<MapPin | null>(null);
   readonly circleRadiusKm = input(0);
+  readonly userPosition = input<MapPin | null>(null);
 
   readonly pathLength = output<number>();
   readonly locationPicked = output<MapPin>();
@@ -64,14 +65,17 @@ export class Map implements OnDestroy {
     });
 
     // Leaflet lives outside the component tree, so an effect redraws it when the inputs change.
-    // Pins and path: redraw them, report the length, and frame the view.
+    // Pins, user and path: redraw them, report the length, and frame the view.
+    // With a user position the path starts at the user, but the length counts only the pins.
     effect(() => {
       const pins = this.pins();
       const showPath = this.showPath();
+      const user = this.userPosition();
       this.pinLayer.clearLayers();
       if (showPath) {
+        const pathPoints = user ? [user, ...pins] : pins;
         this.pinLayer.addLayer(
-          L.polyline(pins.map(toLatLng), {
+          L.polyline(pathPoints.map(toLatLng), {
             color: this.token('--color-accent'),
             weight: 4,
             opacity: 0.6,
@@ -83,6 +87,11 @@ export class Map implements OnDestroy {
       pins.forEach((pin, index) => {
         this.pinLayer.addLayer(this.pinMarker(pin, showPath ? index + 1 : null, pins.length));
       });
+      if (user) {
+        this.pinLayer.addLayer(
+          L.marker(toLatLng(user), { icon: this.personIcon(), interactive: false, keyboard: false }),
+        );
+      }
       untracked(() => this.frameView());
     });
 
@@ -189,10 +198,11 @@ export class Map implements OnDestroy {
   }
 
   // Picking centres on the initial location, or on the default centre without one.
-  // Otherwise the view frames every pin.
+  // Otherwise the view frames every pin and the user position.
   private frameView(): void {
     const initialLocation = this.initialLocation();
-    let points = this.pins().map(toLatLng);
+    const user = this.userPosition();
+    let points = [...(user ? [user] : []), ...this.pins()].map(toLatLng);
     if (this.picking()) {
       points = initialLocation ? [toLatLng(initialLocation)] : [];
     }

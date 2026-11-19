@@ -60,6 +60,17 @@ function circles(map: L.Map): string[] {
   return found;
 }
 
+// Each path line on the map as its points, in order.
+function paths(map: L.Map): string[][] {
+  const found: string[][] = [];
+  map.eachLayer((layer) => {
+    if (layer instanceof L.Polyline) {
+      found.push((layer.getLatLngs() as L.LatLng[]).map(({ lat, lng }) => `${lat},${lng}`));
+    }
+  });
+  return found;
+}
+
 function click(map: L.Map, latitude: number, longitude: number): void {
   map.fire('click', { latlng: L.latLng(latitude, longitude) });
 }
@@ -173,6 +184,20 @@ describe('Map', () => {
     fixture.detectChanges();
 
     expect(circles(map)).toEqual(['0,1 2000 m']);
+  });
+
+  it('with a user position the path starts at the user, but the length counts only the pins', () => {
+    const addLayer = spyOnAddLayer();
+    const fixture = createMap({ pins: [ONE_EAST], userPosition: ORIGIN, showPath: true });
+    const map = leafletMapOf(addLayer);
+    const lengths: number[] = [];
+    fixture.componentInstance.pathLength.subscribe((length) => lengths.push(length));
+
+    fixture.componentRef.setInput('pins', [ONE_EAST, ORIGIN]);
+    fixture.detectChanges();
+
+    expect(paths(map)).toEqual([['0,0', '0,1', '0,0']]);
+    expect(lengths.at(-1)).toBeCloseTo(ONE_DEGREE_KM, 1);
   });
 
   it('in picking mode a click moves the circle to the selected pin', () => {
