@@ -1,5 +1,6 @@
 using Games.Application;
 using Games.Application.LocationChallengeAuthoring;
+using Games.Application.LocationChallengePlaying;
 using Games.Application.LocationChallenges;
 using Games.Application.SocialChallengeAuthoring;
 using Games.Application.SocialChallengeLifecycle;
@@ -29,6 +30,8 @@ public static class GamesModuleExtensions
 
         services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
         services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
+        services.AddScoped<ILocationChallengeProgressRepository, LocationChallengeProgressRepository>();
+        services.AddScoped<ILocationChallengeProgressReadRepository, LocationChallengeProgressReadRepository>();
         services.AddScoped<IImageStore, GamesImageStore>();
         services.AddScoped<IImageUsage, GamesImageUsage>();
 
@@ -37,6 +40,8 @@ public static class GamesModuleExtensions
         services.AddScoped<SocialChallengeLifecycleService>();
         services.AddScoped<LocationChallengeAuthoringService>();
         services.AddScoped<LocationChallengeAuthoringQueries>();
+        services.AddScoped<LocationChallengePlayingService>();
+        services.AddScoped<LocationChallengePlayingQueries>();
 
         return services;
     }

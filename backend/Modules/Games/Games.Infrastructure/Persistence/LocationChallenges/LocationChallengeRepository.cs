@@ -1,5 +1,6 @@
 using Games.Application.LocationChallenges;
 using Games.Domain.LocationChallenges;
+using Microsoft.EntityFrameworkCore;
 
 namespace Games.Infrastructure.Persistence.LocationChallenges;
 
@@ -10,6 +11,16 @@ internal sealed class LocationChallengeRepository : ILocationChallengeRepository
     public LocationChallengeRepository(GamesDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public Task<LocationChallenge?> GetByIdAsync(Guid id)
+    {
+        return _dbContext.LocationChallenges.FirstOrDefaultAsync(challenge => challenge.Id == id);
+    }
+
+    public Task<List<LocationChallenge>> GetAllAsync()
+    {
+        return _dbContext.LocationChallenges.ToListAsync();
     }
 
     public void Add(LocationChallenge challenge)

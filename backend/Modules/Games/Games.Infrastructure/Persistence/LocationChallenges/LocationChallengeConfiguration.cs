@@ -10,6 +10,7 @@ internal static class LocationChallengeConfiguration
     {
         ConfigureLocationChallenge(modelBuilder.Entity<LocationChallenge>());
         ConfigureHiddenPoint(modelBuilder.Entity<HiddenPoint>());
+        ConfigureProgress(modelBuilder.Entity<LocationChallengeProgress>());
     }
 
     private static void ConfigureLocationChallenge(EntityTypeBuilder<LocationChallenge> builder)
@@ -33,5 +34,15 @@ internal static class LocationChallengeConfiguration
         builder.Property(point => point.Image).HasMaxLength(200);
 
         builder.ComplexProperty(point => point.Location);
+    }
+
+    private static void ConfigureProgress(EntityTypeBuilder<LocationChallengeProgress> builder)
+    {
+        builder.ToTable("LocationChallengeProgresses");
+        builder.Property(progress => progress.Id).ValueGeneratedNever();
+
+        builder.PrimitiveCollection(progress => progress.DiscoveredPointIds).HasField("_discoveredPointIds");
+
+        builder.HasIndex(progress => new { progress.UserId, progress.LocationChallengeId }).IsUnique();
     }
 }

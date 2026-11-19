@@ -55,3 +55,25 @@ export interface UpdateSocialChallengeDto {
   xp: number;
   exitMessage: string;
 }
+
+export type LocationChallengeState = 'NotStarted' | 'Active' | 'Completed';
+
+export interface PlayableLocationChallengeDto {
+  id: string;
+  name: string;
+  xp: number;
+  startLocation: LocationDto;
+  radiusMeters: number;
+  state: LocationChallengeState;
+}
+
+export interface PlayedHiddenPointDto {
+  id: string;
+  image: string;
+  isDiscovered: boolean;
+}
+
+export interface PlayedLocationChallengeDto {
+  id: string;
+  hiddenPoints: PlayedHiddenPointDto[];
+}

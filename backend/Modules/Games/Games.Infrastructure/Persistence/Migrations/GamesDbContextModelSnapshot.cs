@@ -88,6 +88,35 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.ToTable("LocationChallenges", "games");
                 });
 
+            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallengeProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.PrimitiveCollection<Guid[]>("DiscoveredPointIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<int>("EarnedXp")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LocationChallengeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "LocationChallengeId")
+                        .IsUnique();
+
+                    b.ToTable("LocationChallengeProgresses", "games");
+                });
+
             modelBuilder.Entity("Games.Domain.SocialChallenges.SocialChallenge", b =>
                 {
                     b.Property<Guid>("Id")
