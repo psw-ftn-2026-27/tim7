@@ -17,4 +17,9 @@ public sealed class TourExecutionTrackingQueries
 
         return new MyActiveTourExecutionDto(execution);
     }
+
+    public Task<List<DiscoveredSecretDto>> GetDiscoveredSecretsAsync(Guid tourId, Guid touristId)
+    {
+        return _tourExecutionReadRepository.GetDiscoveredSecretsAsync(tourId, touristId);
+    }
 }
