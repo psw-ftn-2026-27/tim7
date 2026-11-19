@@ -1,4 +1,5 @@
 using Games.Application;
+using Games.Application.QuizLifecycle;
 using Games.Application.QuizManagement;
 using Games.Application.Quizzes;
 using Games.Application.SocialChallengeAuthoring;
@@ -28,6 +29,7 @@ public static class GamesModuleExtensions
 
         services.AddScoped<QuizManagementService>();
         services.AddScoped<QuizManagementQueries>();
+        services.AddScoped<QuizLifecycleService>();
 
         services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
 

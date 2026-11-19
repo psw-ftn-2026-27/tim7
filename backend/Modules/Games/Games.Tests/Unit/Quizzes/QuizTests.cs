@@ -14,6 +14,67 @@ public class QuizTests
         return quiz;
     }
 
+    private static Quiz CreateCompleteQuiz()
+    {
+        var quiz = new Quiz("Prestonice Evrope", "Izaberi tačan odgovor.", 50);
+        AddCompleteQuestion(quiz, "Glavni grad Srbije?", "Beograd", "Novi Sad");
+        return quiz;
+    }
+
+    private static void AddCompleteQuestion(Quiz quiz, string text, string correctAnswer, string wrongAnswer)
+    {
+        quiz.AddQuestion(text);
+        var question = quiz.Questions[^1];
+        quiz.AddAnswerOption(question.Id, correctAnswer);
+        quiz.AddAnswerOption(question.Id, wrongAnswer);
+        quiz.MarkAnswerOptionCorrect(question.Id, question.AnswerOptions[0].Id);
+    }
+
+    private static Quiz CreateQuizIn(QuizStatus status)
+    {
+        var quiz = CreateCompleteQuiz();
+        if (status != QuizStatus.Draft)
+        {
+            quiz.Publish();
+        }
+        if (status is QuizStatus.Retired or QuizStatus.Archived)
+        {
+            quiz.Retire();
+        }
+        if (status == QuizStatus.Archived)
+        {
+            quiz.Archive();
+        }
+        return quiz;
+    }
+
+    private static Action Transition(Quiz quiz, string transition)
+    {
+        return transition switch
+        {
+            "publish" => quiz.Publish,
+            "retire" => quiz.Retire,
+            "restore" => quiz.Restore,
+            "archive" => quiz.Archive,
+            _ => throw new ArgumentOutOfRangeException(nameof(transition))
+        };
+    }
+
+    private static Action Modification(Quiz quiz, string modification)
+    {
+        var question = quiz.Questions[0];
+        return modification switch
+        {
+            "update details" => () => quiz.UpdateDetails("Novi naziv", "Nova uputstva.", 80),
+            "add question" => () => quiz.AddQuestion("Glavni grad Francuske?"),
+            "remove question" => () => quiz.RemoveQuestion(question.Id),
+            "add answer option" => () => quiz.AddAnswerOption(question.Id, "Niš"),
+            "remove answer option" => () => quiz.RemoveAnswerOption(question.Id, question.AnswerOptions[1].Id),
+            "mark answer option correct" => () => quiz.MarkAnswerOptionCorrect(question.Id, question.AnswerOptions[1].Id),
+            _ => throw new ArgumentOutOfRangeException(nameof(modification))
+        };
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -151,5 +212,193 @@ public class QuizTests
         var marking = () => quiz.MarkAnswerOptionCorrect(Guid.NewGuid(), Guid.NewGuid());
 
         marking.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Complete_draft_quiz_is_published()
+    {
+        var quiz = CreateCompleteQuiz();
+
+        quiz.Publish();
+
+        quiz.Status.Should().Be(QuizStatus.Published);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Quiz_without_instructions_is_not_published(string? instructions)
+    {
+        var quiz = CreateCompleteQuiz();
+        quiz.UpdateDetails("Prestonice Evrope", instructions, 50);
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Fact]
+    public void Quiz_without_xp_is_not_published()
+    {
+        var quiz = CreateCompleteQuiz();
+        quiz.UpdateDetails("Prestonice Evrope", "Izaberi tačan odgovor.", null);
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Fact]
+    public void Quiz_without_questions_is_not_published()
+    {
+        var quiz = CreateCompleteQuiz();
+        quiz.RemoveQuestion(quiz.Questions[0].Id);
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Fact]
+    public void Quiz_with_a_question_that_has_fewer_than_two_answer_options_is_not_published()
+    {
+        var quiz = CreateCompleteQuiz();
+        var question = quiz.Questions[0];
+        quiz.RemoveAnswerOption(question.Id, question.AnswerOptions[1].Id);
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Fact]
+    public void Quiz_with_a_question_without_a_correct_answer_option_is_not_published()
+    {
+        var quiz = CreateCompleteQuiz();
+        quiz.AddQuestion("Glavni grad Francuske?");
+        var questionId = quiz.Questions[1].Id;
+        quiz.AddAnswerOption(questionId, "Pariz");
+        quiz.AddAnswerOption(questionId, "Lion");
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Quiz_with_a_question_without_text_is_not_published(string text)
+    {
+        var quiz = CreateCompleteQuiz();
+        AddCompleteQuestion(quiz, text, "Pariz", "Lion");
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Quiz_with_an_answer_option_without_text_is_not_published(string text)
+    {
+        var quiz = CreateCompleteQuiz();
+        AddCompleteQuestion(quiz, "Glavni grad Francuske?", "Pariz", text);
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published, "retire", QuizStatus.Retired)]
+    [InlineData(QuizStatus.Retired, "restore", QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired, "archive", QuizStatus.Archived)]
+    public void Allowed_transition_changes_the_status_of_a_quiz(QuizStatus from, string transition, QuizStatus to)
+    {
+        var quiz = CreateQuizIn(from);
+
+        Transition(quiz, transition)();
+
+        quiz.Status.Should().Be(to);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft, "retire")]
+    [InlineData(QuizStatus.Draft, "restore")]
+    [InlineData(QuizStatus.Draft, "archive")]
+    [InlineData(QuizStatus.Published, "publish")]
+    [InlineData(QuizStatus.Published, "restore")]
+    [InlineData(QuizStatus.Published, "archive")]
+    [InlineData(QuizStatus.Retired, "publish")]
+    [InlineData(QuizStatus.Retired, "retire")]
+    [InlineData(QuizStatus.Archived, "publish")]
+    [InlineData(QuizStatus.Archived, "retire")]
+    [InlineData(QuizStatus.Archived, "restore")]
+    [InlineData(QuizStatus.Archived, "archive")]
+    public void Transition_that_is_not_allowed_leaves_the_quiz_in_its_status(QuizStatus status, string transition)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var change = Transition(quiz, transition);
+
+        change.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Archived)]
+    public void Draft_or_archived_quiz_can_be_deleted(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var deletion = () => quiz.EnsureDeletable();
+
+        deletion.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    public void Published_or_retired_quiz_cannot_be_deleted(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var deletion = () => quiz.EnsureDeletable();
+
+        deletion.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData("update details")]
+    [InlineData("add question")]
+    [InlineData("remove question")]
+    [InlineData("add answer option")]
+    [InlineData("remove answer option")]
+    [InlineData("mark answer option correct")]
+    public void Quiz_that_is_not_a_draft_cannot_be_changed(string modification)
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+
+        var change = Modification(quiz, modification);
+
+        change.Should().Throw<DomainException>();
+        quiz.Name.Should().Be("Prestonice Evrope");
+        quiz.Instructions.Should().Be("Izaberi tačan odgovor.");
+        quiz.Xp.Should().Be(50);
+        quiz.Questions.Should().ContainSingle();
+        quiz.Questions[0].AnswerOptions.Should().HaveCount(2);
+        quiz.Questions[0].AnswerOptions[0].IsCorrect.Should().BeTrue();
+        quiz.Questions[0].AnswerOptions[1].IsCorrect.Should().BeFalse();
     }
 }

@@ -41,6 +41,26 @@ public sealed class Question : Entity
         correct.SetCorrect(true);
     }
 
+    internal void EnsureReadyForPublish()
+    {
+        if (string.IsNullOrWhiteSpace(Text))
+        {
+            throw new DomainException("Every question needs a text before the quiz is published.");
+        }
+        if (_answerOptions.Count < 2)
+        {
+            throw new DomainException($"The question \"{Text}\" needs at least two answer options.");
+        }
+        if (_answerOptions.Count(answerOption => answerOption.IsCorrect) != 1)
+        {
+            throw new DomainException($"The question \"{Text}\" needs exactly one correct answer option.");
+        }
+        if (_answerOptions.Any(answerOption => string.IsNullOrWhiteSpace(answerOption.Text)))
+        {
+            throw new DomainException($"Every answer option of the question \"{Text}\" needs a text.");
+        }
+    }
+
     private AnswerOption GetAnswerOption(Guid answerOptionId)
     {
         return _answerOptions.FirstOrDefault(answerOption => answerOption.Id == answerOptionId)

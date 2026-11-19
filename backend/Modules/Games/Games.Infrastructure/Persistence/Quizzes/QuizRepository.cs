@@ -25,4 +25,9 @@ internal sealed class QuizRepository : IQuizRepository
     {
         _dbContext.Quizzes.Add(quiz);
     }
+
+    public void Remove(Quiz quiz)
+    {
+        _dbContext.Quizzes.Remove(quiz);
+    }
 }
