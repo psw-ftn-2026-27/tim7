@@ -5,7 +5,8 @@
     <p class="alert">{{ error() }}</p>
   }
 
-  @if (active.isLoading()) {
+  <!-- The page reloads after every check, so "Loading" shows only before the first answer. -->
+  @if (active.isLoading() && !active.hasValue()) {
     <p class="meta">Loading your active tour...</p>
   } @else if (active.error()) {
     <p class="alert">Could not load your active tour. Log in and try again.</p>
@@ -27,20 +28,6 @@
         </button>
       </div>
 
-      <div class="card map">
-        <app-map [pins]="pins()" [showPath]="true" />
-      </div>
-
-      @if (execution.firstKeyPoint; as point) {
-        <div class="card key-point">
-          <img [src]="point.image" [alt]="point.name" />
-          <div class="stack">
-            <h2>Next: {{ point.name }}</h2>
-            <p>{{ point.description }}</p>
-          </div>
-        </div>
-      }
-
       @if (confirming()) {
         <div class="card stack">
           <p>Do you really want to abandon this tour?</p>
@@ -59,6 +46,65 @@
           </div>
         </div>
       }
+
+      @if (execution.nextKeyPoint; as point) {
+        <div class="card key-point">
+          <img [src]="point.image" [alt]="point.name" />
+          <div class="stack">
+            <h2>Next: {{ point.name }}</h2>
+            <p>{{ point.description }}</p>
+          </div>
+        </div>
+      }
+
+      <div class="card map">
+        <app-map [pins]="pathToNext()" [showPath]="true" />
+      </div>
+
+      <section class="stack">
+        <h2>Completed key points</h2>
+
+        @if (execution.completedKeyPoints.length > 0) {
+          <ul class="completed">
+            @for (point of execution.completedKeyPoints; track point.id) {
+              <li class="card stack">
+                <button class="button" type="button" (click)="toggleSecret(point.id)">
+                  {{ point.order }}. {{ point.name }}
+                </button>
+                @if (openedKeyPointId() === point.id) {
+                  @if (point.secret) {
+                    <p>{{ point.secret }}</p>
+                  } @else {
+                    <p class="meta">Nothing to reveal</p>
+                  }
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="meta">No key points completed yet.</p>
+        }
+      </section>
+
+      <section class="card stack">
+        <h2>Your position</h2>
+        <app-position-simulator [pins]="keyPoints()" (positionChanged)="onPositionChanged($event)" />
+      </section>
+    } @else if (checkedTourId(); as tourId) {
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>Tour completed</h1>
+          <p>You reached every key point of the tour.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="button button--primary" [routerLink]="['/exploration', tourId]">
+          See discovered secrets
+        </a>
+        <a class="button" routerLink="/exploration">Browse tours</a>
+      </div>
     } @else {
       <div class="page-header">
         <div>

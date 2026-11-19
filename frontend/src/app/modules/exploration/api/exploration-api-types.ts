@@ -175,14 +175,30 @@ export interface TourExecutionKeyPointDto {
   location: LocationDto;
 }
 
+export interface CompletedKeyPointDto {
+  id: string;
+  order: number;
+  name: string;
+  completedAt: string;
+  secret: string | null;
+}
+
 export interface ActiveTourExecutionDto {
   id: string;
   tourId: string;
   tourName: string;
-  startLocation: LocationDto;
-  firstKeyPoint: TourExecutionKeyPointDto | null;
+  lastKnownLocation: LocationDto;
+  completedKeyPoints: CompletedKeyPointDto[];
+  nextKeyPoint: TourExecutionKeyPointDto | null;
 }
 
 export interface MyActiveTourExecutionDto {
   execution: ActiveTourExecutionDto | null;
+}
+
+export interface DiscoveredSecretDto {
+  keyPointId: string;
+  name: string;
+  secret: string | null;
+  completedAt: string;
 }

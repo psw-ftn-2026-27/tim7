@@ -85,8 +85,9 @@ carry versionless `PackageReference` lines. `Directory.Build.props` turns on nul
 reference types and treats warnings as errors, solution-wide. Both files are
 platform-owned.
 
-AutoMapper is pinned to 16.3.0 and runs without a license key; this is a settled
-platform decision. Do not change the version or add a license key.
+AutoMapper is pinned centrally in `Directory.Packages.props` and runs without a license
+key. Change the central version only when a platform team member updates the pinned
+dependency.
 
 ## Identity
 
