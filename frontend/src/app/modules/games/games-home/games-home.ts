@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Auth } from '../../../core/auth/auth';
 
 @Component({
   selector: 'app-games-home',
@@ -16,8 +17,11 @@ import { RouterLink } from '@angular/router';
         </div>
       </div>
 
-      <nav class="subnav" aria-label="Games pages">
+<nav class="subnav" aria-label="Games pages">
         <a routerLink="/games/challenges">Social challenges</a>
+        @if (isAdministrator()) {
+          <a routerLink="/games/location-challenges">Lokacijski izazovi</a>
+        }
       </nav>
 
       <div class="empty stack">
@@ -28,4 +32,10 @@ import { RouterLink } from '@angular/router';
     </div>
   `,
 })
-export class GamesHome {}
+export class GamesHome {
+  private readonly auth = inject(Auth);
+
+  protected readonly isAdministrator = computed(
+    () => this.auth.user()?.roles.includes('administrator') ?? false,
+  );
+}
