@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
+using Social.Application.ClubInvitations;
 using Social.Application.ClubMembership;
 using Social.Application.Clubs;
 using Social.Domain.Clubs;
@@ -52,13 +53,18 @@ internal sealed class ClubReadRepository : IClubReadRepository
                 club.Name,
                 club.Description,
                 club.Images,
+                club.Status,
                 club.Members
                     .OrderBy(member => member.UserId)
                     .Select(member => new ClubMemberDto(member.UserId, member.Role))
                     .ToList(),
                 MembershipState.None,
                 null,
-                club.JoinRequests.Select(request => request.UserId).ToList()))
+                club.JoinRequests.Select(request => request.UserId).ToList(),
+                club.Invitations
+                    .OrderBy(invitation => invitation.UserId)
+                    .Select(invitation => new ClubInvitationDto(invitation.UserId, null))
+                    .ToList()))
             .FirstOrDefaultAsync();
         if (club is null)
         {
@@ -66,6 +72,16 @@ internal sealed class ClubReadRepository : IClubReadRepository
         }
 
         return club with { Members = [new ClubMemberDto(club.OwnerId, ClubRole.Owner), .. club.Members] };
+    }
+
+    public Task<List<MyInvitationDto>> GetInvitationsOfUserAsync(Guid userId)
+    {
+        return _dbContext.Clubs
+            .Where(club => club.Invitations.Any(invitation => invitation.UserId == userId))
+            .OrderBy(club => club.Name)
+            .ThenBy(club => club.Id)
+            .Select(club => new MyInvitationDto(club.Id, club.Name))
+            .ToListAsync();
     }
 
     private static IQueryable<ClubDto> ProjectToDtos(IQueryable<Club> clubs)
@@ -76,6 +92,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
                 club.OwnerId,
                 club.Name,
                 club.Description,
-                club.Images));
+                club.Images,
+                club.Status));
     }
 }

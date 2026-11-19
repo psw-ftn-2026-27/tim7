@@ -1,10 +1,13 @@
 <ul class="comments">
   @for (comment of comments(); track comment.id) {
     <li class="stack">
+      <p class="meta">{{ comment.userEmail }} &middot; {{ comment.createdAt }}</p>
       <p>{{ comment.text }}</p>
-      <p class="meta">{{ comment.createdAt }}</p>
+      @if (comment.lastModifiedAt) {
+        <p class="meta">Edited {{ comment.lastModifiedAt }}</p>
+      }
 
-      @if (!readOnly() && comment.userId === currentUserId()) {
+      @if (!readOnly() && comment.userId === currentUserId() && isWithinEditWindow(comment)) {
         @if (editingCommentId() === comment.id) {
           <form class="comment-actions" (submit)="saveEdit($event, comment.id)">
             <input type="text" aria-label="Edit comment" [formField]="editForm.text" />

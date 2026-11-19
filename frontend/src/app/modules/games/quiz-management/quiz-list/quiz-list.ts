@@ -6,11 +6,11 @@ import { ChallengeListItemDto } from '../../api/games-api-types';
 
 @Component({
   imports: [RouterLink],
-  selector: 'app-challenge-list',
-  styleUrl: './challenge-list.scss',
-  templateUrl: './challenge-list.html',
+  selector: 'app-quiz-list',
+  styleUrl: './quiz-list.scss',
+  templateUrl: './quiz-list.html',
 })
-export class ChallengeList {
+export class QuizList {
   // Only the first page of the newest 20 challenges; paging controls come when there are more.
   protected readonly challenges = httpResource<PageResult<ChallengeListItemDto>>(
     () => '/api/games/quizzes?page=1&pageSize=20',

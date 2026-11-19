@@ -2,9 +2,8 @@
   width: 14rem;
 }
 
+// Only this page's difference from the global .actions: centred items that wrap.
 .actions {
   align-items: center;
-  display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
 }

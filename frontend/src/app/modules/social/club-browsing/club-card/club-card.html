@@ -1,5 +1,9 @@
 <article class="card stack">
-  <h3>{{ club().name }}</h3>
+  <h2>{{ club().name }}</h2>
+
+  @if (club().status === 'Closed') {
+    <span class="status">Closed</span>
+  }
 
   <p>{{ club().description }}</p>
 
@@ -11,5 +15,7 @@
     </div>
   }
 
-  <a [routerLink]="['/social/clubs', club().id]">Open club</a>
+  <p class="open">
+    <a class="button" [routerLink]="['/social/clubs', club().id]">Open club</a>
+  </p>
 </article>

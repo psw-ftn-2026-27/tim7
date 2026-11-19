@@ -1,7 +1,10 @@
 <div class="stack">
   <h1>Challenges</h1>
 
-  <p><a routerLink="/games/create">New quiz</a></p>
+  <p>
+    <a routerLink="/games/create">New quiz</a> ·
+    <a routerLink="/games/challenges">Social challenges</a>
+  </p>
 
   @if (challenges.isLoading()) {
     <p>Loading challenges...</p>

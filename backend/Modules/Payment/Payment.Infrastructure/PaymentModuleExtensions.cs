@@ -1,6 +1,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
+using Payment.Application.Carts;
+using Payment.Application.Tokens;
+using Payment.Application.TourPurchasing;
+using Payment.Contracts;
+using Payment.Domain.Checkout;
+using Payment.Infrastructure.Persistence.Carts;
+using Payment.Infrastructure.Persistence.Tokens;
 using Payment.Application.WalletAdministration;
 using Payment.Application.WalletBrowsing;
 using Payment.Application.WalletOpening;
@@ -21,7 +28,15 @@ public static class PaymentModuleExtensions
 
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IWalletReadRepository, WalletReadRepository>();
+        services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+        services.AddScoped<IPurchaseTokenRepository, PurchaseTokenRepository>();
+        services.AddScoped<IPurchaseTokenReadRepository, PurchaseTokenReadRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<PaymentDbContext>());
+
+        services.AddScoped<CartCheckout>();
+        services.AddScoped<IPaymentApi, PaymentApi>();
+        services.AddScoped<TourPurchasingService>();
+        services.AddScoped<TourPurchasingQueries>();
 
         services.AddScoped<WalletOpeningService>();
         services.AddScoped<WalletBrowsingQueries>();

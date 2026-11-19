@@ -7,6 +7,8 @@ export interface CommentDto {
   userId: string;
   text: string;
   createdAt: string;
+  lastModifiedAt: string | null;
+  userEmail: string | null;
 }
 
 export interface BlogDto {
@@ -46,12 +48,15 @@ export interface VoteDto {
   type: BlogVoteType;
 }
 
+export type ClubStatus = 'Active' | 'Closed';
+
 export interface ClubDto {
   id: string;
   ownerId: string;
   name: string;
   description: string;
   images: string[];
+  status: ClubStatus;
 }
 
 export interface CreateClubDto {
@@ -81,8 +86,25 @@ export interface ClubMembershipDto {
   name: string;
   description: string;
   images: string[];
+  status: ClubStatus;
   members: ClubMemberDto[];
   myState: MembershipState;
   myRole: ClubRole | null;
   pendingRequests: string[] | null;
+  sentInvitations: ClubInvitationDto[] | null;
+}
+
+export interface ClubInvitationDto {
+  userId: string;
+  userEmail: string | null;
+}
+
+export interface ExplorerDto {
+  id: string;
+  email: string;
+}
+
+export interface MyInvitationDto {
+  clubId: string;
+  clubName: string;
 }

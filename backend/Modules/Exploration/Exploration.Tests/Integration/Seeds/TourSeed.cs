@@ -14,7 +14,9 @@ internal static class TourSeed
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedBikeRideToPetrovaradin;
     public static readonly Tour PublishedOldTownWalk;
+    public static readonly Tour PublishedForestTrailStartingAtAHiddenSpring;
     public static readonly Tour ArchivedLakeside;
+    public static readonly Tour PublishedFreeTourWithHiddenFirstKeyPoint;
 
     static TourSeed()
     {
@@ -33,14 +35,14 @@ internal static class TourSeed
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
         PublishedMonasteries.AddKeyPoint("Krušedol", "Prvi manastir na turi.", "/images/exploration/seed-krusedol.jpg", new Location(45.1192, 19.9431), null, true);
         PublishedMonasteries.AddKeyPoint("Grgeteg", "Drugi manastir na turi.", "/images/exploration/seed-grgeteg.jpg", new Location(45.1408, 19.8956), null, false);
-        PublishedMonasteries.Publish(new TourPrice(true, null));
+        PublishedMonasteries.Publish(new TourPrice(false, 150m));
 
         PublishedBikeRideToPetrovaradin = new(WellKnownUsers.SecondExplorer, "Biciklom do Petrovaradina", "Vožnja kreće sa Keja žrtava racije, prelazi Varadinski most i penje se do Petrovaradinske tvrđave, uz obilazak Sahat kule i povratak kroz Podgrađe.", TourDifficulty.Easy, ["grad", "istorija"], new RecommendedGroupSize(1, 6));
         PublishedBikeRideToPetrovaradin.AddTransportTime(TransportMode.Bicycle, 40);
         PublishedBikeRideToPetrovaradin.AddTransportTime(TransportMode.Walking, 120);
         PublishedBikeRideToPetrovaradin.AddKeyPoint("Kej žrtava racije", "Polazna tačka vožnje.", "/images/exploration/seed-kej.jpg", new Location(45.2510, 19.8550), null, true);
         PublishedBikeRideToPetrovaradin.AddKeyPoint("Sahat kula", "Cilj vožnje, na vrhu tvrđave.", "/images/exploration/seed-sahat-kula.jpg", new Location(45.2532, 19.8614), null, false);
-        PublishedBikeRideToPetrovaradin.Publish(new TourPrice(true, null));
+        PublishedBikeRideToPetrovaradin.Publish(new TourPrice(false, 50m));
 
         PublishedOldTownWalk = new(WellKnownUsers.SecondExplorer, "Peške kroz staro jezgro", "Šetnja vodi od Trga slobode, kroz Zmaj Jovinu i Dunavsku ulicu, pored Vladičanskog dvora i Saborne crkve, do Dunavskog parka i Muzeja Vojvodine.", TourDifficulty.Easy, ["istorija"], new RecommendedGroupSize(2, 15));
         PublishedOldTownWalk.AddTransportTime(TransportMode.Walking, 75);
@@ -48,13 +50,25 @@ internal static class TourSeed
         PublishedOldTownWalk.AddKeyPoint("Dunavski park", "Kraj šetnje.", "/images/exploration/seed-dunavski-park.jpg", new Location(45.2547, 19.8508), null, false);
         PublishedOldTownWalk.Publish(new TourPrice(true, null));
 
+        PublishedForestTrailStartingAtAHiddenSpring = new(WellKnownUsers.SecondExplorer, "Šumska staza do Grgetega", "Staza počinje kod skrivenog izvora u šumi iznad Grgetega, spušta se kroz bukovu šumu do vidikovca i završava se pogledom na manastirsku crkvu.", TourDifficulty.Moderate, ["priroda"], new RecommendedGroupSize(2, 8));
+        PublishedForestTrailStartingAtAHiddenSpring.AddTransportTime(TransportMode.Walking, 80);
+        PublishedForestTrailStartingAtAHiddenSpring.AddKeyPoint("Skriveni izvor", "Polazna tačka staze, koju turista otkriva na licu mesta.", "/images/exploration/seed-skriveni-izvor.jpg", new Location(45.1600, 19.8800), "Izvor je iza stene obrasle mahovinom.", false);
+        PublishedForestTrailStartingAtAHiddenSpring.AddKeyPoint("Vidikovac nad Grgetegom", "Kraj staze, sa pogledom na manastir.", "/images/exploration/seed-vidikovac-grgeteg.jpg", new Location(45.1450, 19.8990), null, true);
+        PublishedForestTrailStartingAtAHiddenSpring.Publish(new TourPrice(false, 80m));
+
         ArchivedLakeside = new(WellKnownUsers.Explorer, "Obala Palićkog jezera", "Tura prati obalu Palićkog jezera od Velike terase do Ženskog štranda, uz obilazak Vodotornja i zoološkog vrta na severnoj strani jezera.", TourDifficulty.Easy, ["priroda", "jezero"], new RecommendedGroupSize(2, 8));
         ArchivedLakeside.AddTransportTime(TransportMode.Walking, 75);
         ArchivedLakeside.AddKeyPoint("Velika terasa", "Polazna tačka ture.", "/images/exploration/seed-velika-terasa.jpg", new Location(46.1003, 19.7620), null, true);
         ArchivedLakeside.AddKeyPoint("Ženski štrand", "Kraj ture.", "/images/exploration/seed-zenski-strand.jpg", new Location(46.0990, 19.7700), null, false);
         ArchivedLakeside.Publish(new TourPrice(true, null));
         ArchivedLakeside.Archive();
+
+        PublishedFreeTourWithHiddenFirstKeyPoint = new(WellKnownUsers.SecondExplorer, "Kanal Dunav-Tisa-Dunav", "Šetnja prati nasip kanala Dunav-Tisa-Dunav od ustave na Šajkaškoj strani do starog mosta, uz pogled na barske ptice i ribolovce.", TourDifficulty.Easy, ["priroda"], new RecommendedGroupSize(1, 10));
+        PublishedFreeTourWithHiddenFirstKeyPoint.AddTransportTime(TransportMode.Walking, 60);
+        PublishedFreeTourWithHiddenFirstKeyPoint.AddKeyPoint("Ustava", "Polazna tačka šetnje, skrivena dok se tura ne pokrene.", "/images/exploration/seed-ustava.jpg", new Location(45.2700, 19.8800), "Ispod ustave je stari natpis graditelja.", false);
+        PublishedFreeTourWithHiddenFirstKeyPoint.AddKeyPoint("Stari most", "Kraj šetnje.", "/images/exploration/seed-stari-most.jpg", new Location(45.2750, 19.8900), null, true);
+        PublishedFreeTourWithHiddenFirstKeyPoint.Publish(new TourPrice(true, null));
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, ArchivedLakeside];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedBikeRideToPetrovaradin, PublishedOldTownWalk, PublishedForestTrailStartingAtAHiddenSpring, ArchivedLakeside, PublishedFreeTourWithHiddenFirstKeyPoint];
 }

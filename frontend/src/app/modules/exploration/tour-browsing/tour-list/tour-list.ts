@@ -1,15 +1,15 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
 import {
   MyTourPreferencesDto,
-  SortDirection,
   TourDifficulty,
   TourDto,
   TourSearchDto,
+  TourSort,
   TransportMode,
 } from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
@@ -32,10 +32,51 @@ export class TourList {
     hard: false,
     tags: '',
     transport: '' as TransportMode | '',
-    difficultySort: '' as SortDirection | '',
+    minPrice: null as number | null,
+    maxPrice: null as number | null,
+    minLength: null as number | null,
+    maxLength: null as number | null,
+    sortBy: '' as TourSort | '',
   });
 
-  protected readonly form = form(this.model);
+  // Both prices are optional, so an empty field (null) is valid. Prices are whole EC.
+  protected readonly form = form(this.model, (path) => {
+    min(path.minPrice, 0, { message: 'Min price cannot be negative.' });
+    min(path.maxPrice, 0, { message: 'Max price cannot be negative.' });
+    validate(path.minPrice, ({ value }) => {
+      const minPrice = value();
+      if (minPrice !== null && !Number.isInteger(minPrice)) {
+        return { kind: 'notWhole', message: 'Min price must be a whole number of EC.' };
+      }
+      return null;
+    });
+    validate(path.maxPrice, ({ value }) => {
+      const maxPrice = value();
+      if (maxPrice !== null && !Number.isInteger(maxPrice)) {
+        return { kind: 'notWhole', message: 'Max price must be a whole number of EC.' };
+      }
+      return null;
+    });
+    validate(path.maxPrice, ({ value }) => {
+      const maxPrice = value();
+      const minPrice = this.model().minPrice;
+      if (maxPrice !== null && minPrice !== null && maxPrice < minPrice) {
+        return { kind: 'belowMin', message: 'Max price cannot be less than min price.' };
+      }
+      return null;
+    });
+    // Both lengths are optional too; a length is in kilometres and need not be whole.
+    min(path.minLength, 0, { message: 'Min length cannot be negative.' });
+    min(path.maxLength, 0, { message: 'Max length cannot be negative.' });
+    validate(path.maxLength, ({ value }) => {
+      const maxLength = value();
+      const minLength = this.model().minLength;
+      if (maxLength !== null && minLength !== null && maxLength < minLength) {
+        return { kind: 'belowMin', message: 'Max length cannot be less than min length.' };
+      }
+      return null;
+    });
+  });
 
   protected readonly page = signal(1);
 
@@ -64,12 +105,20 @@ export class TourList {
       difficulties: difficulties.length === 0 ? null : difficulties,
       tags: tags.length === 0 ? null : tags,
       transport: criteria.transport === '' ? null : criteria.transport,
-      difficultySort: criteria.difficultySort === '' ? null : criteria.difficultySort,
+      minPrice: criteria.minPrice,
+      maxPrice: criteria.maxPrice,
+      minLength: criteria.minLength,
+      maxLength: criteria.maxLength,
+      sortBy: criteria.sortBy === '' ? null : criteria.sortBy,
     };
   });
 
   // Reloads from the server whenever the criteria or the page change.
+  // Invalid criteria (a bad price range) return undefined, which means "do not read".
   protected readonly tours = httpResource<PageResult<TourDto>>(() => {
+    if (!this.form().valid()) {
+      return undefined;
+    }
     const search = this.search();
     const params = new URLSearchParams();
     params.set('page', String(this.page()));
@@ -86,8 +135,20 @@ export class TourList {
     if (search.transport !== null) {
       params.set('transport', search.transport);
     }
-    if (search.difficultySort !== null) {
-      params.set('difficultySort', search.difficultySort);
+    if (search.minPrice !== null) {
+      params.set('minPrice', String(search.minPrice));
+    }
+    if (search.maxPrice !== null) {
+      params.set('maxPrice', String(search.maxPrice));
+    }
+    if (search.minLength !== null) {
+      params.set('minLength', String(search.minLength));
+    }
+    if (search.maxLength !== null) {
+      params.set('maxLength', String(search.maxLength));
+    }
+    if (search.sortBy !== null) {
+      params.set('sortBy', search.sortBy);
     }
     return `/api/exploration/tours/published?${params}`;
   });
@@ -116,7 +177,7 @@ export class TourList {
     this.page.set(1);
   }
 
-  // Copies the saved difficulties, transport and tags into the filters; name and sort stay.
+  // Copies the saved difficulties, transport and tags into the filters; name, prices, lengths and sort stay.
   protected applyMyPreferences(): void {
     const preferences = this.myPreferences.value()?.preferences ?? null;
     if (preferences === null) {
@@ -131,7 +192,11 @@ export class TourList {
       hard: preferences.difficulties.includes('Hard'),
       tags: preferences.tags.join(', '),
       transport: preferences.preferredTransportMode ?? '',
-      difficultySort: criteria.difficultySort,
+      minPrice: criteria.minPrice,
+      maxPrice: criteria.maxPrice,
+      minLength: criteria.minLength,
+      maxLength: criteria.maxLength,
+      sortBy: criteria.sortBy,
     });
     this.backToFirstPage();
   }

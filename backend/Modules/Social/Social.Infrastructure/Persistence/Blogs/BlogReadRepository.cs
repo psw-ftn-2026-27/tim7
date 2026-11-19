@@ -53,7 +53,7 @@ internal sealed class BlogReadRepository : IBlogReadRepository
                 blog.Status,
                 blog.LastModifiedAt,
                 blog.Comments
-                    .Select(comment => new CommentDto(comment.Id, comment.UserId, comment.Text, comment.CreatedAt))
+                    .Select(comment => new CommentDto(comment.Id, comment.UserId, comment.Text, comment.CreatedAt, comment.LastModifiedAt, null))
                     .ToList(),
                 blog.Votes.Count(vote => vote.Type == BlogVoteType.Upvote)
                     - blog.Votes.Count(vote => vote.Type == BlogVoteType.Downvote),

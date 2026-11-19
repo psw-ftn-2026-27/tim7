@@ -15,3 +15,12 @@
 .card > a {
   align-self: flex-start;
 }
+
+// The button stays at the bottom, so cards of different length end alike.
+article {
+  height: 100%;
+}
+
+.open {
+  margin-top: auto;
+}

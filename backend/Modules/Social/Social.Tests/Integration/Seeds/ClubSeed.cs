@@ -15,6 +15,10 @@ internal static class ClubSeed
     public static readonly Club RunnersWithMemberAndPendingRequest;
     public static readonly Club SwimmersWithExplorerMemberAndPendingRequest;
     public static readonly Club ClimbersWithExplorerModeratorAndPendingRequest;
+    public static readonly Club ClosedKayakers;
+    public static readonly Club WalkersWithDemoMember;
+    public static readonly Club PaintersWithInvitationsAndPendingRequest;
+    public static readonly Club SingersWithDemoMemberAndDemoInvitation;
 
     static ClubSeed()
     {
@@ -33,7 +37,24 @@ internal static class ClubSeed
         ClimbersWithExplorerModeratorAndPendingRequest.AcceptRequest(WellKnownUsers.SecondExplorer, WellKnownUsers.Explorer);
         ClimbersWithExplorerModeratorAndPendingRequest.PromoteToModerator(WellKnownUsers.SecondExplorer, WellKnownUsers.Explorer);
         ClimbersWithExplorerModeratorAndPendingRequest.RequestToJoin(WellKnownUsers.Administrator);
+
+        ClosedKayakers = new(WellKnownUsers.Explorer, "Kajakaši Tise", "Veslanje kajakom niz Tisu.", ["https://example.com/tisa.jpg"]);
+        ClosedKayakers.Close(WellKnownUsers.Explorer);
+
+        WalkersWithDemoMember = new(WellKnownUsers.Explorer, "Šetači Petrovaradina", "Večernje šetnje po Petrovaradinskoj tvrđavi.", ["https://example.com/petrovaradin.jpg"]);
+        WalkersWithDemoMember.RequestToJoin(DemoUsers.Explorer1);
+        WalkersWithDemoMember.AcceptRequest(WellKnownUsers.Explorer, DemoUsers.Explorer1);
+
+        PaintersWithInvitationsAndPendingRequest = new(WellKnownUsers.Explorer, "Slikari Sremskih Karlovaca", "Slikanje u prirodi oko Sremskih Karlovaca.", ["https://example.com/karlovci.jpg"]);
+        PaintersWithInvitationsAndPendingRequest.RequestToJoin(WellKnownUsers.SecondExplorer);
+        PaintersWithInvitationsAndPendingRequest.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+        PaintersWithInvitationsAndPendingRequest.Invite(WellKnownUsers.Explorer, DemoUsers.Explorer2);
+
+        SingersWithDemoMemberAndDemoInvitation = new(WellKnownUsers.Explorer, "Pevači Novog Sada", "Pevanje narodnih pesama na Ribljoj pijaci.", ["https://example.com/riblja-pijaca.jpg"]);
+        SingersWithDemoMemberAndDemoInvitation.RequestToJoin(DemoUsers.Explorer1);
+        SingersWithDemoMemberAndDemoInvitation.AcceptRequest(WellKnownUsers.Explorer, DemoUsers.Explorer1);
+        SingersWithDemoMemberAndDemoInvitation.Invite(WellKnownUsers.Explorer, DemoUsers.Explorer2);
     }
 
-    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest, SwimmersWithExplorerMemberAndPendingRequest, ClimbersWithExplorerModeratorAndPendingRequest];
+    public static Club[] All => [FruskaGoraHikers, OldTownPhotographers, SecondExplorersCyclists, BirdWatchers, SecondExplorersBirdWatchers, RunnersWithMemberAndPendingRequest, SwimmersWithExplorerMemberAndPendingRequest, ClimbersWithExplorerModeratorAndPendingRequest, ClosedKayakers, WalkersWithDemoMember, PaintersWithInvitationsAndPendingRequest, SingersWithDemoMemberAndDemoInvitation];
 }

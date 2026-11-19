@@ -28,6 +28,13 @@ public class ClubTests
         return club;
     }
 
+    private static Club CreateClosedClubWithModeratorAndMember()
+    {
+        var club = CreateClubWithModeratorAndMember();
+        club.Close(WellKnownUsers.Explorer);
+        return club;
+    }
+
     [Theory]
     [InlineData("", "Vikend ture po stazama Fruške gore.")]
     [InlineData("   ", "Vikend ture po stazama Fruške gore.")]
@@ -297,5 +304,216 @@ public class ClubTests
 
         removing.Should().Throw<NotFoundException>();
         club.OwnerId.Should().Be(WellKnownUsers.Explorer);
+    }
+
+    [Fact]
+    public void Owner_closes_the_club_and_no_request_stays_pending()
+    {
+        var club = CreateClub();
+        club.RequestToJoin(WellKnownUsers.SecondExplorer);
+
+        club.Close(WellKnownUsers.Explorer);
+
+        club.Status.Should().Be(ClubStatus.Closed);
+        club.JoinRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void User_who_is_not_the_owner_cannot_close_the_club()
+    {
+        var club = CreateClubWithModeratorAndMember();
+
+        var closing = () => club.Close(WellKnownUsers.SecondExplorer);
+
+        closing.Should().Throw<DomainException>();
+        club.Status.Should().Be(ClubStatus.Active);
+    }
+
+    [Fact]
+    public void Closed_club_cannot_be_closed_again()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var closing = () => club.Close(WellKnownUsers.Explorer);
+
+        closing.Should().Throw<DomainException>();
+        club.Status.Should().Be(ClubStatus.Closed);
+    }
+
+    [Fact]
+    public void Nobody_can_request_to_join_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+        var userId = Guid.NewGuid();
+
+        var requesting = () => club.RequestToJoin(userId);
+
+        requesting.Should().Throw<DomainException>();
+        club.HasPendingRequest(userId).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Owner_cannot_promote_a_member_of_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var promoting = () => club.PromoteToModerator(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+
+        promoting.Should().Throw<DomainException>();
+        club.Members.Should().ContainSingle(member =>
+            member.UserId == WellKnownUsers.Administrator && member.Role == ClubRole.Member);
+    }
+
+    [Fact]
+    public void Owner_cannot_transfer_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var transferring = () => club.TransferOwnership(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        transferring.Should().Throw<DomainException>();
+        club.OwnerId.Should().Be(WellKnownUsers.Explorer);
+    }
+
+    [Fact]
+    public void Owner_cannot_remove_a_member_of_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        var removing = () => club.RemoveMember(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+
+        removing.Should().Throw<DomainException>();
+        club.IsMember(WellKnownUsers.Administrator).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Owner_changes_the_name_description_and_images_of_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+
+        club.Update("Planinari i šetači", "Ture i šetnje po Fruškoj gori.", ["https://example.com/vidikovac.jpg"]);
+
+        club.Name.Should().Be("Planinari i šetači");
+        club.Description.Should().Be("Ture i šetnje po Fruškoj gori.");
+        club.Images.Should().Equal("https://example.com/vidikovac.jpg");
+    }
+
+    [Fact]
+    public void Owner_invites_a_user_who_then_has_a_pending_invitation()
+    {
+        var club = CreateClub();
+
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.Invitations.Should().ContainSingle(invitation => invitation.UserId == WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
+    public void User_who_is_not_the_owner_cannot_invite()
+    {
+        var club = CreateClubWithModeratorAndMember();
+        var userId = Guid.NewGuid();
+
+        var inviting = () => club.Invite(WellKnownUsers.SecondExplorer, userId);
+
+        inviting.Should().Throw<DomainException>();
+        club.Invitations.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Nobody_can_be_invited_to_a_closed_club()
+    {
+        var club = CreateClosedClubWithModeratorAndMember();
+        var userId = Guid.NewGuid();
+
+        var inviting = () => club.Invite(WellKnownUsers.Explorer, userId);
+
+        inviting.Should().Throw<DomainException>();
+        club.Invitations.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Member_of_the_club_cannot_be_invited()
+    {
+        var club = CreateClubWithMember(WellKnownUsers.SecondExplorer);
+
+        var inviting = () => club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        inviting.Should().Throw<DomainException>();
+        club.Invitations.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void User_with_a_pending_invitation_cannot_be_invited_again()
+    {
+        var club = CreateClub();
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        var inviting = () => club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        inviting.Should().Throw<DomainException>();
+        club.Invitations.Should().ContainSingle(invitation => invitation.UserId == WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
+    public void Accepted_invitation_makes_the_user_a_regular_member_and_removes_their_invitation_and_request()
+    {
+        var club = CreateClub();
+        club.RequestToJoin(WellKnownUsers.SecondExplorer);
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.AcceptInvitation(WellKnownUsers.SecondExplorer);
+
+        club.Members.Should().ContainSingle(member =>
+            member.UserId == WellKnownUsers.SecondExplorer && member.Role == ClubRole.Member);
+        club.Invitations.Should().NotContain(invitation => invitation.UserId == WellKnownUsers.SecondExplorer);
+        club.JoinRequests.Should().NotContain(request => request.UserId == WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
+    public void Invitation_that_does_not_exist_cannot_be_accepted()
+    {
+        var club = CreateClub();
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.Administrator);
+
+        var accepting = () => club.AcceptInvitation(WellKnownUsers.SecondExplorer);
+
+        accepting.Should().Throw<NotFoundException>();
+        club.IsMember(WellKnownUsers.SecondExplorer).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Rejected_invitation_disappears_and_the_user_is_not_a_member()
+    {
+        var club = CreateClub();
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.RejectInvitation(WellKnownUsers.SecondExplorer);
+
+        club.Invitations.Should().NotContain(invitation => invitation.UserId == WellKnownUsers.SecondExplorer);
+        club.IsMember(WellKnownUsers.SecondExplorer).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Accepting_a_request_to_join_also_removes_the_invitation_of_the_same_user()
+    {
+        var club = CreateClub();
+        club.RequestToJoin(WellKnownUsers.SecondExplorer);
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.AcceptRequest(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.Invitations.Should().NotContain(invitation => invitation.UserId == WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
+    public void Owner_closes_the_club_and_no_invitation_stays_pending()
+    {
+        var club = CreateClub();
+        club.Invite(WellKnownUsers.Explorer, WellKnownUsers.SecondExplorer);
+
+        club.Close(WellKnownUsers.Explorer);
+
+        club.Invitations.Should().BeEmpty();
     }
 }

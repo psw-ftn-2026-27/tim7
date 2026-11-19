@@ -73,6 +73,9 @@ namespace Social.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("text");
@@ -108,6 +111,13 @@ namespace Social.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Active");
 
                     b.HasKey("Id");
 
@@ -183,6 +193,28 @@ namespace Social.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Social.Domain.Clubs.Club", b =>
                 {
+                    b.OwnsMany("Social.Domain.Clubs.ClubInvitation", "Invitations", b1 =>
+                        {
+                            b1.Property<Guid>("ClubId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("ClubId", "Id");
+
+                            b1.ToTable("ClubInvitations", "social");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ClubId");
+                        });
+
                     b.OwnsMany("Social.Domain.Clubs.JoinRequest", "JoinRequests", b1 =>
                         {
                             b1.Property<Guid>("ClubId")
@@ -204,6 +236,8 @@ namespace Social.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("ClubId");
                         });
+
+                    b.Navigation("Invitations");
 
                     b.Navigation("JoinRequests");
                 });

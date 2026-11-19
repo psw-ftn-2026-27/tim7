@@ -15,6 +15,10 @@ internal static class ClubConfiguration
     private static void ConfigureClub(EntityTypeBuilder<Club> builder)
     {
         builder.Property(club => club.Name).HasMaxLength(200);
+        builder.Property(club => club.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(ClubStatus.Active);
 
         builder.HasMany(club => club.Members)
             .WithOne()
@@ -27,6 +31,12 @@ internal static class ClubConfiguration
         {
             joinRequests.ToTable("ClubJoinRequests");
             joinRequests.WithOwner().HasForeignKey("ClubId");
+        });
+
+        builder.OwnsMany(club => club.Invitations, invitations =>
+        {
+            invitations.ToTable("ClubInvitations");
+            invitations.WithOwner().HasForeignKey("ClubId");
         });
     }
 

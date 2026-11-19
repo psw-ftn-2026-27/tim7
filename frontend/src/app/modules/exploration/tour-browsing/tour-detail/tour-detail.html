@@ -1,51 +1,61 @@
 <div class="stack">
-  <p><a routerLink="/exploration">Back to tours</a></p>
+  <p><a class="back" routerLink="/exploration">Back to tours</a></p>
 
   @if (tour.isLoading()) {
-    <p>Loading tour...</p>
+    <p class="meta">Loading tour...</p>
   } @else if (tour.statusCode() === 404) {
-    <p class="error">Tour not found</p>
+    <p class="alert">Tour not found</p>
   } @else if (tour.error()) {
-    <p class="error">Could not load the tour. Log in and try again.</p>
+    <p class="alert">Could not load the tour. Log in and try again.</p>
   } @else {
     @if (tour.value(); as current) {
-      <h1>{{ current.name }}</h1>
-
-      <p class="meta">Difficulty: {{ current.difficulty }}</p>
-
-      <p>{{ current.description }}</p>
-
-      <p>
-        Length:
-        @if (current.length) {
-          {{ current.length.kilometers }} km
-        } @else {
-          <span class="meta">not available</span>
+      <div class="page-header">
+        <div>
+          <span class="badge badge--exploration">Exploration</span>
+          <h1>{{ current.name }}</h1>
+          <p>
+            Difficulty: <strong>{{ current.difficulty }}</strong> ·
+            @if (current.length) {
+              {{ current.length.kilometers }} km
+            } @else {
+              Length not available
+            }
+            · {{ current.keyPoints.length }} key points
+          </p>
+        </div>
+        @if (!current.isFree) {
+          <a class="button button--primary" [routerLink]="['/payment/tours', current.id]">Buy</a>
         }
-      </p>
+      </div>
 
-      @if (current.tags.length > 0) {
-        <ul class="tags">
-          @for (tag of current.tags; track tag) {
-            <li>{{ tag }}</li>
-          }
-        </ul>
-      }
+      <div class="card stack">
+        <p>{{ current.description }}</p>
 
-      @if (current.transportTimes.length > 0) {
-        <ul class="times">
-          @for (time of current.transportTimes; track time.transport) {
-            <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
-          }
-        </ul>
-      } @else {
-        <p class="meta">No transport times yet.</p>
-      }
+        @if (current.tags.length > 0) {
+          <ul class="tags">
+            @for (tag of current.tags; track tag) {
+              <li>{{ tag }}</li>
+            }
+          </ul>
+        }
+
+        @if (current.transportTimes.length > 0) {
+          <ul class="times">
+            @for (time of current.transportTimes; track time.transport) {
+              <li>{{ time.transport }}: {{ time.minutes }} min</li>
+            }
+          </ul>
+        } @else {
+          <p class="times">No transport times yet.</p>
+        }
+      </div>
 
       @if (current.keyPoints.length > 0) {
         <h2>Key points</h2>
 
-        <app-map [pins]="pins()" />
+        <div class="card map">
+          <app-map [pins]="pins()" />
+        </div>
 
         <ul class="key-points">
           @for (point of current.keyPoints; track point.id) {
@@ -63,6 +73,71 @@
           }
         </ul>
       }
+
+      <!-- Shown only when the tourist has completed at least one key point of this tour. -->
+      @if (secrets.hasValue() && secrets.value().length > 0) {
+        <h2>Discovered secrets</h2>
+
+        <ul class="key-points">
+          @for (secret of secrets.value(); track secret.keyPointId) {
+            <li class="card stack">
+              <h3>{{ secret.name }}</h3>
+              @if (secret.secret) {
+                <p>{{ secret.secret }}</p>
+              } @else {
+                <p class="meta">Nothing to reveal</p>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <section class="card stack">
+        <h2>Start the tour</h2>
+
+        @if (active.isLoading()) {
+          <p class="meta">Loading your active tour...</p>
+        } @else if (active.error()) {
+          <p class="alert">Could not load your active tour.</p>
+        } @else {
+          <p class="meta">Click on the map where you are.</p>
+
+          <app-map [picking]="true" (locationPicked)="onLocationPicked($event)" />
+
+          @if (active.value()?.execution; as execution) {
+            @if (execution.tourId === current.id) {
+              <p>
+                <a class="button button--primary" routerLink="/exploration/active">Continue tour</a>
+              </p>
+            } @else {
+              <p class="meta">Your active tour is {{ execution.tourName }}.</p>
+              <p><a class="button" routerLink="/exploration/active">Continue that tour</a></p>
+              @if (startError()) {
+                <p class="alert">{{ startError() }}</p>
+              }
+              <p>
+                <button class="button button--primary" type="button" [disabled]="true">
+                  Start tour
+                </button>
+              </p>
+            }
+          } @else {
+            @if (startError()) {
+              <p class="alert">{{ startError() }}</p>
+            }
+            <p>
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="!canStart()"
+                (click)="start()"
+              >
+                Start tour
+              </button>
+            </p>
+          }
+        }
+      </section>
     }
   }
 </div>

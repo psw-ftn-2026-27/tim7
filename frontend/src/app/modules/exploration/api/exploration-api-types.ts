@@ -4,7 +4,11 @@ export type TourStatus = 'Draft' | 'Published' | 'Archived';
 
 export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
-export type SortDirection = 'Ascending' | 'Descending';
+export type TourSort =
+  | 'DifficultyAscending'
+  | 'DifficultyDescending'
+  | 'PriceAscending'
+  | 'PriceDescending';
 
 export interface TransportTimeDto {
   transport: TransportMode;
@@ -102,6 +106,7 @@ export interface PublishedTourDto {
   length: TourLengthDto | null;
   transportTimes: TransportTimeDto[];
   keyPoints: PublicKeyPointDto[];
+  isFree: boolean;
 }
 
 export interface TourPriceDto {
@@ -131,5 +136,69 @@ export interface TourSearchDto {
   difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transport: TransportMode | null;
-  difficultySort: SortDirection | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  minLength: number | null;
+  maxLength: number | null;
+  sortBy: TourSort | null;
+}
+
+export interface TourOnMapDto {
+  tour: TourDto;
+  firstPublicKeyPointLocation: LocationDto | null;
+}
+
+export interface RecordLocationSearchDto {
+  center: LocationDto;
+  radiusKilometers: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transport: TransportMode | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  minLength: number | null;
+  maxLength: number | null;
+  resultCount: number;
+}
+
+export interface StartTourDto {
+  tourId: string;
+  startLocation: LocationDto;
+}
+
+export interface TourExecutionKeyPointDto {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: LocationDto;
+}
+
+export interface CompletedKeyPointDto {
+  id: string;
+  order: number;
+  name: string;
+  completedAt: string;
+  secret: string | null;
+}
+
+export interface ActiveTourExecutionDto {
+  id: string;
+  tourId: string;
+  tourName: string;
+  lastKnownLocation: LocationDto;
+  completedKeyPoints: CompletedKeyPointDto[];
+  nextKeyPoint: TourExecutionKeyPointDto | null;
+}
+
+export interface MyActiveTourExecutionDto {
+  execution: ActiveTourExecutionDto | null;
+}
+
+export interface DiscoveredSecretDto {
+  keyPointId: string;
+  name: string;
+  secret: string | null;
+  completedAt: string;
 }
