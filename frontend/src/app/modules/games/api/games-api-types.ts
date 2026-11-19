@@ -33,6 +33,7 @@ export interface QuizDto {
   instructions: string | null;
   xp: number | null;
   status: QuizStatus;
+  location: LocationDto | null;
   questions: QuestionDto[];
 }
 

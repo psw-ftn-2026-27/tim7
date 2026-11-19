@@ -17,6 +17,7 @@ internal static class QuizConfiguration
     {
         builder.Property(quiz => quiz.Name).HasMaxLength(200);
         builder.Property(quiz => quiz.Status).HasConversion<string>().HasMaxLength(20);
+        builder.ComplexProperty(quiz => quiz.Location);
         builder.HasMany(quiz => quiz.Questions).WithOne().IsRequired().OnDelete(DeleteBehavior.Cascade);
     }
 

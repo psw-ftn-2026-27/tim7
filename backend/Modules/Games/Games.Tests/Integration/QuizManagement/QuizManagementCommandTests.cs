@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Games.Application.LocationChallenges;
 using Games.Application.QuizManagement;
+using Games.Domain.LocationChallenges;
 using Games.Domain.Quizzes;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;
@@ -25,6 +27,7 @@ public class QuizManagementCommandTests : BaseIntegrationTest
 
         yield return [HttpMethod.Post.Method, BaseUrl];
         yield return [HttpMethod.Put.Method, quizUrl];
+        yield return [HttpMethod.Put.Method, $"{quizUrl}/location"];
         yield return [HttpMethod.Post.Method, $"{quizUrl}/questions"];
         yield return [HttpMethod.Delete.Method, questionUrl];
         yield return [HttpMethod.Post.Method, $"{questionUrl}/answer-options"];
@@ -170,6 +173,48 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         var stored = LoadQuiz(assertContext, QuizSeed.CapitalsQuiz.Id);
         stored.Questions[0].AnswerOptions.Single(option => option.Id == noviSad.Id).IsCorrect.Should().BeTrue();
         stored.Questions[0].AnswerOptions.Single(option => option.Id == belgrade.Id).IsCorrect.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Administrator_sets_the_location_of_a_draft_quiz()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = new LocationDto(45.2551, 19.8452);
+
+        var response = await client.PutAsJsonAsync($"{BaseUrl}/{QuizSeed.CapitalsQuiz.Id}/location", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = LoadQuiz(assertContext, QuizSeed.CapitalsQuiz.Id);
+        stored.Location.Should().Be(new Location(45.2551, 19.8452));
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_set_the_location_of_a_published_quiz()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = new LocationDto(44.8176, 20.4569);
+
+        var response = await client.PutAsJsonAsync($"{BaseUrl}/{QuizSeed.PublishedRiversQuiz.Id}/location", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = LoadQuiz(assertContext, QuizSeed.PublishedRiversQuiz.Id);
+        stored.Location.Should().Be(QuizSeed.PublishedRiversQuiz.Location);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_set_the_location_of_a_quiz_that_does_not_exist()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var missingQuizId = Guid.NewGuid();
+        var request = new LocationDto(44.8176, 20.4569);
+
+        var response = await client.PutAsJsonAsync($"{BaseUrl}/{missingQuizId}/location", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.Quizzes.Should().NotContain(quiz => quiz.Id == missingQuizId);
     }
 
     [Fact]

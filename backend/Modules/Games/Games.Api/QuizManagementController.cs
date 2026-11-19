@@ -1,3 +1,4 @@
+using Games.Application.LocationChallenges;
 using Games.Application.QuizManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,13 @@ public sealed class QuizManagementController : ControllerBase
     public async Task<ActionResult> UpdateDetails(Guid id, QuizDetailsDto dto)
     {
         await _managementService.UpdateDetailsAsync(id, dto);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/location")]
+    public async Task<ActionResult> SetLocation(Guid id, LocationDto dto)
+    {
+        await _managementService.SetLocationAsync(id, dto);
         return NoContent();
     }
 

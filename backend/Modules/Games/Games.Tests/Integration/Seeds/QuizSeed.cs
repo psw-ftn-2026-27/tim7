@@ -1,3 +1,4 @@
+using Games.Domain.LocationChallenges;
 using Games.Domain.Quizzes;
 
 namespace Games.Tests.Integration.Seeds;
@@ -20,12 +21,14 @@ internal static class QuizSeed
         CapitalsQuiz.AddAnswerOption(CapitalsQuiz.Questions[0].Id, "Beograd");
         CapitalsQuiz.AddAnswerOption(CapitalsQuiz.Questions[0].Id, "Novi Sad");
         CapitalsQuiz.MarkAnswerOptionCorrect(CapitalsQuiz.Questions[0].Id, CapitalsQuiz.Questions[0].AnswerOptions[0].Id);
+        CapitalsQuiz.SetLocation(new Location(44.8176, 20.4569));
 
         PublishedRiversQuiz = new Quiz("Reke Srbije", "Izaberi tačan odgovor.", 40);
         PublishedRiversQuiz.AddQuestion("Koja reka protiče kroz Novi Sad?");
         PublishedRiversQuiz.AddAnswerOption(PublishedRiversQuiz.Questions[0].Id, "Dunav");
         PublishedRiversQuiz.AddAnswerOption(PublishedRiversQuiz.Questions[0].Id, "Sava");
         PublishedRiversQuiz.MarkAnswerOptionCorrect(PublishedRiversQuiz.Questions[0].Id, PublishedRiversQuiz.Questions[0].AnswerOptions[0].Id);
+        PublishedRiversQuiz.SetLocation(new Location(45.2551, 19.8452));
         PublishedRiversQuiz.Publish();
 
         RetiredBridgesQuiz = new Quiz("Mostovi Beograda", "Izaberi tačan odgovor.", 30);
@@ -33,6 +36,7 @@ internal static class QuizSeed
         RetiredBridgesQuiz.AddAnswerOption(RetiredBridgesQuiz.Questions[0].Id, "Stari savski most");
         RetiredBridgesQuiz.AddAnswerOption(RetiredBridgesQuiz.Questions[0].Id, "Most na Adi");
         RetiredBridgesQuiz.MarkAnswerOptionCorrect(RetiredBridgesQuiz.Questions[0].Id, RetiredBridgesQuiz.Questions[0].AnswerOptions[0].Id);
+        RetiredBridgesQuiz.SetLocation(new Location(44.8125, 20.4500));
         RetiredBridgesQuiz.Publish();
         RetiredBridgesQuiz.Retire();
 
@@ -41,6 +45,7 @@ internal static class QuizSeed
         ArchivedMonumentsQuiz.AddAnswerOption(ArchivedMonumentsQuiz.Questions[0].Id, "Svetozara Miletića");
         ArchivedMonumentsQuiz.AddAnswerOption(ArchivedMonumentsQuiz.Questions[0].Id, "Jovana Jovanovića Zmaja");
         ArchivedMonumentsQuiz.MarkAnswerOptionCorrect(ArchivedMonumentsQuiz.Questions[0].Id, ArchivedMonumentsQuiz.Questions[0].AnswerOptions[0].Id);
+        ArchivedMonumentsQuiz.SetLocation(new Location(45.2550, 19.8450));
         ArchivedMonumentsQuiz.Publish();
         ArchivedMonumentsQuiz.Retire();
         ArchivedMonumentsQuiz.Archive();

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Games.Application.LocationChallenges;
 using Games.Application.QuizManagement;
 using Games.Domain.Quizzes;
 using Games.Tests.Integration.Seeds;
@@ -44,6 +45,7 @@ public class QuizManagementQueryTests : BaseIntegrationTest
         quiz!.Name.Should().Be(QuizSeed.CapitalsQuiz.Name);
         quiz.Instructions.Should().Be(QuizSeed.CapitalsQuiz.Instructions);
         quiz.Status.Should().Be(QuizStatus.Draft);
+        quiz.Location.Should().Be(new LocationDto(QuizSeed.CapitalsQuiz.Location!.Latitude, QuizSeed.CapitalsQuiz.Location.Longitude));
         var question = quiz.Questions.Should().ContainSingle(item => item.Id == seededQuestion.Id).Subject;
         question.AnswerOptions.Should().HaveCount(seededQuestion.AnswerOptions.Count);
         question.AnswerOptions.Should().ContainSingle(option => option.IsCorrect)
