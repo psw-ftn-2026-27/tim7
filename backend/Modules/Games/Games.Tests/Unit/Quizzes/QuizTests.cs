@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.LocationChallenges;
 using Games.Domain.Quizzes;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -14,10 +15,19 @@ public class QuizTests
         return quiz;
     }
 
-    private static Quiz CreateCompleteQuiz()
+    private static readonly Location Belgrade = new(44.8176, 20.4569);
+
+    private static Quiz CreateCompleteQuizWithoutLocation()
     {
         var quiz = new Quiz("Prestonice Evrope", "Izaberi tačan odgovor.", 50);
         AddCompleteQuestion(quiz, "Glavni grad Srbije?", "Beograd", "Novi Sad");
+        return quiz;
+    }
+
+    private static Quiz CreateCompleteQuiz()
+    {
+        var quiz = CreateCompleteQuizWithoutLocation();
+        quiz.SetLocation(Belgrade);
         return quiz;
     }
 
@@ -71,6 +81,7 @@ public class QuizTests
             "add answer option" => () => quiz.AddAnswerOption(question.Id, "Niš"),
             "remove answer option" => () => quiz.RemoveAnswerOption(question.Id, question.AnswerOptions[1].Id),
             "mark answer option correct" => () => quiz.MarkAnswerOptionCorrect(question.Id, question.AnswerOptions[1].Id),
+            "set location" => () => quiz.SetLocation(new Location(45.2551, 19.8452)),
             _ => throw new ArgumentOutOfRangeException(nameof(modification))
         };
     }
@@ -252,6 +263,38 @@ public class QuizTests
     }
 
     [Fact]
+    public void Quiz_without_a_location_is_not_published()
+    {
+        var quiz = CreateCompleteQuizWithoutLocation();
+
+        var publication = () => quiz.Publish();
+
+        publication.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Fact]
+    public void Draft_quiz_gets_a_location()
+    {
+        var quiz = CreateCompleteQuizWithoutLocation();
+
+        quiz.SetLocation(Belgrade);
+
+        quiz.Location.Should().Be(Belgrade);
+    }
+
+    [Fact]
+    public void Location_of_a_draft_quiz_is_changed()
+    {
+        var quiz = CreateCompleteQuiz();
+        var noviSad = new Location(45.2551, 19.8452);
+
+        quiz.SetLocation(noviSad);
+
+        quiz.Location.Should().Be(noviSad);
+    }
+
+    [Fact]
     public void Quiz_without_questions_is_not_published()
     {
         var quiz = CreateCompleteQuiz();
@@ -386,6 +429,7 @@ public class QuizTests
     [InlineData("add answer option")]
     [InlineData("remove answer option")]
     [InlineData("mark answer option correct")]
+    [InlineData("set location")]
     public void Quiz_that_is_not_a_draft_cannot_be_changed(string modification)
     {
         var quiz = CreateQuizIn(QuizStatus.Published);
@@ -400,5 +444,6 @@ public class QuizTests
         quiz.Questions[0].AnswerOptions.Should().HaveCount(2);
         quiz.Questions[0].AnswerOptions[0].IsCorrect.Should().BeTrue();
         quiz.Questions[0].AnswerOptions[1].IsCorrect.Should().BeFalse();
+        quiz.Location.Should().Be(Belgrade);
     }
 }

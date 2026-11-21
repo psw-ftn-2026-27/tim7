@@ -1,3 +1,4 @@
+using Games.Domain.LocationChallenges;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -12,6 +13,7 @@ public sealed class Quiz : AggregateRoot
     public int? Xp { get; private set; }
     public QuizStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public Location? Location { get; private set; }
     public IReadOnlyList<Question> Questions => _questions;
 
     private Quiz()
@@ -75,6 +77,13 @@ public sealed class Quiz : AggregateRoot
         GetQuestion(questionId).MarkCorrect(answerOptionId);
     }
 
+    public void SetLocation(Location location)
+    {
+        EnsureDraft();
+
+        Location = location;
+    }
+
     public void Publish()
     {
         if (Status != QuizStatus.Draft)
@@ -88,6 +97,10 @@ public sealed class Quiz : AggregateRoot
         if (Xp is not > 0)
         {
             throw new DomainException("A quiz needs XP greater than zero to be published.");
+        }
+        if (Location is null)
+        {
+            throw new DomainException("A quiz needs a location to be published.");
         }
         if (_questions.Count == 0)
         {

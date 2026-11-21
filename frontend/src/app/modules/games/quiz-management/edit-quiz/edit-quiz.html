@@ -87,6 +87,41 @@
           </div>
         }
 
+        <div class="card stack">
+          <h2>Location</h2>
+
+          @if (locationError()) {
+            <p class="alert">{{ locationError() }}</p>
+          }
+
+          <app-map
+            [picking]="true"
+            [initialLocation]="current.location"
+            [circleRadiusKm]="locationRadiusKm"
+            (locationPicked)="pickedLocation.set($event)"
+          />
+
+          @if (current.location; as location) {
+            <p>
+              Location set: {{ location.latitude.toFixed(5) }},
+              {{ location.longitude.toFixed(5) }}
+            </p>
+          } @else {
+            <p class="meta">No location yet</p>
+          }
+
+          <div class="actions">
+            <button
+              class="button button--primary"
+              type="button"
+              [disabled]="!pickedLocation() || pending()"
+              (click)="saveLocation()"
+            >
+              Save location
+            </button>
+          </div>
+        </div>
+
         <h2>Questions</h2>
 
         @if (error()) {

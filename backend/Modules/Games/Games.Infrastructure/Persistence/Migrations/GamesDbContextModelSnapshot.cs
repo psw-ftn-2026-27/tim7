@@ -183,6 +183,15 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.Property<int?>("Xp")
                         .HasColumnType("integer");
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Location", "Games.Domain.Quizzes.Quiz.Location#Location", b1 =>
+                        {
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+                        });
+
                     b.HasKey("Id");
 
                     b.ToTable("Quizzes", "games");
