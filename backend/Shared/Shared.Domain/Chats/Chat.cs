@@ -32,6 +32,12 @@ public sealed class Chat : AggregateRoot
         IsLocked = true;
     }
 
+    // A place can reopen its chat, e.g. when an archived tour is reactivated.
+    public void Unlock()
+    {
+        IsLocked = false;
+    }
+
     public bool IsMuted(Guid userId)
     {
         return _mutedUsers.Any(muted => muted.UserId == userId);

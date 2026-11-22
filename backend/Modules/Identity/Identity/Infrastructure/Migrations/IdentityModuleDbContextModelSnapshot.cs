@@ -134,6 +134,23 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("FollowRequests", "identity");
                 });
 
+            modelBuilder.Entity("Identity.Core.UserPositions.UserPosition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserPositions", "identity");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -270,6 +287,31 @@ namespace Identity.Infrastructure.Migrations
                         .WithMany("Requests")
                         .HasForeignKey("ConnectionId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Identity.Core.UserPositions.UserPosition", b =>
+                {
+                    b.OwnsOne("Identity.Core.UserPositions.Coordinates", "Coordinates", b1 =>
+                        {
+                            b1.Property<Guid>("UserPositionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("UserPositionId");
+
+                            b1.ToTable("UserPositions", "identity");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserPositionId");
+                        });
+
+                    b.Navigation("Coordinates")
                         .IsRequired();
                 });
 

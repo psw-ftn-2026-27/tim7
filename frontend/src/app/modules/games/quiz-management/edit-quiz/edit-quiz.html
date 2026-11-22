@@ -1,0 +1,128 @@
+<div class="stack">
+  <p><a class="back" routerLink="/games">Back to quizzes</a></p>
+
+  @if (quiz.isLoading()) {
+    <p class="meta">Loading quiz...</p>
+  } @else if (quiz.statusCode() === 404) {
+    <p class="alert">This quiz does not exist.</p>
+  } @else if (quiz.error()) {
+    <p class="alert">Could not load the quiz. Log in as an administrator and try again.</p>
+  } @else {
+    @if (quiz.value(); as current) {
+      @if (current.status !== 'Draft') {
+        <p class="alert">This quiz is {{ current.status }} and can no longer be edited.</p>
+      } @else {
+        <div class="page-header">
+          <div>
+            <span class="badge badge--games">Games</span>
+            <h1>{{ current.name }}</h1>
+            <p>Build the quiz step by step; every change is saved at once.</p>
+          </div>
+        </div>
+
+        @if (editingDetails()) {
+          <form class="card stack" (submit)="saveDetails($event)">
+            <h2>Quiz details</h2>
+
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" type="text" [formField]="detailsForm.name" />
+            </div>
+
+            <div class="field">
+              <label for="instructions">Instructions (optional)</label>
+              <textarea
+                id="instructions"
+                rows="4"
+                [formField]="detailsForm.instructions"
+              ></textarea>
+            </div>
+
+            <div class="field">
+              <label for="xp">XP (optional)</label>
+              <input id="xp" type="number" [formField]="detailsForm.xp" />
+            </div>
+
+            @if (detailsError()) {
+              <p class="alert">{{ detailsError() }}</p>
+            }
+
+            <button class="button button--primary" type="submit" [disabled]="pending()">
+              Save
+            </button>
+          </form>
+        } @else {
+          <div class="card stack">
+            <h2>Quiz details</h2>
+            <p>Name: {{ current.name }}</p>
+            <p>
+              <span class="status">{{ current.status }}</span>
+            </p>
+            <p>
+              Instructions:
+              @if (current.instructions) {
+                {{ current.instructions }}
+              } @else {
+                <span class="meta">none</span>
+              }
+            </p>
+            <p>
+              XP:
+              @if (current.xp !== null) {
+                {{ current.xp }}
+              } @else {
+                <span class="meta">not set</span>
+              }
+            </p>
+            <div class="actions">
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="startEditDetails(current)"
+              >
+                Edit details
+              </button>
+            </div>
+          </div>
+        }
+
+        <h2>Questions</h2>
+
+        @if (error()) {
+          <p class="alert">{{ error() }}</p>
+        }
+
+        <ol class="questions">
+          @for (question of current.questions; track question.id) {
+            <li>
+              <app-quiz-question
+                [question]="question"
+                [pending]="pending()"
+                (remove)="removeQuestion(question)"
+                (addAnswerOption)="addAnswerOption(question, $event)"
+                (removeAnswerOption)="removeAnswerOption(question, $event)"
+                (markCorrect)="markCorrect(question, $event)"
+              />
+            </li>
+          } @empty {
+            <li class="meta">This quiz has no questions yet.</li>
+          }
+        </ol>
+
+        <form class="card stack" (submit)="addQuestion($event)">
+          <h2>Add question</h2>
+
+          <div class="field">
+            <label for="question-text">Text</label>
+            <input id="question-text" type="text" [formField]="questionForm.text" />
+          </div>
+
+          <button class="button button--primary" type="submit" [disabled]="pending()">
+            Add question
+          </button>
+        </form>
+      }
+    }
+  }
+</div>

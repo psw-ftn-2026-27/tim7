@@ -74,6 +74,24 @@
         </ul>
       }
 
+      <!-- Shown only when the tourist has completed at least one key point of this tour. -->
+      @if (secrets.hasValue() && secrets.value().length > 0) {
+        <h2>Discovered secrets</h2>
+
+        <ul class="key-points">
+          @for (secret of secrets.value(); track secret.keyPointId) {
+            <li class="card stack">
+              <h3>{{ secret.name }}</h3>
+              @if (secret.secret) {
+                <p>{{ secret.secret }}</p>
+              } @else {
+                <p class="meta">Nothing to reveal</p>
+              }
+            </li>
+          }
+        </ul>
+      }
+
       <section class="card stack">
         <h2>Start the tour</h2>
 

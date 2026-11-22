@@ -1,7 +1,9 @@
 ﻿using Exploration.Application;
+using Exploration.Domain.LocationSearches;
 using Exploration.Domain.TourExecutions;
 using Exploration.Domain.TourPreferences;
 using Exploration.Domain.Tours;
+using Exploration.Infrastructure.Persistence.LocationSearches;
 using Exploration.Infrastructure.Persistence.TourExecutions;
 using Exploration.Infrastructure.Persistence.TourPreferences;
 using Exploration.Infrastructure.Persistence.Tours;
@@ -15,6 +17,7 @@ internal sealed class ExplorationDbContext : DbContext, IUnitOfWork
 
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<TourPreference> TourPreferences => Set<TourPreference>();
+    public DbSet<LocationSearch> LocationSearches => Set<LocationSearch>();
     public DbSet<TourExecution> TourExecutions => Set<TourExecution>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -22,6 +25,7 @@ internal sealed class ExplorationDbContext : DbContext, IUnitOfWork
         builder.HasDefaultSchema("exploration");
         builder.ConfigureTours();
         builder.ConfigureTourPreferences();
+        builder.ConfigureLocationSearches();
         builder.ConfigureTourExecutions();
     }
 }
