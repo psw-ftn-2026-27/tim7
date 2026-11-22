@@ -1,4 +1,5 @@
 using Shared.Domain;
+using Shared.Domain.Chats;
 using Shared.Domain.Exceptions;
 
 namespace Social.Domain.Clubs;
@@ -63,6 +64,26 @@ public sealed class Club : AggregateRoot
     public bool CanResolveRequests(Guid userId)
     {
         return OwnerId == userId || IsModerator(userId);
+    }
+
+    // The club's chat is found by this context; the kind is local to the Social module.
+    public ChatContext ChatContext => new("club", Id);
+
+    // Only the owner and the members take part in the club's chat; the owner and the moderators are privileged.
+    public ChatParticipant ChatParticipantFor(Guid userId)
+    {
+        if (!IsMember(userId))
+        {
+            throw new DomainException("Only the owner and the members of a club take part in its chat.");
+        }
+
+        return new ChatParticipant(userId, CanResolveRequests(userId));
+    }
+
+    // Answers for former members too, whose messages stay in the chat, instead of throwing.
+    public bool CanBeMutedInChat(Guid userId)
+    {
+        return IsMember(userId) && !CanResolveRequests(userId);
     }
 
     public void Close(Guid userId)

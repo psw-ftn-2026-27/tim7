@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Chats;
+using Shared.Infrastructure.Chats;
 using Social.Application;
 using Social.Domain.Blogs;
 using Social.Domain.Clubs;
@@ -13,11 +15,15 @@ internal sealed class SocialDbContext : DbContext, IUnitOfWork
 
     public DbSet<Blog> Blogs => Set<Blog>();
     public DbSet<Club> Clubs => Set<Club>();
+    public DbSet<Chat> Chats => Set<Chat>();
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("social");
         builder.ConfigureBlogs();
         builder.ConfigureClubs();
+        builder.ConfigureChats();
+        builder.ConfigureMessages();
     }
 }
