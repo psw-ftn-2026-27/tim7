@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { SendMessageDto, StartTourDto } from '../api/exploration-api-types';
+import { RecordLocationSearchDto, SendMessageDto, StartTourDto } from '../api/exploration-api-types';
 
 // Starting a tour is served by the backend's TourExecutionTracking group,
 // but the command runs from the tour detail page, so it lives in this group's service.
@@ -36,5 +36,9 @@ export class TourBrowsing {
     await firstValueFrom(
       this.http.delete<void>(`/api/exploration/tours/${tourId}/chat/muted/${userId}`),
     );
+  }
+
+  async recordLocationSearch(dto: RecordLocationSearchDto): Promise<void> {
+    await firstValueFrom(this.http.post<void>('/api/exploration/tours/location-searches', dto));
   }
 }

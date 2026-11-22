@@ -14,19 +14,22 @@ public sealed class TourExecutionTrackingService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPaymentApi _paymentApi;
     private readonly TourExecutionStarter _tourExecutionStarter;
+    private readonly TourProgress _tourProgress;
 
     public TourExecutionTrackingService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
         IUnitOfWork unitOfWork,
         IPaymentApi paymentApi,
-        TourExecutionStarter tourExecutionStarter)
+        TourExecutionStarter tourExecutionStarter,
+        TourProgress tourProgress)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _unitOfWork = unitOfWork;
         _paymentApi = paymentApi;
         _tourExecutionStarter = tourExecutionStarter;
+        _tourProgress = tourProgress;
     }
 
     public async Task<Guid> StartTourAsync(Guid touristId, StartTourDto dto)
@@ -55,6 +58,17 @@ public sealed class TourExecutionTrackingService
             ?? throw new NotFoundException($"Tourist {touristId} has no active tour.");
 
         execution.Abandon();
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CheckPositionAsync(Guid touristId, LocationDto position)
+    {
+        var execution = await _tourExecutionRepository.GetActiveByTouristAsync(touristId)
+            ?? throw new NotFoundException($"Tourist {touristId} has no active tour.");
+        var tour = await _tourRepository.GetByIdAsync(execution.TourId)
+            ?? throw new NotFoundException($"Tour {execution.TourId} does not exist.");
+
+        _tourProgress.CheckPosition(execution, tour, new Location(position.Latitude, position.Longitude));
         await _unitOfWork.SaveChangesAsync();
     }
 }

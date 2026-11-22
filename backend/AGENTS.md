@@ -89,8 +89,9 @@ carry versionless `PackageReference` lines. `Directory.Build.props` turns on nul
 reference types and treats warnings as errors, solution-wide. Both files are
 platform-owned.
 
-AutoMapper is pinned to 16.3.0 and runs without a license key; this is a settled
-platform decision. Do not change the version or add a license key.
+AutoMapper is pinned centrally in `Directory.Packages.props` and runs without a license
+key. Change the central version only when a platform team member updates the pinned
+dependency.
 
 ## Identity
 
@@ -98,13 +99,16 @@ Identity is a deliberate exception to the module structure: one platform-owned p
 that students use but never modify or reference, plus `Identity.Contracts`, which other
 modules may reference like any other module's `Contracts`. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
-(`administrator`, `explorer`). Its `Core` folder also holds the module's one aggregate,
-`Connection` (following between users), with a `Following` use-case group that follows the
-application-layer patterns below; the details live in the project itself. `Core/IdentityApi`
+(`administrator`, `explorer`). Its `Core` folder also holds the module's two aggregates,
+each with a use-case group that follows the application-layer patterns below: `Connection`
+(following between users) with `Following`, and `UserPosition` (a user's one current
+position, marked by hand on a map until GPS exists) with `PositionSimulation`, open to any
+signed-in user; the details live in the project itself. `Core/IdentityApi`
 implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
 whether a user exists, finding a user by e-mail, which serves as the username, the
 users for a list of IDs (unknown IDs are left out, no error), and a search for at most ten
-explorers by part of the username (a blank text finds nobody). The search reads the role
+explorers by part of the username (a blank text finds nobody). It also returns the users a user
+follows (whose follow request they sent and the other accepted). The search reads the role
 tables through `IUserReadRepository` in `Core/Users`; who counts as an explorer is decided
 in one place, `Infrastructure/Users/ExplorerUsers`, shared with the search for users to follow.
 

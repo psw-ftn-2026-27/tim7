@@ -6,6 +6,7 @@ import { Chat, ChatMessage, ChatMutedUser, chatMessageForm } from '../../../../s
 import { Map, MapPin } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import {
+  DiscoveredSecretDto,
   MyActiveTourExecutionDto,
   PublishedTourDto,
   TourChatDto,
@@ -33,6 +34,11 @@ export class TourDetail {
   // The tourist's active session decides between "Start tour", "Continue tour" and a message.
   protected readonly active = httpResource<MyActiveTourExecutionDto>(
     () => '/api/exploration/tour-executions/active',
+  );
+
+  // Key points the tourist completed in any of their sessions of this tour, with their secrets.
+  protected readonly secrets = httpResource<DiscoveredSecretDto[]>(
+    () => `/api/exploration/tour-executions/discovered-secrets/${this.id()}`,
   );
 
   // Only some of the key points are shown, so the map gets pins without a path.

@@ -181,4 +181,58 @@ public class TourExecutionTrackingCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Checking_a_position_near_the_next_key_point_records_its_completion_and_the_tourists_last_position()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var nextKeyPoint = TourSeed.PublishedFreeTourWithHiddenFirstKeyPoint.KeyPoints[0];
+        var position = new LocationDto(nextKeyPoint.Location.Latitude, nextKeyPoint.Location.Longitude);
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", position);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == TourExecutionSeed.ExplorersActiveExecution.Id);
+        stored.LastKnownLocation.Should().Be(nextKeyPoint.Location);
+        var completion = stored.KeyPointCompletions.Should().ContainSingle().Subject;
+        completion.KeyPointId.Should().Be(nextKeyPoint.Id);
+        completion.CompletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task Checking_a_position_without_an_active_session_reports_that_it_does_not_exist_and_records_nothing()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var keyPoint = TourSeed.PublishedOldTownWalk.KeyPoints[0];
+        var position = new LocationDto(keyPoint.Location.Latitude, keyPoint.Location.Longitude);
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", position);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.TourExecutions.Single(execution => execution.Id == TourExecutionSeed.SecondExplorersAbandonedExecution.Id);
+        stored.KeyPointCompletions.Should().BeEmpty();
+        stored.LastKnownLocation.Should().Be(TourExecutionSeed.SecondExplorersAbandonedExecution.LastKnownLocation);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_check_a_position()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", StartLocation);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_check_a_position()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tour-executions/active/position-checks", StartLocation);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

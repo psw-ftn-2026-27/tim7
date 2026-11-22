@@ -137,7 +137,28 @@ export interface TourSearchDto {
   transport: TransportMode | null;
   minPrice: number | null;
   maxPrice: number | null;
+  minLength: number | null;
+  maxLength: number | null;
   sortBy: TourSort | null;
+}
+
+export interface TourOnMapDto {
+  tour: TourDto;
+  firstPublicKeyPointLocation: LocationDto | null;
+}
+
+export interface RecordLocationSearchDto {
+  center: LocationDto;
+  radiusKilometers: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transport: TransportMode | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  minLength: number | null;
+  maxLength: number | null;
+  resultCount: number;
 }
 
 export interface StartTourDto {
@@ -153,12 +174,21 @@ export interface TourExecutionKeyPointDto {
   location: LocationDto;
 }
 
+export interface CompletedKeyPointDto {
+  id: string;
+  order: number;
+  name: string;
+  completedAt: string;
+  secret: string | null;
+}
+
 export interface ActiveTourExecutionDto {
   id: string;
   tourId: string;
   tourName: string;
-  startLocation: LocationDto;
-  firstKeyPoint: TourExecutionKeyPointDto | null;
+  lastKnownLocation: LocationDto;
+  completedKeyPoints: CompletedKeyPointDto[];
+  nextKeyPoint: TourExecutionKeyPointDto | null;
 }
 
 export interface MyActiveTourExecutionDto {
@@ -189,4 +219,11 @@ export interface TourChatDto {
 
 export interface SendMessageDto {
   text: string;
+}
+
+export interface DiscoveredSecretDto {
+  keyPointId: string;
+  name: string;
+  secret: string | null;
+  completedAt: string;
 }

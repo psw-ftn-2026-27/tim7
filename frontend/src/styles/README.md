@@ -39,6 +39,10 @@ dodaje samo centriranje i pomeraj.
 
 ## Kontrolna lista
 
+Kad tvoj PR dodaje stranicu u `modules/<modul>/`, kopiraj ovu listu u opis PR-a i štikliraj
+je. PR odobrava član tvog podtima koji nije autor, po istoj listi, a zahtev za izmenu navodi
+stavku i mesto u kodu.
+
 Za stranicu na kojoj radiš proveri, čitajući samo njen kod:
 
 - [ ] Nema lokalne kopije deljenog obrasca: `.scss` stranice ne ponavlja pravila nijedne
