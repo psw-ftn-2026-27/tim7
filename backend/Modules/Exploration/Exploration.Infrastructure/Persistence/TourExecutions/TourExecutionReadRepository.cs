@@ -15,7 +15,8 @@ internal sealed class TourExecutionReadRepository : ITourExecutionReadRepository
         _dbContext = dbContext;
     }
 
-    // The tour is read whatever its status, and its first key point is the first by order whether it is public or not.
+    // The tour is read whatever its status, and its next key point is the first uncompleted by order whether it is public or not.
+    // Only the completed key points carry their secrets.
     public Task<ActiveTourExecutionDto?> GetActiveByTouristAsync(Guid touristId)
     {
         return _dbContext.TourExecutions
@@ -27,8 +28,22 @@ internal sealed class TourExecutionReadRepository : ITourExecutionReadRepository
                     execution.Id,
                     tour.Id,
                     tour.Name,
-                    new LocationDto(execution.StartLocation.Latitude, execution.StartLocation.Longitude),
+                    new LocationDto(execution.LastKnownLocation.Latitude, execution.LastKnownLocation.Longitude),
                     tour.KeyPoints
+                        .Where(keyPoint => execution.KeyPointCompletions.Any(completion => completion.KeyPointId == keyPoint.Id))
+                        .OrderBy(keyPoint => keyPoint.Order)
+                        .Select(keyPoint => new CompletedKeyPointDto(
+                            keyPoint.Id,
+                            keyPoint.Order,
+                            keyPoint.Name,
+                            execution.KeyPointCompletions
+                                .Where(completion => completion.KeyPointId == keyPoint.Id)
+                                .Select(completion => completion.CompletedAt)
+                                .First(),
+                            keyPoint.Secret))
+                        .ToList(),
+                    tour.KeyPoints
+                        .Where(keyPoint => !execution.KeyPointCompletions.Any(completion => completion.KeyPointId == keyPoint.Id))
                         .OrderBy(keyPoint => keyPoint.Order)
                         .Select(keyPoint => new TourExecutionKeyPointDto(
                             keyPoint.Id,
@@ -38,5 +53,27 @@ internal sealed class TourExecutionReadRepository : ITourExecutionReadRepository
                             new LocationDto(keyPoint.Location.Latitude, keyPoint.Location.Longitude)))
                         .FirstOrDefault()))
             .FirstOrDefaultAsync();
+    }
+
+    // Completions from all of the tourist's sessions of the tour, whatever their status; each key point once, with its earliest completion.
+    public Task<List<DiscoveredSecretDto>> GetDiscoveredSecretsAsync(Guid tourId, Guid touristId)
+    {
+        var completions = _dbContext.TourExecutions
+            .Where(execution => execution.TourId == tourId && execution.TouristId == touristId)
+            .SelectMany(execution => execution.KeyPointCompletions);
+
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId)
+            .SelectMany(tour => tour.KeyPoints)
+            .Where(keyPoint => completions.Any(completion => completion.KeyPointId == keyPoint.Id))
+            .OrderBy(keyPoint => keyPoint.Order)
+            .Select(keyPoint => new DiscoveredSecretDto(
+                keyPoint.Id,
+                keyPoint.Name,
+                keyPoint.Secret,
+                completions
+                    .Where(completion => completion.KeyPointId == keyPoint.Id)
+                    .Min(completion => completion.CompletedAt)))
+            .ToListAsync();
     }
 }

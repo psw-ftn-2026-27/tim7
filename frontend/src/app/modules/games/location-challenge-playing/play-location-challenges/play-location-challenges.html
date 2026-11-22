@@ -1,0 +1,89 @@
+<div class="stack">
+  <div class="page-header">
+    <div>
+      <span class="badge badge--games">Games</span>
+      <h1>Lokacijski izazovi</h1>
+      <p>Uđi u krug izazova i pronađi skrivene tačke sa fotografija.</p>
+    </div>
+    <button class="button button--primary" type="button" (click)="panelOpen.set(!panelOpen())">
+      {{ panelOpen() ? 'Zatvori panel' : 'Otvori panel' }}
+    </button>
+  </div>
+
+  @if (challenges.error()) {
+    <p class="alert">Izazove nije moguće učitati.</p>
+  }
+
+  <div class="layout">
+    <div class="stack">
+      <app-map
+        [pins]="startPins()"
+        [circleCenter]="circleCenter()"
+        [circleRadiusKm]="circleRadiusKm()"
+      />
+      <app-position-simulator [pins]="startPins()" (positionChanged)="onPositionChanged($event)" />
+    </div>
+
+    @if (panelOpen()) {
+      <section class="stack" aria-label="Izazovi">
+        @if (selected(); as challenge) {
+          <button class="button" type="button" (click)="back()">Nazad na spisak</button>
+          <h2>{{ challenge.name }}</h2>
+
+          @if (challenge.state === 'NotStarted') {
+            <p class="meta">Uđi u krug izazova da bi se aktivirao.</p>
+          } @else {
+            @if (selectedPaused()) {
+              <p class="alert">Izazov je pauziran. Vrati se u krug da nastaviš.</p>
+            }
+            <div class="photos" [class.photos--disabled]="!selectedPlayable()">
+              @for (point of hiddenPoints(); track point.id) {
+                <figure class="photo">
+                  <img [src]="point.image" alt="Skrivena tačka" />
+                  @if (point.isDiscovered) {
+                    <figcaption class="status status--active">Otkrivena</figcaption>
+                  }
+                </figure>
+              }
+            </div>
+            @if (checkMessage()) {
+              <p class="alert">{{ checkMessage() }}</p>
+            }
+            <button
+              class="button button--primary check"
+              type="button"
+              [disabled]="!selectedPlayable() || pending()"
+              (click)="check()"
+            >
+              PROVERI LOKACIJU
+            </button>
+          }
+        } @else {
+          @for (challenge of challenges.value(); track challenge.id) {
+            <article class="card stack" [class.card--selected]="challenge.id === selectedId()">
+              <h3>{{ challenge.name }}</h3>
+              <p class="meta">XP: {{ challenge.xp }}</p>
+              @switch (challenge.state) {
+                @case ('Completed') {
+                  <p class="status status--active">Izazov je rešen. Osvojeno XP: {{ challenge.xp }}</p>
+                }
+                @case ('Active') {
+                  @if (isPaused(challenge)) {
+                    <p class="status">Izazov je pauziran</p>
+                  } @else {
+                    <p class="status status--active">Izazov je aktivan</p>
+                  }
+                }
+              }
+              @if (challenge.state !== 'Completed') {
+                <button class="button" type="button" (click)="select(challenge)">Izaberi</button>
+              }
+            </article>
+          } @empty {
+            <p class="empty">Nema lokacijskih izazova.</p>
+          }
+        }
+      </section>
+    }
+  </div>
+</div>
