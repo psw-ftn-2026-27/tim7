@@ -6,5 +6,6 @@ public sealed record ActiveTourExecutionDto(
     Guid Id,
     Guid TourId,
     string TourName,
-    LocationDto StartLocation,
-    TourExecutionKeyPointDto? FirstKeyPoint);
+    LocationDto LastKnownLocation,
+    List<CompletedKeyPointDto> CompletedKeyPoints,
+    TourExecutionKeyPointDto? NextKeyPoint);

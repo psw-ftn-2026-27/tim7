@@ -48,6 +48,29 @@ function popupTexts(map: L.Map): string[] {
   return texts.sort();
 }
 
+// Each circle on the map as its centre and its radius in metres.
+function circles(map: L.Map): string[] {
+  const found: string[] = [];
+  map.eachLayer((layer) => {
+    if (layer instanceof L.Circle) {
+      const { lat, lng } = layer.getLatLng();
+      found.push(`${lat},${lng} ${layer.getRadius()} m`);
+    }
+  });
+  return found;
+}
+
+// Each path line on the map as its points, in order.
+function paths(map: L.Map): string[][] {
+  const found: string[][] = [];
+  map.eachLayer((layer) => {
+    if (layer instanceof L.Polyline) {
+      found.push((layer.getLatLngs() as L.LatLng[]).map(({ lat, lng }) => `${lat},${lng}`));
+    }
+  });
+  return found;
+}
+
 function click(map: L.Map, latitude: number, longitude: number): void {
   map.fire('click', { latlng: L.latLng(latitude, longitude) });
 }
@@ -125,5 +148,72 @@ describe('Map', () => {
     click(map, 2, 2);
 
     expect(picked).toEqual([]);
+  });
+
+  it('draws the circle only with a centre and a radius greater than 0', () => {
+    const addLayer = spyOnAddLayer();
+    createMap({ circleRadiusKm: 1 });
+    createMap({ circleCenter: ORIGIN, circleRadiusKm: 0 });
+    createMap({ circleCenter: ORIGIN, circleRadiusKm: 1 });
+    const [withoutCenter, withoutRadius, withBoth] = [...new Set(addLayer.mock.contexts)] as L.Map[];
+
+    expect(circles(withoutCenter)).toEqual([]);
+    expect(circles(withoutRadius)).toEqual([]);
+    expect(circles(withBoth)).toEqual(['0,0 1000 m']);
+  });
+
+  it('turns a radius of 3 km into a circle of 3000 m', () => {
+    const addLayer = spyOnAddLayer();
+    createMap({ circleCenter: ORIGIN, circleRadiusKm: 3 });
+    const map = leafletMapOf(addLayer);
+
+    expect(circles(map)).toEqual(['0,0 3000 m']);
+  });
+
+  it('after the centre or the radius changes there is still exactly one circle, with the new values', () => {
+    const addLayer = spyOnAddLayer();
+    const fixture = createMap({ circleCenter: ORIGIN, circleRadiusKm: 1 });
+    const map = leafletMapOf(addLayer);
+
+    fixture.componentRef.setInput('circleCenter', ONE_EAST);
+    fixture.detectChanges();
+
+    expect(circles(map)).toEqual(['0,1 1000 m']);
+
+    fixture.componentRef.setInput('circleRadiusKm', 2);
+    fixture.detectChanges();
+
+    expect(circles(map)).toEqual(['0,1 2000 m']);
+  });
+
+  it('with a user position the path starts at the user, but the length counts only the pins', () => {
+    const addLayer = spyOnAddLayer();
+    const fixture = createMap({ pins: [ONE_EAST], userPosition: ORIGIN, showPath: true });
+    const map = leafletMapOf(addLayer);
+    const lengths: number[] = [];
+    fixture.componentInstance.pathLength.subscribe((length) => lengths.push(length));
+
+    fixture.componentRef.setInput('pins', [ONE_EAST, ORIGIN]);
+    fixture.detectChanges();
+
+    expect(paths(map)).toEqual([['0,0', '0,1', '0,0']]);
+    expect(lengths.at(-1)).toBeCloseTo(ONE_DEGREE_KM, 1);
+  });
+
+  it('in picking mode a click moves the circle to the selected pin', () => {
+    const addLayer = spyOnAddLayer();
+    const fixture = createMap({
+      picking: true,
+      initialLocation: { latitude: 1, longitude: 1 },
+      circleRadiusKm: 1,
+    });
+    const map = leafletMapOf(addLayer);
+
+    expect(circles(map)).toEqual(['1,1 1000 m']);
+
+    click(map, 2, 2);
+    fixture.detectChanges();
+
+    expect(circles(map)).toEqual(['2,2 1000 m']);
   });
 });

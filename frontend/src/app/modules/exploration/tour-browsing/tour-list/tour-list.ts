@@ -34,6 +34,8 @@ export class TourList {
     transport: '' as TransportMode | '',
     minPrice: null as number | null,
     maxPrice: null as number | null,
+    minLength: null as number | null,
+    maxLength: null as number | null,
     sortBy: '' as TourSort | '',
   });
 
@@ -60,6 +62,17 @@ export class TourList {
       const minPrice = this.model().minPrice;
       if (maxPrice !== null && minPrice !== null && maxPrice < minPrice) {
         return { kind: 'belowMin', message: 'Max price cannot be less than min price.' };
+      }
+      return null;
+    });
+    // Both lengths are optional too; a length is in kilometres and need not be whole.
+    min(path.minLength, 0, { message: 'Min length cannot be negative.' });
+    min(path.maxLength, 0, { message: 'Max length cannot be negative.' });
+    validate(path.maxLength, ({ value }) => {
+      const maxLength = value();
+      const minLength = this.model().minLength;
+      if (maxLength !== null && minLength !== null && maxLength < minLength) {
+        return { kind: 'belowMin', message: 'Max length cannot be less than min length.' };
       }
       return null;
     });
@@ -94,6 +107,8 @@ export class TourList {
       transport: criteria.transport === '' ? null : criteria.transport,
       minPrice: criteria.minPrice,
       maxPrice: criteria.maxPrice,
+      minLength: criteria.minLength,
+      maxLength: criteria.maxLength,
       sortBy: criteria.sortBy === '' ? null : criteria.sortBy,
     };
   });
@@ -126,6 +141,12 @@ export class TourList {
     if (search.maxPrice !== null) {
       params.set('maxPrice', String(search.maxPrice));
     }
+    if (search.minLength !== null) {
+      params.set('minLength', String(search.minLength));
+    }
+    if (search.maxLength !== null) {
+      params.set('maxLength', String(search.maxLength));
+    }
     if (search.sortBy !== null) {
       params.set('sortBy', search.sortBy);
     }
@@ -156,7 +177,7 @@ export class TourList {
     this.page.set(1);
   }
 
-  // Copies the saved difficulties, transport and tags into the filters; name, prices and sort stay.
+  // Copies the saved difficulties, transport and tags into the filters; name, prices, lengths and sort stay.
   protected applyMyPreferences(): void {
     const preferences = this.myPreferences.value()?.preferences ?? null;
     if (preferences === null) {
@@ -173,6 +194,8 @@ export class TourList {
       transport: preferences.preferredTransportMode ?? '',
       minPrice: criteria.minPrice,
       maxPrice: criteria.maxPrice,
+      minLength: criteria.minLength,
+      maxLength: criteria.maxLength,
       sortBy: criteria.sortBy,
     });
     this.backToFirstPage();

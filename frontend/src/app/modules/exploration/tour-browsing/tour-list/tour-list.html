@@ -15,6 +15,7 @@
     <nav class="subnav" aria-label="Exploration pages">
       <a routerLink="/exploration/mine">My tours</a>
       <a routerLink="/exploration/preferences">My preferences</a>
+      <a routerLink="/exploration/map">Map search</a>
     </nav>
   }
 
@@ -92,6 +93,32 @@
         (input)="backToFirstPage()"
       />
       @for (message of form.maxPrice().errors(); track $index) {
+        <p class="error">{{ message.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="min-length-filter">Min length</label>
+      <input
+        id="min-length-filter"
+        type="number"
+        [formField]="form.minLength"
+        (input)="backToFirstPage()"
+      />
+      @for (message of form.minLength().errors(); track $index) {
+        <p class="error">{{ message.message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="max-length-filter">Max length</label>
+      <input
+        id="max-length-filter"
+        type="number"
+        [formField]="form.maxLength"
+        (input)="backToFirstPage()"
+      />
+      @for (message of form.maxLength().errors(); track $index) {
         <p class="error">{{ message.message }}</p>
       }
     </div>

@@ -6,6 +6,7 @@ import {
   inject,
   input,
   output,
+  signal,
   untracked,
 } from '@angular/core';
 import * as L from 'leaflet';
@@ -30,6 +31,10 @@ export class Map implements OnDestroy {
   readonly showPath = input(false);
   readonly picking = input(false);
   readonly initialLocation = input<MapPin | null>(null);
+  readonly selectedIcon = input<'pin' | 'person'>('pin');
+  readonly circleCenter = input<MapPin | null>(null);
+  readonly circleRadiusKm = input(0);
+  readonly userPosition = input<MapPin | null>(null);
 
   readonly pathLength = output<number>();
   readonly locationPicked = output<MapPin>();
@@ -39,7 +44,10 @@ export class Map implements OnDestroy {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly map = L.map(this.host);
   private readonly pinLayer = L.layerGroup().addTo(this.map);
-  private selectedMarker: L.CircleMarker | null = null;
+  private selectedMarker: L.Layer | null = null;
+  // Where the selected pin is, so the circle can follow it in picking mode.
+  private readonly selectedLocation = signal<MapPin | null>(null);
+  private circle: L.Circle | null = null;
 
   constructor() {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -57,14 +65,17 @@ export class Map implements OnDestroy {
     });
 
     // Leaflet lives outside the component tree, so an effect redraws it when the inputs change.
-    // Pins and path: redraw them, report the length, and frame the view.
+    // Pins, user and path: redraw them, report the length, and frame the view.
+    // With a user position the path starts at the user, but the length counts only the pins.
     effect(() => {
       const pins = this.pins();
       const showPath = this.showPath();
+      const user = this.userPosition();
       this.pinLayer.clearLayers();
       if (showPath) {
+        const pathPoints = user ? [user, ...pins] : pins;
         this.pinLayer.addLayer(
-          L.polyline(pins.map(toLatLng), {
+          L.polyline(pathPoints.map(toLatLng), {
             color: this.token('--color-accent'),
             weight: 4,
             opacity: 0.6,
@@ -76,12 +87,25 @@ export class Map implements OnDestroy {
       pins.forEach((pin, index) => {
         this.pinLayer.addLayer(this.pinMarker(pin, showPath ? index + 1 : null, pins.length));
       });
+      if (user) {
+        this.pinLayer.addLayer(
+          L.marker(toLatLng(user), { icon: this.personIcon(), interactive: false, keyboard: false }),
+        );
+      }
       untracked(() => this.frameView());
     });
 
     // Picking: show the selected pin at the initial location, or no selected pin without one.
     effect(() => {
       this.placeSelectedMarker(this.picking() ? this.initialLocation() : null);
+    });
+
+    // Circle: redraw it when its centre or radius changes. In picking mode the centre is the
+    // selected pin, so the circle follows every click; otherwise it is the circleCenter input.
+    effect(() => {
+      const center = this.picking() ? this.selectedLocation() : this.circleCenter();
+      const radiusKm = this.circleRadiusKm();
+      untracked(() => this.drawCircle(center, radiusKm));
     });
   }
 
@@ -91,17 +115,69 @@ export class Map implements OnDestroy {
 
   private placeSelectedMarker(location: MapPin | null): void {
     this.selectedMarker?.remove();
+    this.selectedMarker = null;
+    this.selectedLocation.set(location);
+    if (!location) {
+      return;
+    }
     // The selected pin ignores clicks, so a click on it reaches the map and moves it.
-    this.selectedMarker = location
-      ? L.circleMarker(toLatLng(location), {
-          radius: 11,
-          color: this.token('--color-surface'),
-          weight: 3,
-          fillColor: this.token('--color-danger'),
-          fillOpacity: 1,
-          interactive: false,
-        }).addTo(this.map)
-      : null;
+    if (this.selectedIcon() === 'person') {
+      this.selectedMarker = L.marker(toLatLng(location), {
+        icon: this.personIcon(),
+        interactive: false,
+        keyboard: false,
+      }).addTo(this.map);
+    } else {
+      this.selectedMarker = L.circleMarker(toLatLng(location), {
+        radius: 11,
+        color: this.token('--color-surface'),
+        weight: 3,
+        fillColor: this.token('--color-danger'),
+        fillOpacity: 1,
+        interactive: false,
+      }).addTo(this.map);
+    }
+  }
+
+  // At most one circle: the old one is always removed first. Leaflet takes the radius in metres.
+  private drawCircle(center: MapPin | null, radiusKm: number): void {
+    const previousRadius = this.circle?.getRadius() ?? null;
+    this.circle?.remove();
+    this.circle = null;
+    if (!center || radiusKm <= 0) {
+      return;
+    }
+    const radius = radiusKm * 1000;
+    // The circle ignores clicks, so a click inside it still reaches the map or the pin below.
+    this.circle = L.circle(toLatLng(center), {
+      radius,
+      color: this.token('--color-accent'),
+      weight: 2,
+      fillColor: this.token('--color-accent'),
+      fillOpacity: 0.1,
+      interactive: false,
+    }).addTo(this.map);
+    this.circle.bringToBack();
+    // When the circle appears or its radius changes, frame it whole; a new centre keeps the view.
+    if (radius !== previousRadius) {
+      this.map.fitBounds(this.circle.getBounds(), { padding: [24, 24] });
+    }
+  }
+
+  // A figure of a person, for the user's own position. The markup is a constant, never user text.
+  private personIcon(): L.DivIcon {
+    const fill = this.token('--color-danger');
+    const outline = this.token('--color-surface');
+    return L.divIcon({
+      className: '',
+      iconSize: [28, 36],
+      iconAnchor: [14, 34],
+      html:
+        `<svg width="28" height="36" viewBox="0 0 28 36" aria-label="Your position">` +
+        `<circle cx="14" cy="7" r="5.5" fill="${fill}" stroke="${outline}" stroke-width="2"/>` +
+        `<path d="M5 33 L8 16 Q14 12 20 16 L23 33 Z" fill="${fill}" stroke="${outline}" stroke-width="2"/>` +
+        `</svg>`,
+    });
   }
 
   // A click on a pin opens its popup and does not reach the map, so it never picks a location.
@@ -122,10 +198,11 @@ export class Map implements OnDestroy {
   }
 
   // Picking centres on the initial location, or on the default centre without one.
-  // Otherwise the view frames every pin.
+  // Otherwise the view frames every pin and the user position.
   private frameView(): void {
     const initialLocation = this.initialLocation();
-    let points = this.pins().map(toLatLng);
+    const user = this.userPosition();
+    let points = [...(user ? [user] : []), ...this.pins()].map(toLatLng);
     if (this.picking()) {
       points = initialLocation ? [toLatLng(initialLocation)] : [];
     }
