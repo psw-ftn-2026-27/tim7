@@ -176,6 +176,48 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.ToTable("Tours", "exploration");
                 });
 
+            modelBuilder.Entity("Shared.Domain.Chats.Chat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Chats", "exploration");
+                });
+
+            modelBuilder.Entity("Shared.Domain.Chats.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages", "exploration");
+                });
+
             modelBuilder.Entity("Exploration.Domain.LocationSearches.LocationSearch", b =>
                 {
                     b.OwnsOne("Exploration.Domain.Tours.Location", "Center", b1 =>
@@ -358,6 +400,25 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                                 .IsRequired();
                         });
 
+                    b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("From")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("To")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
                     b.OwnsOne("Exploration.Domain.Tours.TourLength", "Length", b1 =>
                         {
                             b1.Property<Guid>("TourId")
@@ -384,25 +445,6 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
                             b1.Property<bool>("IsFree")
                                 .HasColumnType("boolean");
-
-                            b1.HasKey("TourId");
-
-                            b1.ToTable("Tours", "exploration");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TourId");
-                        });
-
-                    b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>
-                        {
-                            b1.Property<Guid>("TourId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<int>("From")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("To")
-                                .HasColumnType("integer");
 
                             b1.HasKey("TourId");
 
@@ -446,6 +488,60 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("TransportTimes");
+                });
+
+            modelBuilder.Entity("Shared.Domain.Chats.Chat", b =>
+                {
+                    b.OwnsOne("Shared.Domain.Chats.ChatContext", "Context", b1 =>
+                        {
+                            b1.Property<Guid>("ChatId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("ContextId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Kind")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)");
+
+                            b1.HasKey("ChatId");
+
+                            b1.HasIndex("Kind", "ContextId")
+                                .IsUnique();
+
+                            b1.ToTable("Chats", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ChatId");
+                        });
+
+                    b.OwnsMany("Shared.Domain.Chats.MutedUser", "MutedUsers", b1 =>
+                        {
+                            b1.Property<Guid>("ChatId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<Guid>("UserId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("ChatId", "Id");
+
+                            b1.ToTable("ChatMutedUsers", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ChatId");
+                        });
+
+                    b.Navigation("Context")
+                        .IsRequired();
+
+                    b.Navigation("MutedUsers");
                 });
 #pragma warning restore 612, 618
         }
