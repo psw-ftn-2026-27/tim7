@@ -61,4 +61,16 @@ public class IdentityApiTests : BaseIntegrationTest
 
         found.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Followed_users_are_those_whose_follow_request_the_user_sent_and_they_accepted()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+
+        var followed = await identityApi.GetFollowedUsersAsync(UserSeed.Explorer.Id);
+
+        followed.Should().Contain(new UserSummary(UserSeed.FollowedExplorer.Id, UserSeed.FollowedExplorer.Email!));
+        followed.Should().NotContain(user => user.Id == UserSeed.SecondExplorer.Id);
+    }
 }

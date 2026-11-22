@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { ChatDemo } from './chat-demo/chat-demo';
 import { Home } from './home/home';
 import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
@@ -10,6 +11,7 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   { path: 'map-demo', component: MapDemo },
+  { path: 'chat-demo', component: ChatDemo },
   { path: 'privacy', component: Privacy },
   {
     path: 'exploration',

@@ -21,13 +21,17 @@ backend/
   Shared/
     Shared.Domain/                 Entity, AggregateRoot, PageResult,
                                    DomainException, NotFoundException,
-                                   Images/ (ImageFile, ImageSelection)       [platform]
+                                   Images/ (ImageFile, ImageSelection),
+                                   Chats/ (Chat, Message, ChatContext,
+                                   ChatParticipant, MutedUser)               [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId(),
                                    Images/ (ImageUploadReader, UploadedImage,
                                    ImageUploadLimits)                        [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
                                    module, per-schema migrations history),
-                                   Images/ (ImageStore, AddImageStorage)     [platform]
+                                   Images/ (ImageStore, AddImageStorage),
+                                   Chats/ (ChatConfiguration,
+                                   MessageConfiguration)                     [platform]
     Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
                                    reseed, test JWTs), WellKnownUsers        [platform]
     Shared.UnitTests/              unit tests of the shared code             [platform]
@@ -103,7 +107,8 @@ signed-in user; the details live in the project itself. `Core/IdentityApi`
 implements `IIdentityApi` over `UserManager`: a page of users (ID and e-mail), a check
 whether a user exists, finding a user by e-mail, which serves as the username, the
 users for a list of IDs (unknown IDs are left out, no error), and a search for at most ten
-explorers by part of the username (a blank text finds nobody). The search reads the role
+explorers by part of the username (a blank text finds nobody). It also returns the users a user
+follows (whose follow request they sent and the other accepted). The search reads the role
 tables through `IUserReadRepository` in `Core/Users`; who counts as an explorer is decided
 in one place, `Infrastructure/Users/ExplorerUsers`, shared with the search for users to follow.
 
@@ -234,6 +239,48 @@ image cleanup job (`AddImageCleanup` in `Host.Api`) periodically deletes images 
 module uses and that are older than `ImageCleanup:MinAge`, and it only touches the
 subfolders of modules that registered an `IImageUsage`; a module without one keeps all of
 its files.
+
+## Chat
+
+A module that offers a chat adopts the shared one; it never writes its own rules. The
+types live in `Shared.Domain/Chats/`: `Chat` (a `ChatContext` of a module-local kind and
+the context ID, `IsLocked`, `Open`, `Lock`, `Unlock`, `Write`), `Message` (its own aggregate with
+`ChatId`, `AuthorId`, `Text`, `SentAt`, `IsDeleted`, `DeleteBy`; the constructor
+enforces 1 to 1000 characters and is reachable only through `Chat.Write`) and
+`ChatParticipant` (`UserId`, `IsPrivileged`). `Chat` also keeps its `MutedUsers` with
+`Mute`, `Unmute` and `ForgetMute`. The chat knows no participants; the
+embedding aggregate decides who takes part, who is privileged and when to lock.
+
+The module's `Application` declares `IChatRepository`, `IMessageRepository` and
+`IMessageReadRepository`, implemented in its `Infrastructure`. Its `DbContext` calls
+`builder.ConfigureChats()` and `builder.ConfigureMessages()` from
+`Shared.Infrastructure` after `HasDefaultSchema`, so the tables land in the module's own
+schema with the unique index on the context, and the module adds its own migration. The
+embedding aggregate (e.g. `Club`) provides a method that turns a user into a
+`ChatParticipant` or rejects a non-participant. The send command loads that aggregate
+and takes the participant from it, opens the chat for the context if it does not exist,
+calls `Chat.Write` with the current time, saves the message (and the new chat) once and
+returns the message ID. The list query rejects a non-participant through the same
+aggregate, reads a `PageResult` of the newest messages through `IMessageReadRepository`,
+fills the author e-mails with one `IIdentityApi.GetUsersByIdsAsync` call, and returns an
+empty page when the chat does not exist. The module's controller exposes both. The
+frontend half is the presentational component `shared/chat`; the page owns the form,
+built with `chatMessageForm()`, and reloads the list with the periodic refresh pattern
+from `frontend/AGENTS.md`.
+
+Moderation adds three commands to the same group, each returning nothing: delete loads
+the message within the chat of its own place (another chat's message is a 404), takes the
+participant from the embedding aggregate and calls `Message.DeleteBy`; mute takes both
+the moderator and the target as `ChatParticipant`s from the embedding aggregate and calls
+`Chat.Mute`; unmute calls `Chat.Unmute`. Mute and unmute answer 404 when the chat does
+not exist. The mapping hides deleted messages with a global query filter, so no
+repository filters them by hand. The list query returns a chat DTO instead of a bare
+page: the messages (a `PageResult`, each with whether its author may be muted), whether
+the viewer is privileged and muted, `IsLocked`, and the muted users with their e-mails,
+read through `IChatReadRepository`. Whether an author may be muted comes from a query
+method of the embedding aggregate that answers for former participants too instead of
+throwing. Every command of the module that makes a user privileged or removes them from
+the place loads the place's chat and calls `Chat.ForgetMute` for that user.
 
 ## Events
 

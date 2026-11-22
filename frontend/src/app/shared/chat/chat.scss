@@ -1,0 +1,29 @@
+.chat h2 {
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
+// Only these lists' difference from .stack: no bullets and no indentation.
+.messages,
+.muted-users {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// Keeps the line breaks the author typed and wraps long words.
+.text {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.chat h3 {
+  font-size: var(--font-size-md);
+  margin: 0;
+}
+
+// Only this row's difference from .actions: it sits a little below the text.
+.moderation {
+  margin-top: var(--space-2);
+}
