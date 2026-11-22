@@ -8,6 +8,8 @@ using Exploration.Infrastructure.Persistence.TourExecutions;
 using Exploration.Infrastructure.Persistence.TourPreferences;
 using Exploration.Infrastructure.Persistence.Tours;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Chats;
+using Shared.Infrastructure.Chats;
 
 namespace Exploration.Infrastructure.Persistence;
 
@@ -19,6 +21,8 @@ internal sealed class ExplorationDbContext : DbContext, IUnitOfWork
     public DbSet<TourPreference> TourPreferences => Set<TourPreference>();
     public DbSet<LocationSearch> LocationSearches => Set<LocationSearch>();
     public DbSet<TourExecution> TourExecutions => Set<TourExecution>();
+    public DbSet<Chat> Chats => Set<Chat>();
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -27,5 +31,7 @@ internal sealed class ExplorationDbContext : DbContext, IUnitOfWork
         builder.ConfigureTourPreferences();
         builder.ConfigureLocationSearches();
         builder.ConfigureTourExecutions();
+        builder.ConfigureChats();
+        builder.ConfigureMessages();
     }
 }

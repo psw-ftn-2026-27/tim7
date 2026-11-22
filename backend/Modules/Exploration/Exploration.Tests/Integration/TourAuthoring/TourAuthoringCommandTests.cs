@@ -300,4 +300,16 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Archiving_a_tour_locks_its_chat()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PostAsync($"/api/exploration/tours/{TourSeed.PublishedVineyards.Id}/archive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.Chats.Single(chat => chat.Id == ChatSeed.VineyardsChat.Id).IsLocked.Should().BeTrue();
+    }
 }

@@ -1,3 +1,5 @@
+import { PageResult } from '../../../shared/api/page-result';
+
 export type TourDifficulty = 'Easy' | 'Moderate' | 'Hard';
 
 export type TourStatus = 'Draft' | 'Published' | 'Archived';
@@ -5,10 +7,7 @@ export type TourStatus = 'Draft' | 'Published' | 'Archived';
 export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
 export type TourSort =
-  | 'DifficultyAscending'
-  | 'DifficultyDescending'
-  | 'PriceAscending'
-  | 'PriceDescending';
+  'DifficultyAscending' | 'DifficultyDescending' | 'PriceAscending' | 'PriceDescending';
 
 export interface TransportTimeDto {
   transport: TransportMode;
@@ -194,6 +193,32 @@ export interface ActiveTourExecutionDto {
 
 export interface MyActiveTourExecutionDto {
   execution: ActiveTourExecutionDto | null;
+}
+
+export interface ChatMessageDto {
+  id: string;
+  authorId: string;
+  authorEmail: string | null;
+  text: string;
+  sentAt: string;
+  authorCanBeMuted: boolean;
+}
+
+export interface ChatMutedUserDto {
+  userId: string;
+  email: string | null;
+}
+
+export interface TourChatDto {
+  messages: PageResult<ChatMessageDto>;
+  isPrivileged: boolean;
+  isMuted: boolean;
+  isLocked: boolean;
+  mutedUsers: ChatMutedUserDto[];
+}
+
+export interface SendMessageDto {
+  text: string;
 }
 
 export interface DiscoveredSecretDto {
