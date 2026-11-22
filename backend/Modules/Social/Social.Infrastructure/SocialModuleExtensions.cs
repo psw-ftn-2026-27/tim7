@@ -9,6 +9,8 @@ using Social.Application.BlogReading;
 using Social.Application.BlogVoting;
 using Social.Application.Chats;
 using Social.Application.ClubChat;
+using Social.Application.Conversations;
+using Social.Application.DirectMessaging;
 using Social.Application.ClubBrowsing;
 using Social.Application.ClubInvitations;
 using Social.Application.Blogs;
@@ -20,6 +22,7 @@ using Social.Infrastructure.Images;
 using Social.Infrastructure.Persistence;
 using Social.Infrastructure.Persistence.Blogs;
 using Social.Infrastructure.Persistence.Chats;
+using Social.Infrastructure.Persistence.Conversations;
 using Social.Infrastructure.Persistence.Clubs;
 
 namespace Social.Infrastructure;
@@ -41,6 +44,8 @@ public static class SocialModuleExtensions
         services.AddScoped<IChatReadRepository, ChatReadRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IMessageReadRepository, MessageReadRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IConversationReadRepository, ConversationReadRepository>();
         services.AddScoped<IImageStore, SocialImageStore>();
         services.AddScoped<IImageUsage, SocialImageUsage>();
 
@@ -59,6 +64,8 @@ public static class SocialModuleExtensions
         services.AddScoped<ClubInvitationsQueries>();
         services.AddScoped<ClubChatService>();
         services.AddScoped<ClubChatQueries>();
+        services.AddScoped<DirectMessagingService>();
+        services.AddScoped<DirectMessagingQueries>();
 
         return services;
     }

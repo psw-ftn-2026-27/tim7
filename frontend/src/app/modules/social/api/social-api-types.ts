@@ -136,3 +136,25 @@ export interface ClubChatDto {
 export interface SendMessageDto {
   text: string;
 }
+
+export interface ConversationDto {
+  id: string;
+  otherUserId: string;
+  otherUserEmail: string | null;
+  lastMessageAt: string | null;
+}
+
+export interface FollowedUserDto {
+  id: string;
+  email: string;
+}
+
+export interface ConversationChatDto {
+  otherUserId: string;
+  otherUserEmail: string | null;
+  messages: PageResult<ChatMessageDto>;
+}
+
+export interface StartConversationDto {
+  otherUserId: string;
+}

@@ -1,0 +1,81 @@
+<div class="stack">
+  <div class="page-header">
+    <div>
+      <span class="badge badge--social">Social</span>
+      <h1>Messages</h1>
+      <p>Private conversations with the people you follow.</p>
+    </div>
+  </div>
+
+  <nav class="subnav" aria-label="Social pages">
+    <a routerLink="/social">All blogs</a>
+    <a routerLink="/social/clubs">Clubs</a>
+  </nav>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  <h2>Conversations</h2>
+
+  @if (conversations.isLoading()) {
+    <p class="meta">Loading conversations...</p>
+  } @else if (conversations.error()) {
+    <p class="alert">Could not load your conversations. Log in and try again.</p>
+  } @else {
+    <ul class="stack list">
+      @for (conversation of conversations.value() ?? []; track conversation.id) {
+        <li class="card">
+          <a [routerLink]="['/social/messages', conversation.id]">
+            {{ conversation.otherUserEmail ?? conversation.otherUserId }}
+          </a>
+          <p class="meta">
+            @if (conversation.lastMessageAt; as lastMessageAt) {
+              Last message {{ formatTime(lastMessageAt) }}
+            } @else {
+              No messages yet
+            }
+          </p>
+        </li>
+      } @empty {
+        <p class="empty">No conversations yet. Message someone you follow below.</p>
+      }
+    </ul>
+  }
+
+  <h2>People you follow</h2>
+
+  @if (followedUsers.isLoading()) {
+    <p class="meta">Loading the people you follow...</p>
+  } @else if (followedUsers.error()) {
+    <p class="alert">Could not load the people you follow.</p>
+  } @else {
+    <div class="card">
+      <table class="table">
+        <tbody>
+          @for (user of followedUsers.value() ?? []; track user.id) {
+            <tr>
+              <td>{{ user.email }}</td>
+              <td>
+                <div class="actions">
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="message(user.id)"
+                  >
+                    Message
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td class="meta">You do not follow anyone yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

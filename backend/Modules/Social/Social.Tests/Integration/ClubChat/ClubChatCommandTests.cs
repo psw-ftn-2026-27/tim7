@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Tests;
+using Social.Application.Chats;
 using Social.Application.ClubChat;
 using Social.Infrastructure.Persistence;
 using Social.Tests.Integration.Seeds;

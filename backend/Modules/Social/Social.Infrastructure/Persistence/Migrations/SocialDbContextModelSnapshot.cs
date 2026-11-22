@@ -189,6 +189,26 @@ namespace Social.Infrastructure.Persistence.Migrations
                     b.ToTable("ClubMembers", "social");
                 });
 
+            modelBuilder.Entity("Social.Domain.Conversations.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserAId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserBId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserAId", "UserBId")
+                        .IsUnique();
+
+                    b.ToTable("Conversations", "social");
+                });
+
             modelBuilder.Entity("Shared.Domain.Chats.Chat", b =>
                 {
                     b.OwnsOne("Shared.Domain.Chats.ChatContext", "Context", b1 =>
