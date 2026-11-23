@@ -1,4 +1,6 @@
+using Games.Application.LocationChallenges;
 using Games.Application.Quizzes;
+using Games.Domain.LocationChallenges;
 using Games.Domain.Quizzes;
 using Shared.Domain.Exceptions;
 
@@ -70,6 +72,14 @@ public sealed class QuizManagementService
         var quiz = await GetQuizAsync(quizId);
 
         quiz.MarkAnswerOptionCorrect(questionId, answerOptionId);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task SetLocationAsync(Guid quizId, LocationDto dto)
+    {
+        var quiz = await GetQuizAsync(quizId);
+
+        quiz.SetLocation(new Location(dto.Latitude, dto.Longitude));
         await _unitOfWork.SaveChangesAsync();
     }
 

@@ -2,13 +2,17 @@ import { httpResource } from '@angular/common/http';
 import { Component, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { Map, MapPin } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { AnswerOptionDto, QuestionDto, QuizDto } from '../../api/games-api-types';
 import { QuizManagement } from '../quiz-management';
 import { QuizQuestion } from '../quiz-question/quiz-question';
 
+// The circle around the quiz location: where explorers will be able to start the quiz.
+const LOCATION_RADIUS_KM = 0.1;
+
 @Component({
-  imports: [FormField, QuizQuestion, RouterLink],
+  imports: [FormField, Map, QuizQuestion, RouterLink],
   selector: 'app-edit-quiz',
   styleUrl: './edit-quiz.scss',
   templateUrl: './edit-quiz.html',
@@ -20,12 +24,18 @@ export class EditQuiz {
 
   protected readonly quiz = httpResource<QuizDto>(() => `/api/games/quizzes/${this.id()}`);
 
+  protected readonly locationRadiusKm = LOCATION_RADIUS_KM;
+
   protected readonly editingDetails = signal(false);
   protected readonly pending = signal(false);
   // The message above the save button of the details form.
   protected readonly detailsError = signal<string | null>(null);
   // The message above the list of questions.
   protected readonly error = signal<string | null>(null);
+  // The point clicked on the map and not saved yet; null until the first click.
+  protected readonly pickedLocation = signal<MapPin | null>(null);
+  // The message above the map.
+  protected readonly locationError = signal<string | null>(null);
 
   // No client-side validators: the server checks the name and XP and its message is shown.
   protected readonly detailsForm = form(
@@ -59,6 +69,27 @@ export class EditQuiz {
       this.quiz.reload();
     } catch (failure) {
       this.detailsError.set(serverMessage(failure, 'Could not save the quiz details.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected async saveLocation(): Promise<void> {
+    const location = this.pickedLocation();
+    if (!location) {
+      return;
+    }
+    this.pending.set(true);
+    this.locationError.set(null);
+    try {
+      await this.quizManagement.setLocation(this.id(), {
+        latitude: location.latitude,
+        longitude: location.longitude,
+      });
+      this.pickedLocation.set(null);
+      this.quiz.reload();
+    } catch (failure) {
+      this.locationError.set(serverMessage(failure, 'Could not save the location.'));
     } finally {
       this.pending.set(false);
     }

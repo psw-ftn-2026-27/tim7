@@ -1,3 +1,4 @@
+using Games.Application.LocationChallenges;
 using Games.Application.QuizManagement;
 using Games.Application.Quizzes;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,7 @@ internal sealed class QuizReadRepository : IQuizReadRepository
                 quiz.Instructions,
                 quiz.Xp,
                 quiz.Status,
+                quiz.Location == null ? null : new LocationDto(quiz.Location.Latitude, quiz.Location.Longitude),
                 quiz.Questions
                     .Select(question => new QuestionDto(
                         question.Id,

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { QuizDetailsDto, TextDto } from '../api/games-api-types';
+import { LocationDto, QuizDetailsDto, TextDto } from '../api/games-api-types';
 
 const BASE_URL = '/api/games/quizzes';
 
@@ -16,6 +16,10 @@ export class QuizManagement {
 
   async updateDetails(id: string, dto: QuizDetailsDto): Promise<void> {
     await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}`, dto));
+  }
+
+  async setLocation(id: string, dto: LocationDto): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}/location`, dto));
   }
 
   async addQuestion(id: string, dto: TextDto): Promise<void> {

@@ -1,3 +1,4 @@
+using Games.Application.LocationChallenges;
 using Games.Domain.Quizzes;
 
 namespace Games.Application.QuizManagement;
@@ -8,6 +9,7 @@ public sealed record QuizDto(
     string? Instructions,
     int? Xp,
     QuizStatus Status,
+    LocationDto? Location,
     List<QuestionDto> Questions);
 
 public sealed record QuestionDto(Guid Id, string Text, List<AnswerOptionDto> AnswerOptions);
