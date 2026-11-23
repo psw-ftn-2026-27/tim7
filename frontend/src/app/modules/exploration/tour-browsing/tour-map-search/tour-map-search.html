@@ -98,11 +98,12 @@
     </div>
   </div>
 
-  <!-- The shared map cannot draw a circle yet; that is a request to the platform team. -->
+  <!-- In picking mode the map draws the circle around the picked point. -->
   <app-map
     [pins]="pins()"
     [picking]="true"
     [initialLocation]="center()"
+    [circleRadiusKm]="circleRadiusKm()"
     (locationPicked)="onLocationPicked($event)"
   />
 

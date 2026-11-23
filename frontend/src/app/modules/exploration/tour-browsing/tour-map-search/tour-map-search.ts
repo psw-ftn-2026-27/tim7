@@ -121,6 +121,10 @@ export class TourMapSearch {
   // The point the user clicked on the map; null until the first click.
   protected readonly center = signal<MapPin | null>(null);
 
+  // The radius of the circle the map draws around the point, read as the user types.
+  // The map draws no circle for 0, so an empty field shows only the point.
+  protected readonly circleRadiusKm = computed(() => this.model().radiusKilometers ?? 0);
+
   // The criteria of the last "Search", copied when the button is clicked. The list reads
   // only these, so typing in a filter or moving the point does not reload it.
   // When the page opens, the list shows the first page of all published tours.
