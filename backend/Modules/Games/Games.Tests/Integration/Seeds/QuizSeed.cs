@@ -10,6 +10,7 @@ internal static class QuizSeed
     public static readonly Quiz PublishedRiversQuiz;
     public static readonly Quiz RetiredBridgesQuiz;
     public static readonly Quiz ArchivedMonumentsQuiz;
+    public static readonly Quiz PublishedFortressesQuiz;
 
     static QuizSeed()
     {
@@ -49,7 +50,19 @@ internal static class QuizSeed
         ArchivedMonumentsQuiz.Publish();
         ArchivedMonumentsQuiz.Retire();
         ArchivedMonumentsQuiz.Archive();
+
+        PublishedFortressesQuiz = new Quiz("Tvrđave Srbije", "Izaberi tačan odgovor.", 50);
+        PublishedFortressesQuiz.AddQuestion("Na kojoj reci je Petrovaradinska tvrđava?");
+        PublishedFortressesQuiz.AddAnswerOption(PublishedFortressesQuiz.Questions[0].Id, "Dunav");
+        PublishedFortressesQuiz.AddAnswerOption(PublishedFortressesQuiz.Questions[0].Id, "Tisa");
+        PublishedFortressesQuiz.MarkAnswerOptionCorrect(PublishedFortressesQuiz.Questions[0].Id, PublishedFortressesQuiz.Questions[0].AnswerOptions[0].Id);
+        PublishedFortressesQuiz.AddQuestion("U kom gradu je Kalemegdan?");
+        PublishedFortressesQuiz.AddAnswerOption(PublishedFortressesQuiz.Questions[1].Id, "Beograd");
+        PublishedFortressesQuiz.AddAnswerOption(PublishedFortressesQuiz.Questions[1].Id, "Niš");
+        PublishedFortressesQuiz.MarkAnswerOptionCorrect(PublishedFortressesQuiz.Questions[1].Id, PublishedFortressesQuiz.Questions[1].AnswerOptions[0].Id);
+        PublishedFortressesQuiz.SetLocation(new Location(45.2517, 19.8622));
+        PublishedFortressesQuiz.Publish();
     }
 
-    public static Quiz[] All => [DraftWithEmptyQuestion, CapitalsQuiz, PublishedRiversQuiz, RetiredBridgesQuiz, ArchivedMonumentsQuiz];
+    public static Quiz[] All => [DraftWithEmptyQuestion, CapitalsQuiz, PublishedRiversQuiz, RetiredBridgesQuiz, ArchivedMonumentsQuiz, PublishedFortressesQuiz];
 }

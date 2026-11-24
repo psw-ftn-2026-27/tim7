@@ -14,6 +14,7 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
     public GamesDbContext(DbContextOptions<GamesDbContext> options) : base(options) { }
 
     public DbSet<Quiz> Quizzes => Set<Quiz>();
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
     public DbSet<SocialChallenge> SocialChallenges => Set<SocialChallenge>();
     public DbSet<LocationChallenge> LocationChallenges => Set<LocationChallenge>();
     public DbSet<LocationChallengeProgress> LocationChallengeProgresses => Set<LocationChallengeProgress>();
@@ -22,6 +23,7 @@ internal sealed class GamesDbContext : DbContext, IUnitOfWork
     {
         builder.HasDefaultSchema("games");
         builder.ConfigureQuizzes();
+        builder.ConfigureQuizAttempts();
         builder.ConfigureSocialChallenges();
         builder.ConfigureLocationChallenges();
     }

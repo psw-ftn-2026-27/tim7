@@ -120,3 +120,47 @@ export interface PlayedLocationChallengeDto {
   id: string;
   hiddenPoints: PlayedHiddenPointDto[];
 }
+
+export type QuizSolvingState = 'NotStarted' | 'Started' | 'Solved';
+
+export interface SolvableQuizDto {
+  id: string;
+  name: string;
+  state: QuizSolvingState;
+}
+
+export interface SolvingAnswerOptionDto {
+  id: string;
+  text: string;
+}
+
+export interface SolvingQuestionDto {
+  id: string;
+  text: string;
+  answerOptions: SolvingAnswerOptionDto[];
+}
+
+export interface AnsweredQuestionDto {
+  id: string;
+  text: string;
+  givenAnswer: SolvingAnswerOptionDto;
+  correctAnswer: SolvingAnswerOptionDto;
+}
+
+export interface QuizResultDto {
+  correctAnswerCount: number;
+  earnedXp: number;
+  questions: AnsweredQuestionDto[];
+}
+
+export interface QuizSolvingDto {
+  id: string;
+  name: string;
+  nextQuestion: SolvingQuestionDto | null;
+  result: QuizResultDto | null;
+}
+
+export interface AnswerDto {
+  questionId: string;
+  answerOptionId: string;
+}

@@ -1,0 +1,56 @@
+<div class="stack">
+  <div class="page-header">
+    <div>
+      <span class="badge badge--games">Games</span>
+      <h1>Kvizovi</h1>
+      <p>Dođi do lokacije kviza i odgovori na njegova pitanja.</p>
+    </div>
+  </div>
+
+  <app-position-simulator (positionChanged)="position.set($event)" />
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  @if (quizzes.isLoading() && !quizzes.hasValue()) {
+    <p class="meta">Učitavanje kvizova...</p>
+  } @else if (quizzes.error()) {
+    <p class="alert">Kvizove nije moguće učitati. Prijavi se kao istraživač i pokušaj ponovo.</p>
+  } @else {
+    @for (quiz of quizzes.value(); track quiz.id) {
+      <article class="card stack">
+        <h3>{{ quiz.name }}</h3>
+        @switch (quiz.state) {
+          @case ('NotStarted') {
+            <p class="status">Nije započet</p>
+            <p class="actions">
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="!position() || pending()"
+                (click)="activate(quiz.id)"
+              >
+                Reši
+              </button>
+            </p>
+          }
+          @case ('Started') {
+            <p class="status">Započet</p>
+            <p class="actions">
+              <a class="button" [routerLink]="['/games/quizzes', quiz.id]">Nastavi</a>
+            </p>
+          }
+          @case ('Solved') {
+            <p class="status status--active">Rešen</p>
+            <p class="actions">
+              <a class="button" [routerLink]="['/games/quizzes', quiz.id]">Rezultat</a>
+            </p>
+          }
+        }
+      </article>
+    } @empty {
+      <p class="empty">Nema objavljenih kvizova.</p>
+    }
+  }
+</div>

@@ -1,6 +1,7 @@
 using Games.Application;
 using Games.Application.QuizLifecycle;
 using Games.Application.QuizManagement;
+using Games.Application.QuizSolving;
 using Games.Application.Quizzes;
 using Games.Application.LocationChallengeAuthoring;
 using Games.Application.LocationChallengePlaying;
@@ -36,6 +37,11 @@ public static class GamesModuleExtensions
         services.AddScoped<QuizManagementService>();
         services.AddScoped<QuizManagementQueries>();
         services.AddScoped<QuizLifecycleService>();
+
+        services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
+        services.AddScoped<IQuizAttemptReadRepository, QuizAttemptReadRepository>();
+        services.AddScoped<QuizSolvingService>();
+        services.AddScoped<QuizSolvingQueries>();
 
         services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
 

@@ -446,4 +446,42 @@ public class QuizTests
         quiz.Questions[0].AnswerOptions[1].IsCorrect.Should().BeFalse();
         quiz.Location.Should().Be(Belgrade);
     }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_published_is_not_activated(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var activation = () => quiz.EnsureCanBeActivatedFrom(Belgrade);
+
+        activation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Quiz_is_not_activated_from_a_position_farther_than_100_m_from_its_location()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+        var positionAbout150MetersNorth = new Location(44.8190, 20.4569);
+
+        var activation = () => quiz.EnsureCanBeActivatedFrom(positionAbout150MetersNorth);
+
+        activation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Answer_option_that_is_not_offered_with_the_question_is_rejected()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Draft);
+        AddCompleteQuestion(quiz, "Glavni grad Francuske?", "Pariz", "Lion");
+        quiz.Publish();
+        var firstQuestion = quiz.Questions[0];
+        var optionOfTheSecondQuestion = quiz.Questions[1].AnswerOptions[0];
+
+        var check = () => quiz.CheckAnswer(firstQuestion.Id, optionOfTheSecondQuestion.Id);
+
+        check.Should().Throw<DomainException>();
+    }
 }
