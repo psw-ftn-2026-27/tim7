@@ -13,6 +13,7 @@
     <a routerLink="/games">Quizzes</a>
     <a routerLink="/games/challenges">Social challenges</a>
     @if (isExplorer()) {
+      <a routerLink="/games/quizzes">Rešavanje kvizova</a>
       <a routerLink="/games/location-challenges/map">Lokacijski izazovi (igranje)</a>
     }
     @if (isAdministrator()) {

@@ -6,6 +6,8 @@ namespace Games.Domain.Quizzes;
 
 public sealed class Quiz : AggregateRoot
 {
+    private const double MaxActivationDistanceMeters = 100;
+
     private readonly List<Question> _questions = [];
 
     public string Name { get; private set; }
@@ -152,6 +154,23 @@ public sealed class Quiz : AggregateRoot
         }
     }
 
+    public void EnsureCanBeActivatedFrom(Location position)
+    {
+        EnsurePublished();
+
+        if (Location is null || Location.DistanceTo(position) > MaxActivationDistanceMeters)
+        {
+            throw new DomainException("You must be at most 100 m from the location of the quiz to activate it.");
+        }
+    }
+
+    public bool CheckAnswer(Guid questionId, Guid answerOptionId)
+    {
+        EnsurePublished();
+
+        return GetQuestion(questionId).IsCorrectAnswer(answerOptionId);
+    }
+
     private static void ValidateDetails(string name, int? xp)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -169,6 +188,14 @@ public sealed class Quiz : AggregateRoot
         if (Status != QuizStatus.Draft)
         {
             throw new DomainException("A quiz can be changed only while it is a draft.");
+        }
+    }
+
+    private void EnsurePublished()
+    {
+        if (Status != QuizStatus.Published)
+        {
+            throw new DomainException("Only a published quiz can be solved.");
         }
     }
 

@@ -1,5 +1,6 @@
 using Games.Application.LocationChallenges;
 using Games.Application.QuizManagement;
+using Games.Application.Quizzes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Domain;

@@ -1,7 +1,7 @@
 using Games.Application.LocationChallenges;
 using Games.Domain.Quizzes;
 
-namespace Games.Application.QuizManagement;
+namespace Games.Application.Quizzes;
 
 public sealed record QuizDto(
     Guid Id,

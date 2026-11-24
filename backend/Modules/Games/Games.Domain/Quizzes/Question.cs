@@ -41,6 +41,11 @@ public sealed class Question : Entity
         correct.SetCorrect(true);
     }
 
+    internal bool IsCorrectAnswer(Guid answerOptionId)
+    {
+        return GetAnswerOption(answerOptionId).IsCorrect;
+    }
+
     internal void EnsureReadyForPublish()
     {
         if (string.IsNullOrWhiteSpace(Text))
