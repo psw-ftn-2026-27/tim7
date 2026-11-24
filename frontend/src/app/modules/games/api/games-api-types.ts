@@ -53,6 +53,7 @@ export interface SocialChallengeDto {
   xp: number;
   exitMessage: string;
   status: SocialChallengeStatus;
+  location: LocationDto | null;
 }
 
 export interface CreateSocialChallengeDto {
@@ -63,6 +64,7 @@ export interface CreateSocialChallengeDto {
   rangeMeters: number;
   xp: number;
   exitMessage: string;
+  location: LocationDto | null;
 }
 
 export interface LocationDto {
@@ -97,6 +99,7 @@ export interface UpdateSocialChallengeDto {
   rangeMeters: number;
   xp: number;
   exitMessage: string;
+  location: LocationDto | null;
 }
 
 export type LocationChallengeState = 'NotStarted' | 'Active' | 'Completed';

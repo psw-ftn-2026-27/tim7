@@ -54,6 +54,23 @@
   </div>
 
   <div class="field">
+    <span>Lokacija</span>
+    <app-map
+      [picking]="true"
+      [initialLocation]="form().location().value()"
+      [circleRadiusKm]="rangeKm()"
+      (locationPicked)="pickLocation($event)"
+    />
+    @if (form().location().value(); as location) {
+      <p class="meta">
+        Lokacija: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}
+      </p>
+    } @else {
+      <p class="meta">Kliknite na mapu da postavite lokaciju.</p>
+    }
+  </div>
+
+  <div class="field">
     <label for="xp">XP</label>
     <input id="xp" type="number" [formField]="form().xp" />
     @if (form().xp().touched()) {

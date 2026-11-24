@@ -1,4 +1,6 @@
+using Games.Application.LocationChallenges;
 using Games.Application.SocialChallenges;
+using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallenges;
 using Shared.Domain.Exceptions;
 
@@ -18,7 +20,7 @@ public sealed class SocialChallengeAuthoringService
     public async Task<Guid> CreateAsync(CreateSocialChallengeDto dto)
     {
         var challenge = new SocialChallenge(
-            dto.Name, dto.Start, dto.End, dto.People, dto.RangeMeters, dto.Xp, dto.ExitMessage);
+            dto.Name, dto.Start, dto.End, dto.People, dto.RangeMeters, dto.Xp, dto.ExitMessage, ToLocation(dto.Location));
 
         _challengeRepository.Add(challenge);
         await _unitOfWork.SaveChangesAsync();
@@ -30,7 +32,7 @@ public sealed class SocialChallengeAuthoringService
     {
         var challenge = await GetChallengeAsync(id);
 
-        challenge.Update(dto.Name, dto.Start, dto.End, dto.People, dto.RangeMeters, dto.Xp, dto.ExitMessage);
+        challenge.Update(dto.Name, dto.Start, dto.End, dto.People, dto.RangeMeters, dto.Xp, dto.ExitMessage, ToLocation(dto.Location));
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -41,6 +43,11 @@ public sealed class SocialChallengeAuthoringService
         challenge.EnsureDeletable();
         _challengeRepository.Remove(challenge);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    private static Location? ToLocation(LocationDto? dto)
+    {
+        return dto is null ? null : new Location(dto.Latitude, dto.Longitude);
     }
 
     private async Task<SocialChallenge> GetChallengeAsync(Guid id)

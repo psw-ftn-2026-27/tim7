@@ -9,8 +9,11 @@ import {
   minLength,
   required,
 } from '@angular/forms/signals';
+import { Map, MapPin } from '../../../../shared/map/map';
+import { LocationDto } from '../../api/games-api-types';
 
 // The values of the form. Times are "HH:mm", as the time input gives them.
+// The location is the point clicked on the map; null until the first click.
 export interface ChallengeFormValue {
   name: string;
   start: string;
@@ -19,6 +22,7 @@ export interface ChallengeFormValue {
   rangeMeters: number;
   xp: number;
   exitMessage: string;
+  location: LocationDto | null;
 }
 
 export const emptyChallenge: ChallengeFormValue = {
@@ -29,6 +33,7 @@ export const emptyChallenge: ChallengeFormValue = {
   rangeMeters: 2,
   xp: 1,
   exitMessage: '',
+  location: null,
 };
 
 // The field rules shown under the fields. The rules that need several fields
@@ -49,7 +54,7 @@ export function challengeRules(path: SchemaPathTree<ChallengeFormValue>): void {
 }
 
 @Component({
-  imports: [FormField],
+  imports: [FormField, Map],
   selector: 'app-challenge-form',
   styleUrl: './challenge-form.scss',
   templateUrl: './challenge-form.html',
@@ -61,6 +66,18 @@ export class ChallengeForm {
 
   readonly save = output<void>();
   readonly dismiss = output<void>();
+
+  // The map shows the range in km, the form holds it in metres.
+  protected rangeKm(): number {
+    return this.form().rangeMeters().value() / 1000;
+  }
+
+  protected pickLocation(location: MapPin): void {
+    this.form().location().value.set({
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
+  }
 
   protected submit(event: Event): void {
     event.preventDefault();

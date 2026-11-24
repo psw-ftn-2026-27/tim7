@@ -1,3 +1,4 @@
+using Games.Application.LocationChallenges;
 using Games.Application.SocialChallenges;
 using Games.Domain.SocialChallenges;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,7 @@ internal sealed class SocialChallengeReadRepository : ISocialChallengeReadReposi
                 challenge.Gathering.RangeMeters,
                 challenge.Xp,
                 challenge.ExitMessage,
-                challenge.Status));
+                challenge.Status,
+                challenge.Location == null ? null : new LocationDto(challenge.Location.Latitude, challenge.Location.Longitude)));
     }
 }

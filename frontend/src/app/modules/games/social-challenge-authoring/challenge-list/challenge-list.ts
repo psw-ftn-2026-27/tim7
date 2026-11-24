@@ -80,6 +80,7 @@ export class ChallengeList {
       rangeMeters: challenge.rangeMeters,
       xp: challenge.xp,
       exitMessage: challenge.exitMessage,
+      location: challenge.location,
     });
   }
 
