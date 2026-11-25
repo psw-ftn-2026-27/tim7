@@ -7,6 +7,12 @@
     </div>
   </div>
 
+  <nav class="subnav" aria-label="Games pages">
+    <a routerLink="/games/quizzes">Kvizovi</a>
+    <a routerLink="/games/social-challenges">Društveni izazovi</a>
+    <a routerLink="/games/location-challenges/map">Lokacijski izazovi</a>
+  </nav>
+
   <app-position-simulator (positionChanged)="position.set($event)" />
 
   @if (error()) {
@@ -17,30 +23,32 @@
     <p class="meta">Učitavanje izazova...</p>
   } @else if (challenges.error()) {
     <p class="alert">Izazove nije moguće učitati. Prijavi se kao istraživač i pokušaj ponovo.</p>
+  } @else if ((challenges.value() ?? []).length === 0) {
+    <p class="empty">Nema objavljenih društvenih izazova.</p>
   } @else {
-    @for (challenge of challenges.value(); track challenge.id) {
-      <article class="card stack">
-        <h3>{{ challenge.name }}</h3>
-        <p class="meta">Aktivan: {{ challenge.start }} - {{ challenge.end }}</p>
-        <p>Potrebno ljudi: {{ challenge.people }}</p>
-        @if (challenge.isSolved) {
-          <p class="status status--active">Rešen</p>
-        } @else {
-          <p class="status">Nije rešen</p>
-          <p class="actions">
-            <button
-              class="button button--primary"
-              type="button"
-              [disabled]="!position() || pending()"
-              (click)="activate(challenge.id)"
-            >
-              Aktiviraj
-            </button>
-          </p>
-        }
-      </article>
-    } @empty {
-      <p class="empty">Nema objavljenih društvenih izazova.</p>
-    }
+    <div class="grid">
+      @for (challenge of challenges.value(); track challenge.id) {
+        <article class="card stack">
+          <h3>{{ challenge.name }}</h3>
+          <p class="meta">Aktivan: {{ challenge.start }} - {{ challenge.end }}</p>
+          <p>Potrebno ljudi: {{ challenge.people }}</p>
+          @if (challenge.isSolved) {
+            <p class="status status--active">Rešen</p>
+          } @else {
+            <p class="status">Nije rešen</p>
+            <div class="actions">
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="!position() || pending()"
+                (click)="activate(challenge.id)"
+              >
+                Aktiviraj
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </div>
   }
 </div>

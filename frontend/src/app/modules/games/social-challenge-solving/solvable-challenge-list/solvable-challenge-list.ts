@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MapPin } from '../../../../shared/map/map';
 import { PositionSimulator } from '../../../../shared/position-simulator/position-simulator';
 import { serverMessage } from '../../../../shared/util/server-message';
@@ -8,7 +8,7 @@ import { SolvableSocialChallengeDto } from '../../api/games-api-types';
 import { SocialChallengeSolving } from '../social-challenge-solving';
 
 @Component({
-  imports: [PositionSimulator],
+  imports: [PositionSimulator, RouterLink],
   selector: 'app-solvable-challenge-list',
   styleUrl: './solvable-challenge-list.scss',
   templateUrl: './solvable-challenge-list.html',
