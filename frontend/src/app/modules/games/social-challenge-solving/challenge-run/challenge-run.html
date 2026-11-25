@@ -1,0 +1,38 @@
+<div class="stack">
+  <p><a class="back" routerLink="/games/social-challenges">Nazad na društvene izazove</a></p>
+
+  <div class="page-header">
+    <div>
+      <span class="badge badge--games">Games</span>
+      <h1>Društveni izazov</h1>
+      <p>Ostani u opsegu dok se ne okupi dovoljno ljudi.</p>
+    </div>
+  </div>
+
+  @if (run.isLoading() && !run.hasValue()) {
+    <p class="meta">Učitavanje izvedbe...</p>
+  } @else if (run.error()) {
+    <p class="alert">Izvedbu nije moguće učitati. Aktiviraj izazov sa spiska društvenih izazova.</p>
+  } @else if (run.value(); as current) {
+    @if (current.result; as result) {
+      <section class="card stack">
+        <h2>Izazov je rešen</h2>
+        <p>{{ result.exitMessage }}</p>
+        <p>Dobijeni XP: {{ result.earnedXp }}</p>
+      </section>
+    } @else {
+      <app-position-simulator (positionChanged)="position.set($event)" />
+
+      @if (error()) {
+        <p class="alert">{{ error() }}</p>
+      }
+
+      @if (current.progress; as progress) {
+        <section class="card stack">
+          <h2>Aktivni učesnici u opsegu</h2>
+          <p>{{ progress.activeParticipantCount }} / {{ progress.requiredPeople }}</p>
+        </section>
+      }
+    }
+  }
+</div>

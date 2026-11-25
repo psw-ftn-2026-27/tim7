@@ -167,3 +167,27 @@ export interface AnswerDto {
   questionId: string;
   answerOptionId: string;
 }
+
+export interface SolvableSocialChallengeDto {
+  id: string;
+  name: string;
+  start: string;
+  end: string;
+  people: number;
+  isSolved: boolean;
+}
+
+export interface GatheringProgressDto {
+  activeParticipantCount: number;
+  requiredPeople: number;
+}
+
+export interface SocialChallengeResultDto {
+  exitMessage: string;
+  earnedXp: number;
+}
+
+export interface SocialChallengeRunDto {
+  progress: GatheringProgressDto | null;
+  result: SocialChallengeResultDto | null;
+}

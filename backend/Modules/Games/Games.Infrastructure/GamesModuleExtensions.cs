@@ -8,6 +8,7 @@ using Games.Application.LocationChallengePlaying;
 using Games.Application.LocationChallenges;
 using Games.Application.SocialChallengeAuthoring;
 using Games.Application.SocialChallengeLifecycle;
+using Games.Application.SocialChallengeSolving;
 using Games.Application.SocialChallenges;
 using Games.Infrastructure.Images;
 using Games.Infrastructure.Persistence;
@@ -55,6 +56,12 @@ public static class GamesModuleExtensions
         services.AddScoped<SocialChallengeAuthoringService>();
         services.AddScoped<SocialChallengeAuthoringQueries>();
         services.AddScoped<SocialChallengeLifecycleService>();
+
+        services.AddScoped<ISocialChallengeRunRepository, SocialChallengeRunRepository>();
+        services.AddScoped<ISocialChallengeRunReadRepository, SocialChallengeRunReadRepository>();
+        services.AddScoped<SocialChallengeSolvingService>();
+        services.AddScoped<SocialChallengeSolvingQueries>();
+
         services.AddScoped<LocationChallengeAuthoringService>();
         services.AddScoped<LocationChallengeAuthoringQueries>();
         services.AddScoped<LocationChallengePlayingService>();

@@ -241,4 +241,39 @@ public class SocialChallengeTests
 
         deletion.Should().NotThrow();
     }
+
+    [Fact]
+    public void Challenge_that_is_not_published_cannot_be_activated()
+    {
+        var challenge = CreateChallenge();
+
+        var activation = () => challenge.EnsureCanBeActivatedFrom(Quay, new TimeOnly(19, 0));
+
+        activation.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(17, 59)]
+    [InlineData(20, 1)]
+    public void Published_challenge_cannot_be_activated_outside_its_active_window(int hour, int minute)
+    {
+        var challenge = CreateChallenge();
+        challenge.Publish();
+
+        var activation = () => challenge.EnsureCanBeActivatedFrom(Quay, new TimeOnly(hour, minute));
+
+        activation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Published_challenge_cannot_be_activated_from_outside_its_range()
+    {
+        var challenge = CreateChallenge();
+        challenge.Publish();
+        var positionAbout20MetersNorth = new Location(Quay.Latitude + 0.00018, Quay.Longitude);
+
+        var activation = () => challenge.EnsureCanBeActivatedFrom(positionAbout20MetersNorth, new TimeOnly(19, 0));
+
+        activation.Should().Throw<DomainException>();
+    }
 }
