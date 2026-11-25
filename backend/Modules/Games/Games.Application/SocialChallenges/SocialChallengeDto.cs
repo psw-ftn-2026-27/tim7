@@ -1,3 +1,4 @@
+using Games.Application.LocationChallenges;
 using Games.Domain.SocialChallenges;
 
 namespace Games.Application.SocialChallenges;
@@ -11,4 +12,5 @@ public sealed record SocialChallengeDto(
     int RangeMeters,
     int Xp,
     string ExitMessage,
-    SocialChallengeStatus Status);
+    SocialChallengeStatus Status,
+    LocationDto? Location);

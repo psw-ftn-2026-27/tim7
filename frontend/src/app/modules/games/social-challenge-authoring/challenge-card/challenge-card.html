@@ -6,6 +6,13 @@
   <p class="meta">Broj ljudi: {{ challenge().people }}</p>
   <p class="meta">Opseg: {{ challenge().rangeMeters }} m</p>
   <p class="meta">XP: {{ challenge().xp }}</p>
+  <p class="meta">
+    @if (challenge().location) {
+      Lokacija postavljena
+    } @else {
+      Bez lokacije
+    }
+  </p>
   <p>{{ challenge().exitMessage }}</p>
 
   <div class="actions">

@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Games.Application.LocationChallenges;
 using Games.Application.SocialChallengeAuthoring;
+using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallenges;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;
@@ -17,10 +19,10 @@ public class SocialChallengeAuthoringCommandTests : BaseIntegrationTest
     public SocialChallengeAuthoringCommandTests(GamesApiFactory factory) : base(factory) { }
 
     private static CreateSocialChallengeDto ValidCreateRequest() =>
-        new("Podnevno druženje", new TimeOnly(12, 0), new TimeOnly(14, 0), 8, 6, 75, "Hvala što ste došli na podnevno druženje!");
+        new("Podnevno druženje", new TimeOnly(12, 0), new TimeOnly(14, 0), 8, 6, 75, "Hvala što ste došli na podnevno druženje!", new LocationDto(45.2551, 19.8451));
 
     private static UpdateSocialChallengeDto ValidUpdateRequest() =>
-        new("Ispravljeno druženje", new TimeOnly(9, 0), new TimeOnly(11, 0), 6, 4, 60, "Ispravljena poruka za izlazak iz izazova.");
+        new("Ispravljeno druženje", new TimeOnly(9, 0), new TimeOnly(11, 0), 6, 4, 60, "Ispravljena poruka za izlazak iz izazova.", new LocationDto(45.2470, 19.8520));
 
     [Fact]
     public async Task Administrator_creates_a_draft_challenge()
@@ -45,6 +47,7 @@ public class SocialChallengeAuthoringCommandTests : BaseIntegrationTest
         stored.Gathering.RangeMeters.Should().Be(request.RangeMeters);
         stored.Xp.Should().Be(request.Xp);
         stored.ExitMessage.Should().Be(request.ExitMessage);
+        stored.Location.Should().Be(new Location(request.Location!.Latitude, request.Location.Longitude));
     }
 
     [Fact]
@@ -100,6 +103,7 @@ public class SocialChallengeAuthoringCommandTests : BaseIntegrationTest
         stored.Gathering.RangeMeters.Should().Be(request.RangeMeters);
         stored.Xp.Should().Be(request.Xp);
         stored.ExitMessage.Should().Be(request.ExitMessage);
+        stored.Location.Should().Be(new Location(request.Location!.Latitude, request.Location.Longitude));
     }
 
     [Fact]

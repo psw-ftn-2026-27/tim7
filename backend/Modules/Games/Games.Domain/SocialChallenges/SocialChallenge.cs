@@ -1,3 +1,4 @@
+using Games.Domain.LocationChallenges;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -11,6 +12,7 @@ public sealed class SocialChallenge : AggregateRoot
     public int Xp { get; private set; }
     public string ExitMessage { get; private set; }
     public SocialChallengeStatus Status { get; private set; }
+    public Location? Location { get; private set; }
 
     private SocialChallenge()
     {
@@ -27,7 +29,8 @@ public sealed class SocialChallenge : AggregateRoot
         int people,
         int rangeMeters,
         int xp,
-        string exitMessage)
+        string exitMessage,
+        Location? location)
         : base(Guid.NewGuid())
     {
         EnsureValidDetails(name, xp, exitMessage);
@@ -37,6 +40,7 @@ public sealed class SocialChallenge : AggregateRoot
         Gathering = new Gathering(people, rangeMeters);
         Xp = xp;
         ExitMessage = exitMessage;
+        Location = location;
         Status = SocialChallengeStatus.Draft;
     }
 
@@ -47,11 +51,16 @@ public sealed class SocialChallenge : AggregateRoot
         int people,
         int rangeMeters,
         int xp,
-        string exitMessage)
+        string exitMessage,
+        Location? location)
     {
         if (Status != SocialChallengeStatus.Draft)
         {
             throw new DomainException("Only a draft challenge can be updated.");
+        }
+        if (Location is not null && location is null)
+        {
+            throw new DomainException("The location of a challenge can be changed, but not removed.");
         }
         EnsureValidDetails(name, xp, exitMessage);
         var activeWindow = new ActiveWindow(start, end);
@@ -62,11 +71,16 @@ public sealed class SocialChallenge : AggregateRoot
         Gathering = gathering;
         Xp = xp;
         ExitMessage = exitMessage;
+        Location = location;
     }
 
     public void Publish()
     {
         EnsureStatus("published", SocialChallengeStatus.Draft);
+        if (Location is null)
+        {
+            throw new DomainException("A challenge needs a location to be published.");
+        }
         Status = SocialChallengeStatus.Published;
     }
 

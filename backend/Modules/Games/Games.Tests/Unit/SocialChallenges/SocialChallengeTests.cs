@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallenges;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -8,9 +9,13 @@ namespace Games.Tests.Unit.SocialChallenges;
 public class SocialChallengeTests
 {
     private const string ValidMessage = "Hvala što ste se okupili na keju!";
+    private static readonly Location Quay = new(45.2510, 19.8550);
 
     private static SocialChallenge CreateChallenge() =>
-        new("Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, ValidMessage);
+        new("Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, ValidMessage, Quay);
+
+    private static SocialChallenge CreateChallengeWithoutLocation() =>
+        new("Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, ValidMessage, null);
 
     [Fact]
     public void New_challenge_starts_as_a_draft()
@@ -25,6 +30,7 @@ public class SocialChallengeTests
         challenge.Gathering.RangeMeters.Should().Be(10);
         challenge.Xp.Should().Be(100);
         challenge.ExitMessage.Should().Be(ValidMessage);
+        challenge.Location.Should().Be(Quay);
     }
 
     [Theory]
@@ -33,7 +39,7 @@ public class SocialChallengeTests
     public void Challenge_cannot_start_after_its_end_or_together_with_it(int startHour, int endHour)
     {
         var creation = () => new SocialChallenge(
-            "Večernja šetnja", new TimeOnly(startHour, 0), new TimeOnly(endHour, 0), 10, 10, 100, ValidMessage);
+            "Večernja šetnja", new TimeOnly(startHour, 0), new TimeOnly(endHour, 0), 10, 10, 100, ValidMessage, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -44,7 +50,7 @@ public class SocialChallengeTests
     public void Challenge_requires_from_2_to_100_people(int people)
     {
         var creation = () => new SocialChallenge(
-            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), people, 50, 100, ValidMessage);
+            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), people, 50, 100, ValidMessage, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -55,7 +61,7 @@ public class SocialChallengeTests
     public void Challenge_range_must_be_from_2_to_50_meters(int rangeMeters)
     {
         var creation = () => new SocialChallenge(
-            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 2, rangeMeters, 100, ValidMessage);
+            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 2, rangeMeters, 100, ValidMessage, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -67,7 +73,7 @@ public class SocialChallengeTests
     public void Challenge_range_must_be_sufficient_for_the_number_of_people(int people, int rangeMeters)
     {
         var creation = () => new SocialChallenge(
-            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), people, rangeMeters, 100, ValidMessage);
+            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), people, rangeMeters, 100, ValidMessage, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -78,7 +84,7 @@ public class SocialChallengeTests
     public void Challenge_xp_must_be_positive(int xp)
     {
         var creation = () => new SocialChallenge(
-            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, xp, ValidMessage);
+            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, xp, ValidMessage, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -90,7 +96,7 @@ public class SocialChallengeTests
     public void Challenge_requires_a_name_of_at_most_50_characters(string name)
     {
         var creation = () => new SocialChallenge(
-            name, new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, ValidMessage);
+            name, new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, ValidMessage, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -103,7 +109,7 @@ public class SocialChallengeTests
         var message = new string('a', length);
 
         var creation = () => new SocialChallenge(
-            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, message);
+            "Večernja šetnja", new TimeOnly(18, 0), new TimeOnly(20, 0), 10, 10, 100, message, Quay);
 
         creation.Should().Throw<DomainException>();
     }
@@ -113,7 +119,7 @@ public class SocialChallengeTests
     {
         var challenge = CreateChallenge();
 
-        challenge.Update("Jutarnja šetnja", new TimeOnly(7, 0), new TimeOnly(9, 0), 4, 5, 50, "Vidimo se sutra ujutru opet!");
+        challenge.Update("Jutarnja šetnja", new TimeOnly(7, 0), new TimeOnly(9, 0), 4, 5, 50, "Vidimo se sutra ujutru opet!", new Location(45.2551, 19.8451));
 
         challenge.Name.Should().Be("Jutarnja šetnja");
         challenge.ActiveWindow.Start.Should().Be(new TimeOnly(7, 0));
@@ -122,6 +128,7 @@ public class SocialChallengeTests
         challenge.Gathering.RangeMeters.Should().Be(5);
         challenge.Xp.Should().Be(50);
         challenge.ExitMessage.Should().Be("Vidimo se sutra ujutru opet!");
+        challenge.Location.Should().Be(new Location(45.2551, 19.8451));
     }
 
     [Fact]
@@ -129,9 +136,31 @@ public class SocialChallengeTests
     {
         var challenge = CreateChallenge();
 
-        var update = () => challenge.Update("Jutarnja šetnja", new TimeOnly(9, 0), new TimeOnly(7, 0), 4, 5, 50, ValidMessage);
+        var update = () => challenge.Update("Jutarnja šetnja", new TimeOnly(9, 0), new TimeOnly(7, 0), 4, 5, 50, ValidMessage, Quay);
 
         update.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Challenge_without_a_location_is_not_published()
+    {
+        var challenge = CreateChallengeWithoutLocation();
+
+        var publication = () => challenge.Publish();
+
+        publication.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(SocialChallengeStatus.Draft);
+    }
+
+    [Fact]
+    public void Challenge_with_a_location_cannot_be_updated_without_one()
+    {
+        var challenge = CreateChallenge();
+
+        var update = () => challenge.Update("Jutarnja šetnja", new TimeOnly(7, 0), new TimeOnly(9, 0), 4, 5, 50, ValidMessage, null);
+
+        update.Should().Throw<DomainException>();
+        challenge.Location.Should().Be(Quay);
     }
 
     [Theory]

@@ -1,3 +1,5 @@
+using Games.Application.LocationChallenges;
+
 namespace Games.Application.SocialChallengeAuthoring;
 
 public sealed record CreateSocialChallengeDto(
@@ -7,4 +9,5 @@ public sealed record CreateSocialChallengeDto(
     int People,
     int RangeMeters,
     int Xp,
-    string ExitMessage);
+    string ExitMessage,
+    LocationDto? Location);

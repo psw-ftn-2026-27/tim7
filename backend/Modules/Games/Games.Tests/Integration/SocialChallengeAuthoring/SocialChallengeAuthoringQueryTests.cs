@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using FluentAssertions;
+using Games.Application.LocationChallenges;
 using Games.Application.SocialChallenges;
 using Games.Tests.Integration.Seeds;
 using Shared.Tests;
@@ -41,5 +42,6 @@ public class SocialChallengeAuthoringQueryTests : BaseIntegrationTest
         challenge.Xp.Should().Be(seeded.Xp);
         challenge.ExitMessage.Should().Be(seeded.ExitMessage);
         challenge.Status.Should().Be(seeded.Status);
+        challenge.Location.Should().Be(new LocationDto(seeded.Location!.Latitude, seeded.Location.Longitude));
     }
 }

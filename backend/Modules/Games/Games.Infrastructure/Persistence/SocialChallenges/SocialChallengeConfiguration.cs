@@ -19,5 +19,6 @@ internal static class SocialChallengeConfiguration
 
         builder.ComplexProperty(challenge => challenge.ActiveWindow);
         builder.ComplexProperty(challenge => challenge.Gathering);
+        builder.ComplexProperty(challenge => challenge.Location);
     }
 }
