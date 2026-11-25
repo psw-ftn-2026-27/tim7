@@ -24,6 +24,14 @@ internal sealed class SocialChallengeReadRepository : ISocialChallengeReadReposi
         return ProjectToDtos(_dbContext.SocialChallenges).ToListAsync();
     }
 
+    public Task<List<SocialChallengeDto>> GetPublishedAsync()
+    {
+        var published = _dbContext.SocialChallenges
+            .Where(challenge => challenge.Status == SocialChallengeStatus.Published)
+            .OrderBy(challenge => challenge.Name);
+        return ProjectToDtos(published).ToListAsync();
+    }
+
     private static IQueryable<SocialChallengeDto> ProjectToDtos(IQueryable<SocialChallenge> challenges)
     {
         return challenges

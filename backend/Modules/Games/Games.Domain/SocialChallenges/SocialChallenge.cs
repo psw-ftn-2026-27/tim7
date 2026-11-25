@@ -102,6 +102,27 @@ public sealed class SocialChallenge : AggregateRoot
         Status = SocialChallengeStatus.Archived;
     }
 
+    public void EnsureCanBeActivatedFrom(Location position, TimeOnly time)
+    {
+        if (Status != SocialChallengeStatus.Published)
+        {
+            throw new DomainException("Only a published challenge can be activated.");
+        }
+        if (time < ActiveWindow.Start || time > ActiveWindow.End)
+        {
+            throw new DomainException($"The challenge can be activated only between {ActiveWindow.Start} and {ActiveWindow.End}.");
+        }
+        if (!IsInRange(position))
+        {
+            throw new DomainException($"You must be at most {Gathering.RangeMeters} m from the location of the challenge to activate it.");
+        }
+    }
+
+    public bool IsInRange(Location position)
+    {
+        return Location is not null && Location.DistanceTo(position) <= Gathering.RangeMeters;
+    }
+
     private void EnsureStatus(string action, params SocialChallengeStatus[] allowedFrom)
     {
         if (!allowedFrom.Contains(Status))

@@ -9,6 +9,8 @@ import { SolveQuiz } from './quiz-solving/solve-quiz/solve-quiz';
 import { PlayLocationChallenges } from './location-challenge-playing/play-location-challenges/play-location-challenges';
 import { ChallengeList } from './social-challenge-authoring/challenge-list/challenge-list';
 import { CreateChallenge } from './social-challenge-authoring/create-challenge/create-challenge';
+import { SolvableChallengeList } from './social-challenge-solving/solvable-challenge-list/solvable-challenge-list';
+import { ChallengeRun } from './social-challenge-solving/challenge-run/challenge-run';
 
 export const gamesRoutes: Routes = [
   { path: '', component: QuizList },
@@ -17,6 +19,8 @@ export const gamesRoutes: Routes = [
   { path: 'quizzes/:id', component: SolveQuiz },
   { path: 'challenges', component: ChallengeList },
   { path: 'challenges/create', component: CreateChallenge },
+  { path: 'social-challenges', component: SolvableChallengeList },
+  { path: 'social-challenges/:id', component: ChallengeRun },
   { path: ':id/edit', component: EditQuiz },
   { path: 'location-challenges', component: LocationChallengeList },
   { path: 'location-challenges/map', component: PlayLocationChallenges },
